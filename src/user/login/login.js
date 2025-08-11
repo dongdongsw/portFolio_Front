@@ -1,42 +1,39 @@
-/*
-		Designed by: SELECTO
-		Original image: https://dribbble.com/shots/5311359-Diprella-Login
-*/
+const hamMenu = document.querySelector('.ham-menu');
+const navSlide = document.querySelector('.container .nav-class');
 
-let switchCtn = document.querySelector("#switch-cnt");
-let switchC1 = document.querySelector("#switch-c1");
-let switchC2 = document.querySelector("#switch-c2");
-let switchCircle = document.querySelectorAll(".switch__circle");
-let switchBtn = document.querySelectorAll(".switch-btn");
-let aContainer = document.querySelector("#a-container");
-let bContainer = document.querySelector("#b-container");
-let allButtons = document.querySelectorAll(".submit");
+if (hamMenu && navSlide) {
+  // 접근성: 토글 상태 알려주기
+  if (!navSlide.id) navSlide.id = 'nav-slide';
+  hamMenu.setAttribute('aria-controls', navSlide.id);
+  hamMenu.setAttribute('aria-expanded', 'false');
 
-let getButtons = (e) => e.preventDefault()
+  const toggleNav = () => {
+    const isOpen = navSlide.classList.toggle('is-open');
+    hamMenu.setAttribute('aria-expanded', String(isOpen));
+  };
 
-let changeForm = (e) => {
+  hamMenu.addEventListener('click', toggleNav);
 
-    switchCtn.classList.add("is-gx");
-    setTimeout(function(){
-        switchCtn.classList.remove("is-gx");
-    }, 1500)
+  // 선택: ESC로 닫기
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && navSlide.classList.contains('is-open')) {
+      navSlide.classList.remove('is-open');
+      hamMenu.setAttribute('aria-expanded', 'false');
+      hamMenu.focus();
+    }
+  });
 
-    switchCtn.classList.toggle("is-txr");
-    switchCircle[0].classList.toggle("is-txr");
-    switchCircle[1].classList.toggle("is-txr");
-
-    switchC1.classList.toggle("is-hidden");
-    switchC2.classList.toggle("is-hidden");
-    aContainer.classList.toggle("is-txl");
-    bContainer.classList.toggle("is-txl");
-    bContainer.classList.toggle("is-z200");
+  // 선택: 바깥 클릭 시 닫기
+  document.addEventListener('click', (e) => {
+    if (
+      navSlide.classList.contains('is-open') &&
+      !navSlide.contains(e.target) &&
+      !hamMenu.contains(e.target)
+    ) {
+      navSlide.classList.remove('is-open');
+      hamMenu.setAttribute('aria-expanded', 'false');
+    }
+  });
+} else {
+  console.warn('hamMenu 또는 navSlide를 찾지 못했어. 선택자 확인 ㄱㄱ');
 }
-
-let mainF = (e) => {
-    for (var i = 0; i < allButtons.length; i++)
-        allButtons[i].addEventListener("click", getButtons );
-    for (var i = 0; i < switchBtn.length; i++)
-        switchBtn[i].addEventListener("click", changeForm)
-}
-
-window.addEventListener("load", mainF);
