@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="main">
+    <div class="container a-container" id="a-container">
+        <form class="form" id="a-form" method="" action="">
+            <h2 class="form_title title">Crear Cuenta</h2>
+            <div class="form__icons">
+                <img class="form__icon" src="https://img.icons8.com/color/48/000000/google-logo.png"/>
+                <img class="form__icon" src="https://img.icons8.com/color/48/000000/facebook-new.png"/>
+                <img class="form__icon" src="https://img.icons8.com/color/48/000000/linkedin.png"/>
+            </div>
+            <span class="form__span">o use su email para registrarse</span>
+            <input class="form__input" type="text" placeholder="Nombre">
+            <input class="form__input" type="text" placeholder="Email">
+            <input class="form__input" type="password" placeholder="Contraseña">
+            <button class="form__button button submit">REGISTRARSE</button>
+        </form>
+    </div>
+
+    <div class="container b-container" id="b-container">
+        <form class="form" id="b-form" method="" action="">
+            <h2 class="form_title title">Iniciar Sesión</h2>
+            <div class="form__icons">
+                <img class="form__icon" src="https://img.icons8.com/color/48/000000/google-logo.png"/>
+                <img class="form__icon" src="https://img.icons8.com/color/48/000000/facebook-new.png"/>
+                <img class="form__icon" src="https://img.icons8.com/color/48/000000/linkedin.png"/>
+            </div>
+            <span class="form__span">o use su cuenta de email</span>
+            <input class="form__input" type="text" placeholder="Email">
+            <input class="form__input" type="password" placeholder="Contraseña">
+            <a class="form__link" href="#">¿Olvidó su contraseña?</a>
+            <button class="form__button button submit">ENTRAR</button>
+        </form>
+    </div>
+
+    <div class="switch" id="switch-cnt">
+        <div class="switch__circle"></div>
+        <div class="switch__circle switch__circle--t"></div>
+        <div class="switch__container" id="switch-c1">
+            <h2 class="switch__title title">¡Bienvenido de nuevo!</h2>
+            <p class="switch__description description">Para mantenerse conectado con nosotros, inicie sesión con su información personal</p>
+            <button class="switch__button button switch-btn">INICIAR SESIÓN</button>
+        </div>
+        <div class="switch__container is-hidden" id="switch-c2">
+            <h2 class="switch__title title">Hola, Amigo!</h2>
+            <p class="switch__description description">Ingrese sus datos personales y comience su viaje con nosotros</p>
+            <button class="switch__button button switch-btn">REGISTRARSE</button>
+        </div>
+    </div>
+</div>
+
+<script src="login.js"></script>
+</body>
+</html>
