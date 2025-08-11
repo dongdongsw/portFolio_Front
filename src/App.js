@@ -1,24 +1,25 @@
+import logo from './logo.svg';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-      
-=======
       <header className="App-header">
-        <img src={Spinner}width="500" alt="profile" />
+        <img src={logo} className="App-logo" alt="logo" />
         <p>
-          
-          
-          Hello mother Fucker
->>>>>>> e4b72a045f845991bd2901e0d9bae4f1cb5b23b9
-
+          Edit <code>src/App.js</code> and save to reload.
+        </p>
+        <a
+          className="App-link"
+          href="https://reactjs.org"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Learn React
+        </a>
+      </header>
     </div>
   );
 }
 
 export default App;
- 
