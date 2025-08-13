@@ -18,7 +18,7 @@ function Login() {
     <div className="main">
       {/* 회원가입 폼: a-container */}
       {/* isSignInActive가 true일 때 (로그인 폼이 활성화될 때), 회원가입 폼은 왼쪽으로 밀려나고(is-txl) z-index가 낮아짐 */}
-      <div className={`container a-container ${isSignInActive ? 'is-txl' : ''}`} id="a-container">
+      <div className={`containers a-container ${isSignInActive ? 'is-txl' : ''}`} id="a-container">
         <form id="a-form" className="form" method="" action="">
           <h2 className="form_title title">Create Account</h2>
 
@@ -46,7 +46,7 @@ function Login() {
       {/* 로그인 폼: b-container */}
       {/* isSignInActive가 false일 때 (회원가입 폼이 활성화될 때), 로그인 폼은 왼쪽으로 밀려나고(is-txl) z-index가 낮아짐 */}
       {/* 로그인 폼이 활성화되면 is-z200 클래스로 z-index를 높여 앞으로 보냄 */}
-      <div className={`container b-container ${!isSignInActive ? 'is-txl' : ''} ${isSignInActive ? 'is-z200' : ''}`} id="b-container">
+      <div className={`containers b-container ${!isSignInActive ? 'is-txl' : ''} ${isSignInActive ? 'is-z200' : ''}`} id="b-container">
         <form id="b-form" className="form" method="" action="">
           <h2 className="form_title title">Sign in to Website</h2>
           <div className="form__icons">
