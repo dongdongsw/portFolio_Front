@@ -1,144 +1,125 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React, { useState } from "react";
+import "./postlist.css"; // 위 CSS 임포트
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+export default function PostList() {
+  // 첫 번째 카드: 마우스 진입/이탈 시 .hover 클래스 토글
+  const [hover1, setHover1] = useState(false);
 
-//Opening or closing side bar
+  const prevent = (e) => e.preventDefault();
 
-const elementToggleFunc = function (elem) { elem.classList.toggle("active"); }
+  return (
+    <>
+      {/* 폰트어썸 아이콘 사용 시 (public/index.html <head>에 한 번만 추가해도 됨) */}
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+      />
 
-const sidebar = document.querySelector("[data-sidebar]");
-const sidebarBtn = document.querySelector("[data-sidebar-btn]");
+      <div className="container">
+        {/* Pen Info */}
+        <div className="info">
+          <h1>Article News Card</h1>
+          <span>
+            Made with <i className="fa fa-heart animated infinite pulse" /> by{" "}
+            <a href="http://andy.design" target="_blank" rel="noreferrer">
+              Andy Tran
+            </a>{" "}
+            | Designed by{" "}
+            <a href="http://justinkwak.com" target="_blank" rel="noreferrer">
+              JustinKwak
+            </a>
+          </span>
+        </div>
 
-sidebarBtn.addEventListener("click", function() {elementToggleFunc(sidebar); })
+        {/* Normal Demo */}
+        <div className="column">
+          <div className="demo-title">Normal</div>
 
-//Activating Modal-testimonial
+          {/* Post (호버 시 .hover 클래스 토글) */}
+          <div
+            className={`post-module ${hover1 ? "hover" : ""}`}
+            onMouseEnter={() => setHover1(true)}
+            onMouseLeave={() => setHover1(false)}
+          >
+            {/* Thumbnail */}
+            <div className="thumbnail">
+              <div className="date">
+                <div className="day">27</div>
+                <div className="month">Mar</div>
+              </div>
+              <img
+                src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/169963/photo-1429043794791-eb8f26f44081.jpeg"
+                alt="City Lights in New York"
+              />
+            </div>
 
-const testimonialsItem = document.querySelectorAll('[data-testimonials-item]');
-const modalContainer = document.querySelector('[data-modal-container]');
-const modalCloseBtn = document.querySelector('[data-modal-close-btn]');
-const overlay = document.querySelector('[data-overlay]');
+            {/* Post Content */}
+            <div className="post-content">
+              <div className="category">Photos</div>
+              <h1 className="title">City Lights in New York</h1>
+              <h2 className="sub_title">The city that never sleeps.</h2>
+              <p className="description">
+                New York, the largest city in the U.S., is an architectural
+                marvel with plenty of historic monuments, magnificent buildings
+                and countless dazzling skyscrapers.
+              </p>
+              <div className="post-meta">
+                <span className="timestamp">
+                  <i className="fa fa-clock-o" /> 6 mins ago
+                </span>
+                <span className="comments">
+                  <i className="fa fa-comments" />
+                  <a href="#!" onClick={prevent}>
+                    {" "}
+                    39 comments
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
 
-const modalImg = document.querySelector('[data-modal-img]');
-const modalTitle = document.querySelector('[data-modal-title]');
-const modalText = document.querySelector('[data-modal-text]');
+        {/* Hover Demo — 항상 열린 상태(.post-module.hover) */}
+        <div className="column">
+          <div className="demo-title">Hover</div>
 
-const testimonialsModalFunc = function () {
-    modalContainer.classList.toggle('active');
-    overlay.classList.toggle('active');
+          <div className="post-module hover">
+            <div className="thumbnail">
+              <div className="date">
+                <div className="day">27</div>
+                <div className="month">Mar</div>
+              </div>
+              <img
+                src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/169963/photo-1429043794791-eb8f26f44081.jpeg"
+                alt="City Lights in New York"
+              />
+            </div>
+
+            <div className="post-content">
+              <div className="category">Photos</div>
+              <h1 className="title">City Lights in New York</h1>
+              <h2 className="sub_title">The city that never sleeps.</h2>
+              <p className="description">
+                New York, the largest city in the U.S., is an architectural
+                marvel with plenty of historic monuments, magnificent buildings
+                and countless dazzling skyscrapers.
+              </p>
+              <div className="post-meta">
+                <span className="timestamp">
+                  <i className="fa fa-clock-o" /> 6 mins ago
+                </span>
+                <span className="comments">
+                  <i className="fa fa-comments" />
+                  <a href="#!" onClick={prevent}>
+                    {" "}
+                    39 comments
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
-
-for (let i = 0; i < testimonialsItem.length; i++) {
-    testimonialsItem[i].addEventListener('click', function () {
-        modalImg.src = this.querySelector('[data-testimonials-avatar]').src;
-        modalImg.alt = this.querySelector('[data-testimonials-avatar]').alt;
-        modalTitle.innerHTML = this.querySelector('[data-testimonials-title]').innerHTML;
-        modalText.innerHTML = this.querySelector('[data-testimonials-text]').innerHTML;
-
-        testimonialsModalFunc();
-    })
-}
-
-//Activating close button in modal-testimonial
-
-modalCloseBtn.addEventListener('click', testimonialsModalFunc);
-overlay.addEventListener('click', testimonialsModalFunc);
-
-//Activating Filter Select and filtering options
-
-const select = document.querySelector('[data-select]');
-const selectItems = document.querySelectorAll('[data-select-item]');
-const selectValue = document.querySelector('[data-select-value]');
-const filterBtn = document.querySelectorAll('[data-filter-btn]');
-
-select.addEventListener('click', function () {elementToggleFunc(this); });
-
-for(let i = 0; i < selectItems.length; i++) {
-    selectItems[i].addEventListener('click', function() {
-
-        let selectedValue = this.innerText.toLowerCase();
-        selectValue.innerText = this.innerText;
-        elementToggleFunc(select);
-        filterFunc(selectedValue);
-
-    });
-}
-
-const filterItems = document.querySelectorAll('[data-filter-item]');
-
-const filterFunc = function (selectedValue) {
-    for(let i = 0; i < filterItems.length; i++) {
-        if(selectedValue == "all") {
-            filterItems[i].classList.add('active');
-        } else if (selectedValue == filterItems[i].dataset.category) {
-            filterItems[i].classList.add('active');
-        } else {
-            filterItems[i].classList.remove('active');
-        }
-    }
-}
-
-//Enabling filter button for larger screens 
-
-let lastClickedBtn = filterBtn[0];
-
-for (let i = 0; i < filterBtn.length; i++) {
-    
-    filterBtn[i].addEventListener('click', function() {
-
-        let selectedValue = this.innerText.toLowerCase();
-        selectValue.innerText = this.innerText;
-        filterFunc(selectedValue);
-
-        lastClickedBtn.classList.remove('active');
-        this.classList.add('active');
-        lastClickedBtn = this;
-
-    })
-}
-
-// Enabling Contact Form
-
-const form = document.querySelector('[data-form]');
-const formInputs = document.querySelectorAll('[data-form-input]');
-const formBtn = document.querySelector('[data-form-btn]');
-
-for(let i = 0; i < formInputs.length; i++) {
-    formInputs[i].addEventListener('input', function () {
-        if(form.checkValidity()) {
-            formBtn.removeAttribute('disabled');
-        } else { 
-            formBtn.setAttribute('disabled', '');
-        }
-    })
-}
-
-// Enabling Page Navigation 
-
-const navigationLinks = document.querySelectorAll('[data-nav-link]');
-const pages = document.querySelectorAll('[data-page]');
-
-for(let i = 0; i < navigationLinks.length; i++) {
-    navigationLinks[i].addEventListener('click', function() {
-        
-        for(let i = 0; i < pages.length; i++) {
-            if(this.innerHTML.toLowerCase() == pages[i].dataset.page) {
-                pages[i].classList.add('active');
-                navigationLinks[i].classList.add('active');
-                window.scrollTo(0, 0);
-            } else {
-                pages[i].classList.remove('active');
-                navigationLinks[i]. classList.remove('active');
-            }
-        }
-    });
-}
-reportWebVitals();

@@ -185,3 +185,18 @@ body {
 .container .info span .fa {
   color: #e74c3c;
 }
+
+/* ===== React 호환 보정: jQuery 없이 같은 애니메이션 느낌 ===== */
+.post-module .post-content .description {
+  /* 위 원본 rule을 덮어써서 전환 가능하게 */
+  display: block;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height .3s ease, opacity .3s ease;
+}
+.post-module.hover .post-content .description,
+.post-module:hover .post-content .description {
+  max-height: 400px; /* 내용보다 충분히 크게 */
+  opacity: 1;
+}
