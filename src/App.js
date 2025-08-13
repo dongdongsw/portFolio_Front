@@ -14,7 +14,6 @@ function App() {
       {/* <Route path='/postlist' element={<Postlist/>} /> */}
       {/* <Route path='/mypage' element={<Mypage/>}/> */}
 
-
     </Routes>
 
   );
