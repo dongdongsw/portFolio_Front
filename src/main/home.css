@@ -1,20 +1,20 @@
-*{
+* {
   margin: 0;
   padding: 0;
-  box-sizing: 0;
+  box-sizing: border-box; /* 여기 0에서 border-box로 수정했어! */
 }
 
-.home-section{
+.home-section {
   width: 100%;
   height: 100vh;
 }
 
-header{
+header {
   width: 100%;
   height: 20vh;
 }
 
-.container{
+.container {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -23,30 +23,28 @@ header{
   font-family: 'Nunito', sans-serif;
 }
 
-.logo{
-  
-}
+.logo {}
 
-.ham-menu{
+.ham-menu {
   display: none;
 }
 
-nav{
+nav {
   width: 60%;
   transform: translateY(0) translateX(0);
 }
 
-.nav-class{
+.nav-class {
   display: none;
 }
 
-nav ul{
+nav ul {
   display: flex;
   list-style: none;
   justify-content: space-evenly
 }
 
-li a{
+li a {
   text-decoration: none;
   color: black;
   padding: 2px 8px;
@@ -55,38 +53,40 @@ li a{
   letter-spacing: 1px;
 }
 
-li a::before{
+li a::before {
   content: '';
   position: absolute;
-  bottom:0;
+  bottom: 0;
   right: 50%;
   height: 100%;
-  width:0;
-  transition: 0.4s ease-in;
-}
-li a::after{
-  content: '';
-  position: absolute;
-  bottom:0;
-  left: 50%;
-  height: 100%;
-  width:0;
+  width: 0;
   transition: 0.4s ease-in;
 }
 
-li a:hover::before{
+li a::after {
   content: '';
   position: absolute;
-  bottom:0;
+  bottom: 0;
+  left: 50%;
+  height: 100%;
+  width: 0;
+  transition: 0.4s ease-in;
+}
+
+li a:hover::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
   right: 50%;
   height: 100%;
   width: 50%;
   border-bottom: 1px solid #000;
 }
-li a:hover::after{
+
+li a:hover::after {
   content: '';
   position: absolute;
-  bottom:0;
+  bottom: 0;
   left: 50%;
   height: 100%;
   width: 50%;
@@ -94,27 +94,27 @@ li a:hover::after{
   border-bottom: 1px solid #000;
 }
 
-  .active-link{
-    font-weight: 700;
-  }
+.active-link {
+  font-weight: 700;
+}
 
-main{
+main {
   height: 60vh;
   width: 100%;
   position: relative;
   background-color: red;
-  background-image:linear-gradient(to right,rgba(0,0,0,0.4),rgba(0,0,0,0.4)), url(https://images.pexels.com/photos/279719/pexels-photo-279719.jpeg?cs=srgb&dl=apartment-chair-clean-contemporary-279719.jpg&fm=jpg);
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(https://images.pexels.com/photos/279719/pexels-photo-279719.jpeg?cs=srgb&dl=apartment-chair-clean-contemporary-279719.jpg&fm=jpg);
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
 }
 
-.navigation{
+.navigation {
   display: flex;
   flex-direction: column;
 }
 
-.next-prev{
+.next-prev {
   display: flex;
   justify-content: space-between;
   padding: 0 20px;
@@ -124,34 +124,34 @@ main{
   right: 0;
 }
 
-.indicator{
+.indicator {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  text-align:center;
+  text-align: center;
   padding-bottom: 10px;
 }
 
-.indicator div{
+.indicator div {
   display: flex;
   display: inline-block;
 }
 
-.indicator div div{
+.indicator div div {
   width: 5px;
   height: 5px;
   border-radius: 50%;
   background-color: transparent;
   border: 1px solid #fff;
-  margin:0 4px;
+  margin: 0 4px;
 }
 
-.indicator div div:nth-child(2){
+.indicator div div:nth-child(2) {
   background-color: #fff;
 }
 
-main .some-quote{
+main .some-quote {
   text-align: center;
   padding-top: 60px;
   font-family: 'Dancing Script', cursive;
@@ -159,13 +159,13 @@ main .some-quote{
   font-size: 1.2rem;
 }
 
-main .design-btn{
+main .design-btn {
   margin-top: 160px;
   text-align: center;
   color: #ffffff;
 }
 
-main .design-btn h1{
+main .design-btn h1 {
   font-family: 'Nunito', sans-serif;
   letter-spacing: 3px;
   display: inline-block;
@@ -174,96 +174,98 @@ main .design-btn h1{
   cursor: pointer;
 }
 
-main .design-btn h1::before{
+main .design-btn h1::before {
   content: '';
   border-top: 2px solid #ffffff;
   border-left: 2px solid #ffffff;
   position: absolute;
-  top:0;
-  left:0;
+  top: 0;
+  left: 0;
   height: 100%;
   width: 20%;
   transition: 0.5s ease-in;
 }
 
-main .design-btn h1::after{
+main .design-btn h1::after {
   content: '';
   border-bottom: 2px solid #ffffff;
   border-right: 2px solid #ffffff;
   position: absolute;
-  bottom:0;
-  right:0;
+  bottom: 0;
+  right: 0;
   height: 100%;
   width: 20%;
   transition: 0.5s ease-in;
 }
 
-main .design-btn h1:hover::before{
-  width: 50%;
-  height: 0;
-}
-main .design-btn h1:hover::after{
+main .design-btn h1:hover::before {
   width: 50%;
   height: 0;
 }
 
-.home-footer{
+main .design-btn h1:hover::after {
+  width: 50%;
+  height: 0;
+}
+
+.home-footer {
   height: 20vh;
 }
 
-.social-link-icon{
+.social-link-icon {
   padding-top: 30px;
   display: flex;
   justify-content: center;
 }
 
-.social-link-icon div{
+.social-link-icon div {
   display: flex;
   text-align: center;
 }
 
-.social-link-icon div div{
+.social-link-icon div div {
   margin: 0 10px;
-} 
+}
 
-@media screen and (max-width: 991px){
-  nav{
+@media screen and (max-width: 991px) {
+  nav {
     width: 75%;
   }
 }
-@media screen and (max-width: 767px){
-  body{
+
+@media screen and (max-width: 767px) {
+  body {
     overflow: hidden;
   }
-  
-  header{
+
+  header {
     height: 15vh;
     position: relative;
   }
-  
-header .container{
-  height: 100%;
-  width: 90%;
-  margin: auto;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  font-family: 'Nunito', sans-serif;
-}
-  
-  .ham-menu{
+
+  header .container {
+    height: 100%;
+    width: 90%;
+    margin: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .ham-menu {
     display: block;
   }
-  
-  nav{
+
+  nav {
     display: none;
   }
-  
-  .container .nav-class{
+
+  .container .nav-class {
     display: block;
     position: absolute;
-    background-color: rgba(255,255,255,0.8);
+    background-color: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(5px);
     right: 0;
     bottom: 0;
@@ -273,17 +275,17 @@ header .container{
     width: 50%;
     transition: 0.3s linear;
   }
-  
-  .nav-class ul{
-       display: flex;
-       flex-direction: column;
+
+  .nav-class ul {
+    display: flex;
+    flex-direction: column;
   }
-  
-  .nav-class ul li{
+
+  .nav-class ul li {
     margin: 20px;
   }
-  
-  li a::before{
+
+  li a::before {
     content: '';
     position: relative;
     bottom: 0;
@@ -291,7 +293,8 @@ header .container{
     height: 100%;
     width: 0;
   }
-    li a::after{
+
+  li a::after {
     content: '';
     position: relative;
     bottom: 0;
@@ -299,8 +302,9 @@ header .container{
     height: 100%;
     width: 0;
   }
-   li a:hover::before{
-     content: '';
+
+  li a:hover::before {
+    content: '';
     position: absolute;
     bottom: 0;
     left: 0;
@@ -308,7 +312,8 @@ header .container{
     width: 100%;
     border-bottom: 1px solid #000;
   }
-   li a:hover::after{
+
+  li a:hover::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -316,79 +321,79 @@ header .container{
     height: 100%;
     width: 0;
   }
-  
-  
-  main{
+
+  main {
     height: 65vh;
   }
-  
-  main .design-btn{
-  margin-top: 200px;
-  text-align: center;
-  color: #ffffff;
+
+  main .design-btn {
+    margin-top: 200px;
+    text-align: center;
+    color: #ffffff;
+  }
+
+  main .design-btn h1 {
+    font-family: 'Nunito', sans-serif;
+    letter-spacing: 3px;
+    display: inline-block;
+    padding: 5px 10px;
+    position: relative;
+    cursor: pointer;
+    font-size: 1.3rem;
+  }
+
+  .next-prev {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+  }
+
+  main .some-quote {
+    text-align: center;
+    padding-top: 50px;
+    font-family: 'Dancing Script', cursive;
+    color: #ffffff;
+    font-size: 1.4rem;
+  }
 }
-  
-  main .design-btn h1{
-  font-family: 'Nunito', sans-serif;
-  letter-spacing: 3px;
-  display: inline-block;
-  padding: 5px 10px;
-  position: relative;
-  cursor: pointer;
-  font-size: 1.3rem;
-}
-  
-  .next-prev{
-  display: flex;
-  justify-content: space-between;
-  padding: 0 10px;
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-}
-  
-main .some-quote{
-  text-align: center;
-  padding-top: 50px;
-  font-family: 'Dancing Script', cursive;
-  color: #ffffff;
-  font-size: 1.4rem;
-}
-}
-@media screen and (max-width: 575px){
-  body{
+
+@media screen and (max-width: 575px) {
+  body {
     overflow: hidden;
   }
-  
-  header{
+
+  header {
     height: 15vh;
     position: relative;
   }
-  
-header .container{
-  height: 100%;
-  width: 90%;
-  margin: auto;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  font-family: 'Nunito', sans-serif;
-}
-  
-  .ham-menu{
+
+  header .container {
+    height: 100%;
+    width: 90%;
+    margin: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .ham-menu {
     display: block;
   }
-  
-  nav{
+
+  nav {
     display: none;
   }
-  
-  .container .nav-class{
+
+  .container .nav-class {
     display: block;
     position: absolute;
-    background-color: rgba(255,255,255,0.8);
+    background-color: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(5px);
     right: 0;
     bottom: 0;
@@ -398,17 +403,17 @@ header .container{
     width: 50%;
     transition: 0.3s linear;
   }
-  
-  .nav-class ul{
-       display: flex;
-       flex-direction: column;
+
+  .nav-class ul {
+    display: flex;
+    flex-direction: column;
   }
-  
-  .nav-class ul li{
+
+  .nav-class ul li {
     margin: 20px;
   }
-  
-  li a::before{
+
+  li a::before {
     content: '';
     position: relative;
     bottom: 0;
@@ -416,7 +421,8 @@ header .container{
     height: 100%;
     width: 0;
   }
-    li a::after{
+
+  li a::after {
     content: '';
     position: relative;
     bottom: 0;
@@ -424,8 +430,9 @@ header .container{
     height: 100%;
     width: 0;
   }
-   li a:hover::before{
-     content: '';
+
+  li a:hover::before {
+    content: '';
     position: absolute;
     bottom: 0;
     left: 0;
@@ -433,7 +440,8 @@ header .container{
     width: 100%;
     border-bottom: 1px solid #000;
   }
-   li a:hover::after{
+
+  li a:hover::after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -441,43 +449,43 @@ header .container{
     height: 100%;
     width: 0;
   }
-  
-  
-  main{
+
+
+  main {
     height: 65vh;
   }
-  
-  main .design-btn{
-  margin-top: 200px;
-  text-align: center;
-  color: #ffffff;
-}
-  
-  main .design-btn h1{
-  font-family: 'Nunito', sans-serif;
-  letter-spacing: 3px;
-  display: inline-block;
-  padding: 5px 10px;
-  position: relative;
-  cursor: pointer;
-  font-size: 1.1rem;
-}
-  
-  .next-prev{
-  display: flex;
-  justify-content: space-between;
-  padding: 0 10px;
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-}
-  
-main .some-quote{
-  text-align: center;
-  padding-top: 50px;
-  font-family: 'Dancing Script', cursive;
-  color: #ffffff;
-  font-size: 1.4rem;
-}
+
+  main .design-btn {
+    margin-top: 200px;
+    text-align: center;
+    color: #ffffff;
+  }
+
+  main .design-btn h1 {
+    font-family: 'Nunito', sans-serif;
+    letter-spacing: 3px;
+    display: inline-block;
+    padding: 5px 10px;
+    position: relative;
+    cursor: pointer;
+    font-size: 1.1rem;
+  }
+
+  .next-prev {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+  }
+
+  main .some-quote {
+    text-align: center;
+    padding-top: 50px;
+    font-family: 'Dancing Script', cursive;
+    color: #ffffff;
+    font-size: 1.4rem;
+  }
 }

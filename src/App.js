@@ -1,5 +1,5 @@
 import {Route,Routes} from 'react-router-dom';
-// import Home from './main/home';
+import Home from './main/home';
 import Login from './user/login/login';
 import Postlist from './post/post_list/postlist';
 // import PostDetail from './post/post_detail/postdetail';
@@ -9,7 +9,7 @@ import Postlist from './post/post_list/postlist';
 function App() {
   return (
     <Routes>
-      {/* <Route path='/' element={<Home />}/> */}
+      <Route path='/' element={<Home />}/>
       <Route path='/login' element={<Login/>}/>
       <Route path='/postlist' element={<Postlist/>} />
       {/* <Route path='/mypage' element={<Mypage/>}/> */}
