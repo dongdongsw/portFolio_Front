@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 // CSS 파일은 보통 이렇게 import 해서 사용해!
 import './login.css'; 
-
+import '../../commonness.css';
 function Login() {
   // 로그인(true) 또는 회원가입(false) 상태를 관리하는 state
   const [isSignInActive, setIsSignInActive] = useState(true); // 처음엔 로그인 폼이 보이도록 true
@@ -15,11 +15,11 @@ function Login() {
   };
 
   return (
-    <div className="main">
+    <div className="login_main">
       {/* 회원가입 폼: a-container */}
       {/* isSignInActive가 true일 때 (로그인 폼이 활성화될 때), 회원가입 폼은 왼쪽으로 밀려나고(is-txl) z-index가 낮아짐 */}
       <div className={`containers a-container ${isSignInActive ? 'is-txl' : ''}`} id="a-container">
-        <form id="a-form" className="form" method="" action="">
+        <form id="a-form" className="login_form" method="" action="">
           <h2 className="form_title title">Create Account</h2>
 
           {/* <div className="form__icons"> */}
@@ -47,7 +47,7 @@ function Login() {
       {/* isSignInActive가 false일 때 (회원가입 폼이 활성화될 때), 로그인 폼은 왼쪽으로 밀려나고(is-txl) z-index가 낮아짐 */}
       {/* 로그인 폼이 활성화되면 is-z200 클래스로 z-index를 높여 앞으로 보냄 */}
       <div className={`containers b-container ${!isSignInActive ? 'is-txl' : ''} ${isSignInActive ? 'is-z200' : ''}`} id="b-container">
-        <form id="b-form" className="form" method="" action="">
+        <form id="b-form" className="login_form" method="" action="">
           <h2 className="form_title title">Sign in to Website</h2>
           <div className="form__icons">
             {/* 페이스북 아이콘 */}

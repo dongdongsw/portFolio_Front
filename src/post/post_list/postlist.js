@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import "./postlist.css";
+import '../../commonness.css';
 
 export default function PostList() {
   const cards = useMemo(

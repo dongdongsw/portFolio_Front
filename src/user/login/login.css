@@ -1,38 +1,10 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
 
-*, *::after, *::before {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    user-select: none;
-}
 
-/* Generic */
-body {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 12px;
-    background-color: #e4e1da;
-    color: #6f6767;
-}
 
-.main {
+
+
+.login_main {
     position: relative;
     width: 1000px;
     min-width: 1000px;
@@ -73,7 +45,7 @@ body {
     transition: 1.25s;
 }
 
-.form {
+.login_form {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -133,12 +105,7 @@ body {
     line-height: 2;
 }
 
-.title {
-    font-size: 34px;
-    font-weight: 700;
-    line-height: 3;
-    color: #6f6767;
-}
+
 
 .description {
     font-size: 14px;
@@ -147,22 +114,7 @@ body {
     line-height: 1.6;
 }
 
-.button {
-    width: 180px;
-    height: 50px;
-    border-radius: 25px;
-    margin-top: 50px;
-    font-weight: 700;
-    font-size: 14px;
-    letter-spacing: 1.15px;
-    background-color: #c7c8cc;
-    color: #f9f9f9;
-    box-shadow:
-        8px 8px 16px #d1d9e6,
-        -8px -8px 16px #f9f9f9;
-    border: none;
-    outline: none;
-}
+
 
 .a-container {
     z-index: 100;
