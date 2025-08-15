@@ -1,9 +1,3 @@
-
-
-
-
-
-
 .login_main {
     position: relative;
     width: 1000px;
@@ -20,16 +14,16 @@
 }
 
 @media (max-width: 1200px) {
-    .main { transform: scale(.7); }
+    .login_main { transform: scale(.7); }
 }
 @media (max-width: 1000px) {
-    .main { transform: scale(.6); }
+    .login_main { transform: scale(.6); }
 }
 @media (max-width: 800px) {
-    .main { transform: scale(.5); }
+    .login_main { transform: scale(.5); }
 }
 @media (max-width: 600px) {
-    .main { transform: scale(.4); }
+    .login_main { transform: scale(.4); }
 }
 
 .containers {
@@ -54,19 +48,7 @@
     height: 100%;
 }
 
-.form__icon {
-    object-fit: contain;
-    width: 30px;
-    margin: 0 5px;
-    opacity: .5;
-    transition: .15s;
-}
 
-.form__icon:hover {
-    opacity: 1;
-    transition: .15s;
-    cursor: pointer;
-}
 
 .form__input {
     width: 350px;
