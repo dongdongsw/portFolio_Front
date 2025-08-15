@@ -1,16 +1,4 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 
-  -webkit-box-sizing: border-box;
- 	-moz-box-sizing: border-box;
-}
-
-body{
-  background-color: #dee1e3;
-  font-family: "Roboto", "Tahoma", "Arial", sans-serif;
-}
 
 .text-right{ text-align: right; }
 

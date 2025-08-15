@@ -2,25 +2,24 @@ import React, { useState } from "react";
 import "./comment.css"; // 기존 CSS 그대로 불러오기
 import { createGlobalStyle } from 'styled-components';
 
-function comment() {
-  const GlobalStyle = createGlobalStyle`
-  body {
-     width: 100%;
-    background-color: #e4e1da; 
-    font-size: 14px; 
-    height: 100vh; 
-    -webkit-font-smoothing: antialiased; 
-    -moz-osx-font-smoothing: grayscale; 
-    font-family: 'proxima-nova-soft', sans-serif; 
-    display: flex; 
-    color: #6f6767; 
-    align-items: center; 
-    justify-content: center;
-  }
-    `;
 
 
   function CommentsApp() {
+    const commentstyle = createGlobalStyle`
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+  }
+
+  body{
+    background-color: #dee1e3;
+    font-family: "Roboto", "Tahoma", "Arial", sans-serif;
+  }
+    `;
   const [comment, setComment] = useState({
     text: "",
     author: "",
@@ -69,7 +68,7 @@ function comment() {
 
   return (
     <>
-    <GlobalStyle />
+    <commentstyle />
     <div className="comments-app">
       <h1>Comments App - React</h1>
 
@@ -153,6 +152,6 @@ function comment() {
     </>
   );
  }
-}
+
 
 export default CommentsApp;

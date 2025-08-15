@@ -3,7 +3,7 @@ import Home from './main/home';
 import Login from './user/login/login';
 import Postlist from './post/post_list/postlist';
 import PostDetail from './post/post_detail/postdetail';
-// import Mypage from './mypage/mypage';
+import Comment from './comment/comment';
 
 
 function App() {
@@ -13,7 +13,7 @@ function App() {
       <Route path='/login' element={<Login/>}/>
       <Route path='/postlist' element={<Postlist/>} />
       <Route path='/postlist/postdetail' element={<PostDetail/>} />
-      {/* <Route path='/mypage' element={<Mypage/>}/> */}
+      <Route path='/comment' element={<Comment/>}/>
 
     </Routes>
 

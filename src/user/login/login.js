@@ -7,7 +7,7 @@ import { createGlobalStyle } from 'styled-components';
 function Login() {
   const GlobalStyle = createGlobalStyle`
   body {
-     width: 100%;
+    width: 100%;
     background-color: #e4e1da; 
     font-size: 14px; 
     height: 100vh; 
@@ -19,6 +19,44 @@ function Login() {
     align-items: center; 
     justify-content: center;
   }
+
+  *, *::after, *::before {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+    .button {
+      width: 180px;
+      height: 50px;
+      border-radius: 25px;
+      margin-top: 50px;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 1.15px;
+      background-color: #c7c8cc;
+      color: #f9f9f9;
+      box-shadow:
+          8px 8px 16px #d1d9e6,
+          -8px -8px 16px #f9f9f9;
+      border: none;
+      outline: none;
+    }
+
+    /* 선택: 혹시 가로 스크롤 이슈가 있으면 */
+    html, body { overflow-x: hidden; }
+
+    code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+    }
+
+    .title {
+    font-size: 34px; /* 로그인 */
+    font-weight: 700; /* 로그인 */
+    line-height: 3; /* 로그인 */
+    color: #6f6767; /* 로그인 */
+    }
     `;
 
   // 로그인(true) 또는 회원가입(false) 상태를 관리하는 state
@@ -87,6 +125,7 @@ function Login() {
           <h2 className="switch__title title">Hello Friend !</h2>
           <p className="switch__description description">Enter your personal details and start journey with us</p>
           <button className="switch__button button switch-btn" onClick={handleSignInClick}>SIGN IN</button>
+          
         </div>
       </div>
     </div>
