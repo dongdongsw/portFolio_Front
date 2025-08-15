@@ -10,6 +10,7 @@
 
 import React, { useState } from 'react';
 import styles from './home.css'; // 위에서 만든 CSS 모듈 불러오기
+import '../commonness.css';
 
 function MyHeader() {
   // 내비게이션 슬라이드가 열렸는지 닫혔는지 상태를 관리
@@ -46,25 +47,25 @@ function MyHeader() {
     </div>
     <nav>
       <ul>
-        <li><a href="#" className="active-link">HOME</a></li> {/* class 대신 className 사용 */}
-        <li><a href="#">SERVICES</a></li>
-        <li><a href="#">GALLERY</a></li>
-        <li><a href="#">CONTACT US</a></li>
-        <li><a href="#">ABOUT</a></li>
+        <li className = "home_li"><a href="#" className="active-link">HOME</a></li> {/* class 대신 className 사용 */}
+        <li className = "home_li"><a href="#">SERVICES</a></li>
+        <li className = "home_li"><a href="#">GALLERY</a></li>
+        <li className = "home_li"><a href="#">CONTACT US</a></li>
+        <li className = "home_li"><a href="#">ABOUT</a></li>
       </ul>
     </nav>
     <nav className="nav-class"> {/* class 대신 className 사용 */}
       <ul>
-        <li><a href="#" className="active-link">HOME</a></li> {/* class 대신 className 사용 */}
-        <li><a href="#">SERVICES</a></li>
-        <li><a href="#">GALLERY</a></li>
-        <li><a href="#">CONTACT US</a></li>
-        <li><a href="#">ABOUT</a></li>
+        <li className = "home_li"><a href="#" className="active-link">HOME</a></li> {/* class 대신 className 사용 */}
+        <li className = "home_li"><a href="#">SERVICES</a></li>
+        <li className = "home_li"><a href="#">GALLERY</a></li>
+        <li className = "home_li"><a href="#">CONTACT US</a></li>
+        <li className = "home_li"><a href="#">ABOUT</a></li>
       </ul>
     </nav>
     </div>
   </header>
-  <main>
+  <main className="home_main">
     <div className="some-quote"> {/* class 대신 className 사용 */}
       <p>- stunning & elegant - </p>
     </div>

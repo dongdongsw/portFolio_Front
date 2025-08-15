@@ -1,50 +1,21 @@
-/* postlist 공통 css*/
-
 body {
-  background: #e4e1da;
-  font-family: 'proxima-nova-soft', sans-serif;
-  font-size: 14px;
-  height: 2000px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+   width: 100%; /* 공통 */
+  background-color: #e4e1da; /* 공통 */
+  font-size: 14px; /* 공통 */
+  height: 100vh; /* 공통 */
+  -webkit-font-smoothing: antialiased; /* 공통 */
+  -moz-osx-font-smoothing: grayscale; /* 공통 */
+  font-family: 'proxima-nova-soft', sans-serif; /* 공통 */
+  /* display: flex; */
+  color: #6f6767; /* 공통 */
+  /* align-items: center; */
 }
 
-/* 선택: 혹시 가로 스크롤 이슈가 있으면 */
-html, body { overflow-x: hidden; }
-
-/* login 공통 css*/
-*, *::after, *::before {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    user-select: none;
-}
-
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
-/* Generic */
-body {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 12px;
-    background-color: #e4e1da;
-    color: #6f6767;
+.title {
+    font-size: 34px; /* 로그인 */
+    font-weight: 700; /* 로그인 */
+    line-height: 3; /* 로그인 */
+    color: #6f6767; /* 로그인 */
 }
 
 .button {
@@ -64,9 +35,22 @@ body {
     outline: none;
 }
 
-.title {
-    font-size: 34px;
-    font-weight: 700;
-    line-height: 3;
-    color: #6f6767;
+/* 선택: 혹시 가로 스크롤 이슈가 있으면 */
+html, body { overflow-x: hidden; }
+
+/* login 공통 css*/
+*, *::after, *::before {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
 }
+
+
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+

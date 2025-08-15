@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import './postdetail.css';
+import '../../commonness.css';
 
 function normalize(s) {
   return String(s || '').trim().toLowerCase();

@@ -23,7 +23,6 @@ header {
   font-family: 'Nunito', sans-serif;
 }
 
-.logo {}
 
 .ham-menu {
   display: none;
@@ -44,7 +43,7 @@ nav ul {
   justify-content: space-evenly
 }
 
-li a {
+.home_li a {
   text-decoration: none;
   color: black;
   padding: 2px 8px;
@@ -53,7 +52,7 @@ li a {
   letter-spacing: 1px;
 }
 
-li a::before {
+.home_li a::before {
   content: '';
   position: absolute;
   bottom: 0;
@@ -63,7 +62,7 @@ li a::before {
   transition: 0.4s ease-in;
 }
 
-li a::after {
+.home_li a::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -73,7 +72,7 @@ li a::after {
   transition: 0.4s ease-in;
 }
 
-li a:hover::before {
+.home_li a:hover::before {
   content: '';
   position: absolute;
   bottom: 0;
@@ -83,7 +82,7 @@ li a:hover::before {
   border-bottom: 1px solid #000;
 }
 
-li a:hover::after {
+.home_li a:hover::after {
   content: '';
   position: absolute;
   bottom: 0;
@@ -98,7 +97,7 @@ li a:hover::after {
   font-weight: 700;
 }
 
-main {
+.home_main {
   height: 60vh;
   width: 100%;
   position: relative;
@@ -151,7 +150,7 @@ main {
   background-color: #fff;
 }
 
-main .some-quote {
+.home_main .some-quote {
   text-align: center;
   padding-top: 60px;
   font-family: 'Dancing Script', cursive;
@@ -159,13 +158,13 @@ main .some-quote {
   font-size: 1.2rem;
 }
 
-main .design-btn {
+.home_main .design-btn {
   margin-top: 160px;
   text-align: center;
   color: #ffffff;
 }
 
-main .design-btn h1 {
+.home_main .design-btn h1 {
   font-family: 'Nunito', sans-serif;
   letter-spacing: 3px;
   display: inline-block;
@@ -174,7 +173,7 @@ main .design-btn h1 {
   cursor: pointer;
 }
 
-main .design-btn h1::before {
+.home_main .design-btn h1::before {
   content: '';
   border-top: 2px solid #ffffff;
   border-left: 2px solid #ffffff;
@@ -186,7 +185,7 @@ main .design-btn h1::before {
   transition: 0.5s ease-in;
 }
 
-main .design-btn h1::after {
+.home_main .design-btn h1::after {
   content: '';
   border-bottom: 2px solid #ffffff;
   border-right: 2px solid #ffffff;
@@ -198,12 +197,12 @@ main .design-btn h1::after {
   transition: 0.5s ease-in;
 }
 
-main .design-btn h1:hover::before {
+.home_main .design-btn h1:hover::before {
   width: 50%;
   height: 0;
 }
 
-main .design-btn h1:hover::after {
+.home_main .design-btn h1:hover::after {
   width: 50%;
   height: 0;
 }

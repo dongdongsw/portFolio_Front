@@ -12,7 +12,7 @@ function App() {
       <Route path='/' element={<Home />}/>
       <Route path='/login' element={<Login/>}/>
       <Route path='/postlist' element={<Postlist/>} />
-      <Route path='/postdetail' element={<PostDetail/>} />
+      <Route path='/postlist/postdetail' element={<PostDetail/>} />
       {/* <Route path='/mypage' element={<Mypage/>}/> */}
 
     </Routes>

@@ -1,24 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 :root {
-    --bg-gradient-onyx: linear-gradient(to bottom right, hsla(51, 36%, 93%, 0.975) 3%, hsla(252, 3%, 70%, 0.987) 97%); /*»çÀÌµå ÀÌ¹ÌÁö ¹è°æ»ö ¿ÞÂÊ À§ ¸ð¼­¸® / ¿À¸¥ÂÊ ¸ð¼­¸® ¾Æ·¡*/
-    --bg-gradient-jet: linear-gradient(to bottom right, hsla(240, 1%, 18%, .251) 3%, hsla(240, 2%, 11%, 0) 100%), hsl(240, 2%, 13%);    /*What I'm Doing °¢ ¼½¼Ç ¹è°æ»ö*/
+    --bg-gradient-onyx: linear-gradient(to bottom right, hsla(51, 36%, 93%, 0.975) 3%, hsla(252, 3%, 70%, 0.987) 97%); /*ï¿½ï¿½ï¿½Ìµï¿½ ï¿½Ì¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ð¼­¸ï¿½ / ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ð¼­¸ï¿½ ï¿½Æ·ï¿½*/
+    --bg-gradient-jet: linear-gradient(to bottom right, hsla(240, 1%, 18%, .251) 3%, hsla(240, 2%, 11%, 0) 100%), hsl(240, 2%, 13%);    /*What I'm Doing ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½*/
     --bg-gradient-yellow1: linear-gradient(to bottom right, hsl(45, 100%, 71%) 0%, hsla(36, 100%, 69%, 0) 50%);
     --bg-gradient-yellow2: linear-gradient(135deg, hsla(45, 100%, 71%, .251) 0%, hsla(35, 100%, 68%, 0) 59.86%), hsl(240, 2%, 13%);
     --border-gradient-onyx: linear-gradient(to bottom right, hsl(0, 0%, 25%) 0%, hsla(0, 0%, 25%, 0) 50%);
-    --text-gradient-yellow: linear-gradient(to right, hsl(45, 100%, 72%), hsl(35, 100%, 68%));  /*About Me ÅØ½ºÆ® ¾Æ·¡ ¸·´ë »ö*/
+    --text-gradient-yellow: linear-gradient(to right, hsl(45, 100%, 72%), hsl(35, 100%, 68%));  /*About Me ï¿½Ø½ï¿½Æ® ï¿½Æ·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½*/
 
-    --jet: hsl(0, 0%, 22%); /*ÀüÃ¼ Å×µÎ¸®*/
-    --onyx: hsl(240, 1%, 17%);/*ÁÂ¿ì ½ºÅ©·Ñ¹Ù ¹è°æ»ö*/
+    --jet: hsl(0, 0%, 22%); /*ï¿½ï¿½Ã¼ ï¿½×µÎ¸ï¿½*/
+    --onyx: hsl(240, 1%, 17%);/*ï¿½Â¿ï¿½ ï¿½ï¿½Å©ï¿½Ñ¹ï¿½ ï¿½ï¿½ï¿½ï¿½*/
     --eerie-black1: hsl(240, 2%, 13%);
-    --eerie-black2: hsl(252, 3%, 71%);  /*¹è°æ»ö*/
-    --smoky-black: hsl(0, 0%, 7%);  /*ÆäÀÌÁö ½ºÅ©·Ñ¹Ù ¹è°æ»ö*/
-    --white1: hsl(0, 0%, 100%); /*»çÀÌµå¹Ù Web Developer ÅØ½ºÆ®»ö*/
-    --white2: hsl(0, 0%, 0%);  /*Å« ÅØ½ºÆ® »ö*/
-    --orange-yellow-crayola: hsl(45, 100%, 72%);    /*ÁÂ¿ì ½ºÅ©·Ñ¹Ù »ö*/
+    --eerie-black2: hsl(252, 3%, 71%);  /*ï¿½ï¿½ï¿½ï¿½*/
+    --smoky-black: hsl(0, 0%, 7%);  /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å©ï¿½Ñ¹ï¿½ ï¿½ï¿½ï¿½ï¿½*/
+    --white1: hsl(0, 0%, 100%); /*ï¿½ï¿½ï¿½Ìµï¿½ï¿½ Web Developer ï¿½Ø½ï¿½Æ®ï¿½ï¿½*/
+    --white2: hsl(0, 0%, 0%);  /*Å« ï¿½Ø½ï¿½Æ® ï¿½ï¿½*/
+    --orange-yellow-crayola: hsl(45, 100%, 72%);    /*ï¿½Â¿ï¿½ ï¿½ï¿½Å©ï¿½Ñ¹ï¿½ ï¿½ï¿½*/
     --vegas-gold: hsl(45, 54%, 58%);
-    --light-gray: hsl(0, 0%, 0%);  /*ÀÛÀº ÅØ½ºÆ® »ö*/
-    --light-gray70: hsla(0, 0%, 84%, .7); /*»çÀÌµå Email, Phone µîµî ÅØ½ºÆ® »ö*/
+    --light-gray: hsl(0, 0%, 0%);  /*ï¿½ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Æ® ï¿½ï¿½*/
+    --light-gray70: hsla(0, 0%, 84%, .7); /*ï¿½ï¿½ï¿½Ìµï¿½ Email, Phone ï¿½ï¿½ï¿½ ï¿½Ø½ï¿½Æ® ï¿½ï¿½*/
     --bittersweet-shimmer: hsl(0, 43%, 51%);
 
     --ff-poppins: 'Poppins', sans-serif;
