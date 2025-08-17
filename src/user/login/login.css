@@ -87,7 +87,128 @@
     line-height: 2;
 }
 
+/* Forgot ID / Password 한 줄 링크 안에서 ID, Password 링크 */
+.form__link a {
+    color: #6f6767;          
+    text-decoration: none;    
+    margin: 0 3px;           
+    font-weight: 700;         /* Bold */
+    cursor: pointer;
+}
 
+.form__link a:hover {
+    text-decoration: underline; /* 마우스 올리면 밑줄 */
+}
+
+/* 모달 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 300;
+}
+
+/* 모달 콘텐츠 전체 크기 */
+.modal-content {
+    background: #e4e1da;       /* 로그인 페이지 배경색 그대로 */
+    padding: 20px 30px;
+    border-radius: 10px;
+    width: 350px;
+    min-height: 300px;         /* 최소 높이 고정 */
+    max-height: 400px;         /* 필요 시 최대 높이 */
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    position: relative;
+    margin: 0 auto;
+
+    display: flex;             /* Flexbox 적용 */
+    flex-direction: column;
+    justify-content: space-between; /* 상단 컨텐츠와 하단 버튼 균등 배치 */
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.modal-description {
+  font-size: 13px;        
+  letter-spacing: 0.15px;  
+  color: #6f6767;           
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+/* 모달 제목 (Find your ID / Password) */
+.modal-content h3 {
+    font-size: 34px;           /* 로그인 페이지 제목과 동일 */
+    font-weight: 700;          /* Bold */
+    color: #6f6767;            /* 로그인 페이지 색상 */
+    margin-bottom: 20px;
+}
+
+/* 모달 입력창 */
+.modal-content input {
+    width: 100%;
+    max-width: 350px;              /* 로그인 input과 동일 */
+    height: 40px;
+    margin: 8px 0;
+    padding-left: 25px;        /* 로그인 input과 동일 */
+    font-size: 13px;
+    letter-spacing: 0.15px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    background-color: #e4e1da;
+    box-shadow: inset 2px 2px 4px #b0afb4,
+                inset -2px -2px 4px #c7c8cc;
+    transition: 0.25s ease;
+    box-sizing: border-box;     /* 입력창 튀어나오는 문제 방지 */
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 모달 입력창 focus 효과 */
+.modal-content input:focus {
+    box-shadow: inset 4px 4px 4px #b0afb4,
+                inset -4px -4px 4px #c7c8cc;
+}
+
+/* 모달 버튼 */
+.modal-content button {
+    width: 180px;               /* 로그인 버튼과 동일 */
+    height: 50px;
+    border-radius: 25px;
+    margin: 12px 5px;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 1.15px;
+    background-color: #c7c8cc;
+    color: #f9f9f9;
+    box-shadow: 8px 8px 16px #d1d9e6,
+                -8px -8px 16px #f9f9f9;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.modal-content button:hover {
+    box-shadow: 6px 6px 10px #d1d9e6,
+                -6px -6px 10px #f9f9f9;
+    transform: scale(0.985);
+}
+
+.modal-content button:active,
+.modal-content button:focus {
+    box-shadow: 2px 2px 6px #d1d9e6,
+                -2px -2px 6px #f9f9f9;
+    transform: scale(0.97);
+}
 
 .description {
     font-size: 14px;
@@ -95,8 +216,6 @@
     text-align: center;
     line-height: 1.6;
 }
-
-
 
 .a-container {
     z-index: 100;

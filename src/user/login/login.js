@@ -61,7 +61,14 @@ function Login() {
 
   // 로그인(true) 또는 회원가입(false) 상태를 관리하는 state
   const [isSignInActive, setIsSignInActive] = useState(true); // 처음엔 로그인 폼이 보이도록 true
-
+  const [showIdModal, setShowIdModal] = useState(false);
+  const [showPwModal, setShowPwModal] = useState(false);
+  const [idNotFound, setIdNotFound] = useState(false);
+  // 아이디 찾기 test
+  const [idEmail, setIdEmail] = useState(""); 
+  // 아이디 찾을 시 아이디를 알려주는 화면으로 전환
+  const [foundId, setFoundId] = useState("");
+ 
   const handleSignInClick = () => {
     setIsSignInActive(true);
   };
@@ -102,7 +109,13 @@ function Login() {
           <input className="form__input" type="text" placeholder="Email" />
           <input className="form__input" type="password" placeholder="Password" />
           {/*href에 넘어갈 페이지 링크 넣어줄것임*/ }
-          <a className="form__link" href="#">Forgot your password?</a>
+          <p className="form__link">
+              Forgot your{" "}
+              <a href="#" onClick={(e) => { e.preventDefault(); setShowIdModal(true); }}>ID</a>{" "}
+              /{" "}
+              <a href="#" onClick={(e) => { e.preventDefault(); setShowPwModal(true); }}>Password</a>?
+            </p>
+
           <button className="form__button button submit">SIGN IN</button>
         </form>
       </div>
@@ -129,6 +142,90 @@ function Login() {
         </div>
       </div>
     </div>
+
+    {/* 아이디 찾기 모달 */}
+    {showIdModal && (
+      <div className="modal">
+        <div className="modal-content" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: idNotFound ? "flex-start" : "center", paddingTop: idNotFound ? "40px" : "20px" }}>
+          
+          {/* ID 찾기 전 */}
+          {foundId === "" && !idNotFound && (
+            <>
+              <h3>Find Your ID</h3>
+              <p className="modal-description">Enter your email to find your ID</p>
+              <input 
+                type="email" 
+                placeholder="Enter your email" 
+                value={idEmail} 
+                onChange={(e) => setIdEmail(e.target.value)} 
+              />
+              <button onClick={() => {
+                if(idEmail === "test@example.com") {
+                  setFoundId("qwer"); // ID 찾으면 상태 변경
+                  setIdNotFound(false);
+                } else {
+                  setIdNotFound(true); // ID 없으면 상태 변경
+                }
+              }}>Find ID</button>
+              <button onClick={() => {
+                setShowIdModal(false);
+                setFoundId("");   
+                setIdEmail("");  
+                setIdNotFound(false);
+              }}>Close</button>
+            </>
+          )}
+
+          {/* ID 찾은 후 */}
+          {foundId !== "" && (
+            <>
+              <h3 style={{ fontSize: "34px", fontWeight: "700", marginBottom: "20px" }}>Your ID</h3>
+              <p className="modal-description" style={{ fontSize: "13px", letterSpacing: "0.15px", marginBottom: "40px" }}>
+                {foundId}
+              </p>
+              <button style={{ marginTop: "auto" }} onClick={() => {
+                setShowIdModal(false);
+                setFoundId("");   
+                setIdEmail("");  
+                setIdNotFound(false);
+              }}>Close</button>
+            </>
+          )}
+
+          {/* ID 없을 때 */}
+          {idNotFound && (
+            <>
+              <p className="modal-description" style={{ fontSize: "13px", letterSpacing: "0.15px", textAlign: "center", marginBottom: "20px" }}>
+                No ID found for this email
+              </p>
+              <button style={{ marginBottom: "10px" }} onClick={() => setIdNotFound(false)}>
+                Back
+              </button>
+              <button onClick={() => {
+                setShowIdModal(false);
+                setIdEmail("");
+                setIdNotFound(false);
+              }}>Close</button>
+            </>
+          )}
+
+        </div>
+      </div>
+    )}
+
+
+    {/* 비밀번호 찾기 모달 */}
+    {showPwModal && (
+      <div className="modal">
+        <div className="modal-content">
+        <h3>Find Your PW</h3>
+        <input type="text" placeholder="Enter your ID" />
+        <input type="email" placeholder="Enter your email" />
+        <button>Reset Password</button>
+        <button onClick={() => setShowPwModal(false)}>Close</button>
+        </div>
+      </div>
+    )}
     </>
   );
 }
