@@ -1,99 +1,92 @@
-
-
 /* 카드 */
 .post-module {
   position: relative;
   z-index: 1;
   display: block;
   background: #e4e1da;
-  min-width: 270px;
-  height: 470px;
-  box-shadow: 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5;
+
+  /* ✅ 카드 크기 통일 */
+  width: 250px;
+  min-width: 0;              /* 그리드와 충돌 방지 */
+  height: 320px;
+
+  box-shadow: 6px 6px 8px #f3f1e5, -6px -6px 8px #f3f1e5;
   transition: all 0.3s linear;
   border-radius: 12px;
   overflow: hidden;
 }
 .post-module:hover,
 .hover { box-shadow: 0 1px 35px rgba(0,0,0,0.3); }
-.post-module:hover .thumbnail img,
-.hover .thumbnail img { transform: scale(1.1); opacity: 0.6; }
-.post-module .thumbnail { background: #000; height: 400px; overflow: hidden; }
+
+.post-module .thumbnail {
+  background: #000;
+  height: 210px;             /* ✅ 카드 높이에 맞춘 썸네일 */
+  overflow: hidden;
+}
+.post-module .thumbnail img {
+  display: block;
+  width: 100%;               /* ✅ 250px에 자동 맞춤 */
+  height: 100%;
+  object-fit: cover;         /* 넘치는 부분 잘라내기 */
+  transition: all 0.3s linear;
+}
+
 .post-module .thumbnail .date {
-  position: absolute; top: 20px; right: 20px; z-index: 1;
-  background: #c7c8cc; width: 55px; height: 55px; padding: 5px 0;
+  position: absolute; top: 12px; right: 12px; z-index: 1;
+  background: #c7c8cc; width: 48px; height: 48px; padding: 8px 0;
   border-radius: 100%; color: #6f6767; font-weight: 700; text-align: center;
   box-sizing: border-box;
 }
-.post-module .thumbnail .date .day { font-size: 18px; }
-.post-module .thumbnail .date .month { font-size: 12px; text-transform: uppercase; }
-.post-module .thumbnail img { display: block; width: 280px; height: 200px; transition: all 0.3s linear; }
+.post-module .thumbnail .date .day { font-size: 16px; }
+.post-module .thumbnail .date .month { font-size: 10px; text-transform: uppercase; }
+
 .post-module .post-content {
-  position: absolute; bottom: 0; background: #f6f5ec; width: 100%; padding: 30px;
+  position: absolute; bottom: 0; background: #f6f5ec; width: 100%;
+  padding: 14px 16px;        /* ✅ 컴팩트 패딩 */
   box-sizing: border-box; transition: all 0.3s cubic-bezier(0.37,0.75,0.61,1.05);
+  
 }
 .post-module .post-content .category {
-  position: absolute; top: -34px; left: 0; background: #c7c8cc; padding: 10px 15px;
-  color: #6f6767; font-size: 14px; font-weight: 600; text-transform: uppercase;
+  position: absolute; top: -28px; left: 0; background: #c7c8cc; padding: 8px 12px;
+  color: #6f6767; font-size: 12px; font-weight: 600; text-transform: uppercase;
 }
-.post-module .post-content .title { margin: 0; padding: 0 0 10px; color: #6f6767; font-size: 26px; font-weight: 700; }
-.post-module .post-content .sub_title { margin: 0; padding: 0 0 20px; color: #a0a5a8; font-size: 20px; font-weight: 400; }
-.post-module .post-content .description { display: none; color: #666; font-size: 14px; line-height: 1.8em; }
-.post-module .post-content .post-meta { margin: 30px 0 0; color: #999; }
-.post-module .post-content .post-meta .timestamp { margin: 0 16px 0 0; }
+.post-module .post-content .title { margin: 0; padding: 0 0 6px; color: #6f6767; font-size: 18px; font-weight: 700; }
+.post-module .post-content .sub_title { margin: 0; padding: 0 0 10px; color: #a0a5a8; font-size: 14px; font-weight: 400; }
+.post-module .post-content .description { display: none; color: #666; font-size: 13px; line-height: 1.6; }
+.post-module .post-content .post-meta { margin: 14px 0 0; color: #999; font-size: 12px; }
+.post-module .post-content .post-meta .timestamp { margin: 0 12px 0 0; }
 .post-module .post-content .post-meta a { color: #999; text-decoration: none; }
-.hover .post-content .description { display: block !important; height: auto !important; opacity: 1 !important; }
+.hover .post-content .description { display: block !important; height: 100px; opacity: 1 !important; }
 
 /* 컨테이너(가운데 고정) */
 .post-container {
-  max-width: 1600px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 clamp(24px, 5vw, 80px); /* 좌우 여백 */
   box-sizing: border-box;
   position: relative;
+  overflow: visible !important;
+  max-height: none !important;
 }
 
-/* ✅ 헤더(항상 보이도록 우선순위 최강) */
+/* 헤더 */
 .post-container > .post-info {
   display: block !important;
   width: 300px;
-  margin: 50px auto 24px;
-  margin-bottom: 100px;
+  margin: 50px auto 100px;
   text-align: center;
   position: relative;
   z-index: 9999;
 }
-.post-container > .post-info h1 {
-  margin: 0 0 15px;
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
-}
+.post-container > .post-info h1 { margin: 0 0 15px; font-size: 24px; font-weight: bold; color: #333; }
 .post-container > .post-info span { color: #666; font-size: 12px; }
 .post-container > .post-info span a { color: #000; text-decoration: none; }
 .post-container > .post-info span .fa { color: #e74c3c; }
 
 /* 페이징 */
-.pager {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  align-items: center;
-  margin: 50px 0 24px;
-}
-.pager-btn {
-  appearance: none;
-  border: 1px solid #e6e6e6;
-  background: transparent;
-  color: #a0a5a8;
-  padding: 8px 12px;
-  min-width: 36px;
-  border-radius: 9999px;
-  cursor: pointer;
-  font-size: 14px;
-  line-height: 1;
-}
+.pager { display: flex; gap: 8px; justify-content: center; align-items: center; margin: 50px 0 24px; }
+.pager-btn { appearance: none; border: 1px solid #e6e6e6; background: transparent; color: #a0a5a8; padding: 8px 12px; min-width: 36px; border-radius: 9999px; cursor: pointer; font-size: 14px; line-height: 1; }
 .pager-btn:hover { border-color: #a0a5a8; }
 .pager-btn.is-active { border: 1px solid #a0a5a8; font-weight: 700; }
 .pager-btn.is-disabled { opacity: 0.45; cursor: default; }
 .pager-btn.pager-arrow { min-width: 56px; padding: 8px 10px; }
-

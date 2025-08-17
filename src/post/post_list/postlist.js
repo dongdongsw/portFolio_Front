@@ -1,8 +1,24 @@
 import React, { useMemo, useState } from "react";
 import "./postlist.css";
-import '../../commonness.css';
+import { createGlobalStyle } from "styled-components";
 
-export default function PostList() {
+function PostList() {
+  const PostListStyle = createGlobalStyle`
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background-color: #e4e1da;
+      color: #6f6767;
+      font-size: 14px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-family: 'proxima-nova-soft', sans-serif;
+    }
+  `;
+
   const cards = useMemo(
     () =>
       Array.from({ length: 50 }, (_, i) => ({
@@ -22,7 +38,7 @@ export default function PostList() {
     []
   );
 
-  const PAGE_SIZE = 15; // 5열 × 3행
+  const PAGE_SIZE = 12; // 4열 × 3행
   const [page, setPage] = useState(1);
   const pageCount = Math.ceil(cards.length / PAGE_SIZE);
   const start = (page - 1) * PAGE_SIZE;
@@ -41,35 +57,26 @@ export default function PostList() {
 
   return (
     <>
-      {/* 아이콘 (전역에 한 번만 있어도 됨) */}
+      <PostListStyle />
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
       />
 
-      {/* 모든 콘텐츠를 post-container 안에 배치 */}
       <div className="post-container">
-        {/* ✅ 헤더: 고유 클래스 + 강한 inline 스타일로 항상 보이게 */}
-        <div
-          className="post-info"
-          style={{
-            display: "block",
-            position: "relative",
-            zIndex: 10000,
-            background: "transparent",
-          }}
-        >
+        <div className="post-info">
           <h1>PortFolio</h1>
           <span>postlist</span>
         </div>
 
-        {/* 카드 그리드 (5열) */}
+        {/* 4열 × 250px 그리드 */}
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(5, 1fr)",
-            gap: 40,
-            justifyItems: "center",
+            gridTemplateColumns: "repeat(4, 250px)", // 그리드 칸 폭 = 카드 폭
+            columnGap: 40,
+            rowGap: 30,
+            justifyContent: "center",
             width: "100%",
           }}
         >
@@ -77,7 +84,7 @@ export default function PostList() {
             const i = start + idx;
             const isHover = hoverIdx === i;
             return (
-              <div key={c.id} style={{ width: 280 }}>
+              <div key={c.id}>
                 <div
                   className={`post-module ${isHover ? "hover" : ""}`}
                   onMouseEnter={() => setHoverIdx(i)}
@@ -148,3 +155,6 @@ export default function PostList() {
     </>
   );
 }
+
+export default PostList;
+
