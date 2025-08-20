@@ -4,7 +4,6 @@
   z-index: 1;
   display: block;
   background: #e4e1da;
-
   /* ✅ 카드 크기 통일 */
   width: 250px;
   min-width: 0;              /* 그리드와 충돌 방지 */
@@ -41,7 +40,7 @@
 .post-module .thumbnail .date .month { font-size: 10px; text-transform: uppercase; }
 
 .post-module .post-content {
-  position: absolute; bottom: 0; background: #f6f5ec; width: 100%;
+  position: absolute; bottom: 0; background: #ffffff; width: 100%;
   padding: 14px 16px;        /* ✅ 컴팩트 패딩 */
   box-sizing: border-box; transition: all 0.3s cubic-bezier(0.37,0.75,0.61,1.05);
   
@@ -66,19 +65,6 @@
   max-height: none !important;
 }
 
-/* 헤더 */
-.post-container > .post-info {
-  display: block !important;
-  width: 300px;
-  margin: 50px auto 100px;
-  text-align: center;
-  position: relative;
-  z-index: 9999;
-}
-.post-container > .post-info h1 { margin: 0 0 15px; font-size: 24px; font-weight: bold; color: #333; }
-.post-container > .post-info span { color: #666; font-size: 12px; }
-.post-container > .post-info span a { color: #000; text-decoration: none; }
-.post-container > .post-info span .fa { color: #e74c3c; }
 
 /* 페이징 */
 .pager { display: flex; gap: 8px; justify-content: center; align-items: center; margin: 50px 0 24px; }
