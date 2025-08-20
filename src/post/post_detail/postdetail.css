@@ -4,6 +4,12 @@ main {
     margin-bottom: 75px;
     min-width: 259px;
 }
+.root{
+    background-color: aqua;
+}
+.app-root{
+    background-color: aqua;
+}
 
 .postdetail-sidebar, .postdetail-article {
     background: hsl(68, 30%, 90%);

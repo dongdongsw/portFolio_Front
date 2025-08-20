@@ -1,100 +1,14 @@
-
-
+/* home.css (Header 관련 스타일은 다 삭제하고 남은 부분만) */
 .home-section {
   width: 100%;
   height: 100vh;
 }
 
-header {
-  width: 100%;
-  height: 20vh;
-}
-
-.home-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  align-items: center;
-  font-family: 'Nunito', sans-serif;
-}
-
-
-.ham-menu {
-  display: none;
-}
-
-nav {
-  width: 60%;
-  transform: translateY(0) translateX(0);
-}
-
-.nav-class {
-  display: none;
-}
-
-nav ul {
-  display: flex;
-  list-style: none;
-  justify-content: space-evenly
-}
-
-.home_li a {
-  text-decoration: none;
-  color: black;
-  padding: 2px 8px;
-  position: relative;
-  font-size: 1.1rem;
-  letter-spacing: 1px;
-}
-
-.home_li a::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  right: 50%;
-  height: 100%;
-  width: 0;
-  transition: 0.4s ease-in;
-}
-
-.home_li a::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  height: 100%;
-  width: 0;
-  transition: 0.4s ease-in;
-}
-
-.home_li a:hover::before {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  right: 50%;
-  height: 100%;
-  width: 50%;
-  border-bottom: 1px solid #000;
-}
-
-.home_li a:hover::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  height: 100%;
-  width: 50%;
-  transition: 0.4s ease-in;
-  border-bottom: 1px solid #000;
-}
-
-.active-link {
-  font-weight: 700;
-}
+/* header, home-container, ham-menu, nav, .nav-class 등등 header 관련 스타일은 Header.css로 이동! */
+/* 여기서는 그 부분 다 지우고, .home_main 이하부터 남겨두면 됨! */
 
 .home_main {
-  height: 60vh;
+  height: 60vh; /* 반응형 미디어 쿼리 안에서는 65vh로 바뀜 */
   width: 100%;
   position: relative;
   background-color: red;
@@ -112,7 +26,7 @@ nav ul {
 .next-prev {
   display: flex;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 20px; /* 반응형 미디어 쿼리 안에서는 10px로 바뀜 */
   position: absolute;
   top: 50%;
   left: 0;
@@ -129,8 +43,8 @@ nav ul {
 }
 
 .indicator div {
-  display: flex;
-  display: inline-block;
+  display: flex; /* 원래는 display: inline-block이 중복되어 있었음 */
+  /* inline-block을 flex 자식 요소로 쓰려면 잘 봐야 함. */
 }
 
 .indicator div div {
@@ -148,14 +62,14 @@ nav ul {
 
 .home_main .some-quote {
   text-align: center;
-  padding-top: 60px;
+  padding-top: 60px; /* 반응형 미디어 쿼리 안에서는 50px로 바뀜 */
   font-family: 'Dancing Script', cursive;
   color: #ffffff;
-  font-size: 1.2rem;
+  font-size: 1.2rem; /* 반응형 미디어 쿼리 안에서는 1.4rem로 바뀜 */
 }
 
 .home_main .design-btn {
-  margin-top: 160px;
+  margin-top: 160px; /* 반응형 미디어 쿼리 안에서는 200px로 바뀜 */
   text-align: center;
   color: #ffffff;
 }
@@ -167,6 +81,7 @@ nav ul {
   padding: 5px 10px;
   position: relative;
   cursor: pointer;
+  /* 반응형 미디어 쿼리 안에서는 1.3rem 또는 1.1rem로 바뀜 */
 }
 
 .home_main .design-btn h1::before {
@@ -203,139 +118,38 @@ nav ul {
   height: 0;
 }
 
-
-
+/* @media screen and (max-width: 991px) 이후부터는 home.css에 남은 부분만 남김 */
 @media screen and (max-width: 991px) {
-  nav {
-    width: 75%;
-  }
+  /* nav 스타일은 Header.css로 이동했음 */
 }
 
 @media screen and (max-width: 767px) {
   body {
     overflow: hidden;
   }
-
-  header {
-    height: 15vh;
-    position: relative;
-  }
-
-  header .home-container {
-    height: 100%;
-    width: 90%;
-    margin: auto;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    font-family: 'Nunito', sans-serif;
-  }
-
-  .ham-menu {
-    display: block;
-  }
-
-  nav {
-    display: none;
-  }
-
-  .home-container .nav-class {
-    display: block;
-    position: absolute;
-    background-color: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(5px);
-    right: 0;
-    bottom: 0;
-    transform: translateY(100%) translateX(100%);
-    z-index: 10;
-    height: 85vh;
-    width: 50%;
-    transition: 0.3s linear;
-  }
-
-  .nav-class ul {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .nav-class ul li {
-    margin: 20px;
-  }
-
-  li a::before {
-    content: '';
-    position: relative;
-    bottom: 0;
-    left: 0;
-    height: 100%;
-    width: 0;
-  }
-
-  li a::after {
-    content: '';
-    position: relative;
-    bottom: 0;
-    left: 0;
-    height: 100%;
-    width: 0;
-  }
-
-  li a:hover::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    border-bottom: 1px solid #000;
-  }
-
-  li a:hover::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 100%;
-    width: 0;
-  }
+  /* header, home-container, ham-menu, nav, .nav-class 관련 스타일은 Header.css로 이동! */
 
   .home_main {
-    height: 65vh;
+    height: 65vh; /* 미디어 쿼리에 따른 변화 */
   }
 
   .home_main .design-btn {
-    margin-top: 200px;
+    margin-top: 200px; /* 미디어 쿼리에 따른 변화 */
     text-align: center;
     color: #ffffff;
   }
 
   .home_main .design-btn h1 {
-    font-family: 'Nunito', sans-serif;
-    letter-spacing: 3px;
-    display: inline-block;
-    padding: 5px 10px;
-    position: relative;
-    cursor: pointer;
-    font-size: 1.3rem;
+    font-size: 1.3rem; /* 미디어 쿼리에 따른 변화 */
   }
 
   .next-prev {
-    display: flex;
-    justify-content: space-between;
-    padding: 0 10px;
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
+    padding: 0 10px; /* 미디어 쿼리에 따른 변화 */
   }
 
   .home_main .some-quote {
-    text-align: center;
-    padding-top: 50px;
-    font-family: 'Dancing Script', cursive;
-    color: #ffffff;
-    font-size: 1.4rem;
+    padding-top: 50px; /* 미디어 쿼리에 따른 변화 */
+    font-size: 1.4rem; /* 미디어 쿼리에 따른 변화 */
   }
 }
 
@@ -343,142 +157,25 @@ nav ul {
   body {
     overflow: hidden;
   }
-
-  header {
-    height: 15vh;
-    position: relative;
-  }
-
-  header .home-container {
-    height: 100%;
-    width: 90%;
-    margin: auto;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    font-family: 'Nunito', sans-serif;
-  }
-
-  .ham-menu {
-    display: block;
-  }
-
-  nav {
-    display: none;
-  }
-
-  .home-container .nav-class {
-    display: block;
-    position: absolute;
-    background-color: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(5px);
-    right: 0;
-    bottom: 0;
-    transform: translateY(100%) translateX(100%);
-    z-index: 10;
-    height: 85vh;
-    width: 50%;
-    transition: 0.3s linear;
-  }
-
-  .nav-class ul {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .nav-class ul li {
-    margin: 20px;
-  }
-
-  li a::before {
-    content: '';
-    position: relative;
-    bottom: 0;
-    left: 0;
-    height: 100%;
-    width: 0;
-  }
-
-  li a::after {
-    content: '';
-    position: relative;
-    bottom: 0;
-    left: 0;
-    height: 100%;
-    width: 0;
-  }
-
-  li a:hover::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    border-bottom: 1px solid #000;
-  }
-
-  li a:hover::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 100%;
-    width: 0;
-  }
-
+  /* header, home-container, ham-menu, nav, .nav-class 관련 스타일은 Header.css로 이동! */
 
   .home_main {
-    height: 65vh;
+    height: 65vh; /* 767px과 동일 */
   }
 
   .home_main .design-btn {
-    margin-top: 200px;
-    text-align: center;
-    color: #ffffff;
+    margin-top: 200px; /* 767px과 동일 */
   }
 
   .home_main .design-btn h1 {
-    font-family: 'Nunito', sans-serif;
-    letter-spacing: 3px;
-    display: inline-block;
-    padding: 5px 10px;
-    position: relative;
-    cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1.1rem; /* 미디어 쿼리에 따른 변화 */
   }
 
   .next-prev {
-    display: flex;
-    justify-content: space-between;
-    padding: 0 10px;
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
+    padding: 0 10px; /* 767px과 동일 */
   }
 
   .home_main .some-quote {
-    text-align: center;
-    padding-top: 50px;
-    font-family: 'Dancing Script', cursive;
-    color: #ffffff;
-    font-size: 1.4rem;
+    font-size: 1.4rem; /* 767px과 동일 */
   }
-}
-.home-login{
-  border: #000 1px 1px;
-  border-radius: 25%;
-  box-shadow: inset 2px 2px 4px #b0afb4, inset -2px -2px 4px #c7c8cc;
-
-  width: 70px;
-  height: 30px;
-  background-color: #c7c8cc;
-  color: #000;
-
-}
-
-.home-a{
-  color: #fff;
 }
