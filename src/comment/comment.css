@@ -109,7 +109,7 @@
 .comment .comment-box{
   background-color: #e4e1da;
   border-radius: 4px;
-  box-shadow: 5px 5px 5px #f3f1e5, -5px -5px 5px #f3f1e5
+  box-shadow: 5px 5px 5px #f3f1e5, -5px -5px 5px #f3f1e5;
   margin-left: 100px;
   min-height: 60px;
   position: relative;
