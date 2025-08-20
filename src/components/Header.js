@@ -1,10 +1,9 @@
 // Header.js
 import React, { useState } from 'react';
-import './Header.css'; // Header 전용 CSS 파일 불러오기
-import logo from './10.png'; // 로고 이미지 (이 파일이 Header.js와 같은 폴더에 있다고 가정!)
+import './Header.css'; 
+import logo from './10.png'; 
 
 function Header() {
-  // 내비게이션 슬라이드가 열렸는지 닫혔는지 상태를 관리
   const [isNavOpen, setIsNavOpen] = useState(false);
 
   // 햄버거 메뉴 클릭 시 호출될 함수
@@ -14,11 +13,13 @@ function Header() {
 
   return (
     <header>
-      <div className="home-container">
+      <div className="home-container" >
         <div className="logo">
-          <img src={logo} width="150" height="150" alt="logo" />
+          <a href="http://localhost:3000">
+            <img src={logo} width="150" height="150" alt="logo" />
+          </a>
           <button className="home-login">
-            <a className="home-a">로그인</a>
+            <a className="home-a"  href="http://localhost:3000/login">로그인</a>
           </button>
         </div>
         <div className="ham-menu" onClick={toggleNav}> {/* 햄버거 메뉴 클릭 이벤트 추가! */}
@@ -35,8 +36,7 @@ function Header() {
         </div>
         <nav>
           <ul>
-            <li className="home_li"><a href="#" className="active-link">HOME</a></li>
-            <li className="home_li"><a href="#">게시판</a></li>
+            <li className="home_li"><a href="http://localhost:3000/postlist">게시판</a></li>
             <li className="home_li"><a href="#">CONTACT US</a></li>
             <li className="home_li"><a href="#">ABOUT</a></li>
           </ul>
@@ -44,8 +44,7 @@ function Header() {
         {/* isNavOpen 상태에 따라 클래스 추가 (나중에 애니메이션 연결 가능) */}
         <nav className={`nav-class ${isNavOpen ? 'is-open' : ''}`}>
           <ul>
-            <li className="home_li"><a href="#" className="active-link">HOME</a></li>
-            <li className="home_li"><a href="#">SERVICES</a></li>
+            <li className="home_li"><a href="http://localhost:3000/postlist">SERVICES</a></li>
             <li className="home_li"><a href="#">CONTACT US</a></li>
             <li className="home_li"><a href="#">ABOUT</a></li>
           </ul>
