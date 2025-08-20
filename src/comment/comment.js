@@ -82,7 +82,7 @@ body{
               name="text"
               value={comment.text}
               onChange={handleChange}
-              placeholder="Add comment..."
+              placeholder="댓글을 남겨보세요"
               required
             />
           </div>
@@ -125,7 +125,7 @@ body{
                   </span>
                 </div>
                 <div className="comment-actions">
-                  <a href="#">Reply</a>
+                  <a href="#">답글</a>
                 </div>
               </div>
             </div>
