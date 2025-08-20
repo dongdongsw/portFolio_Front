@@ -70,7 +70,7 @@ body{
     <>
     <CommentStyle />
     <div className="comments-app">
-      <h1>Comments App - React</h1>
+      
 
       {/* 입력폼 */}
       <div className="comment-form">
@@ -124,9 +124,7 @@ body{
                       : new Date(c.date).toLocaleString()}
                   </span>
                 </div>
-                <div className="comment-actions">
-                  <a href="#">답글</a>
-                </div>
+                
               </div>
             </div>
           </div>
