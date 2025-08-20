@@ -43,6 +43,9 @@ body{
     },
   ]);
 
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setComment((prev) => ({
@@ -54,7 +57,22 @@ body{
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!comment.text || !comment.author) return;
+    if (!comment.text) return;
+
+    if (isEditing && selectedIndex !== null) {
+      setComments((prev) => {
+        const next = [...prev];
+        next[selectedIndex] = {
+          ...next[selectedIndex],
+          text: comment.text,
+          author: comment.author,
+          date: new Date(),
+        };
+        return next;
+      });
+      setIsEditing(false);
+      setSelectedIndex(null);
+    } else  {
 
     const newComment = {
       ...comment,
@@ -63,7 +81,28 @@ body{
     };
 
     setComments((prev) => [newComment, ...prev]);
-    setComment({ text: "", author: "" });
+    }
+    setComment((prev) => ({ text: "", author: prev.author }));
+  };
+
+  const handleSelect = (index) => {
+    setSelectedIndex(index);
+  };
+
+  const handleEdit = () => {
+    if (selectedIndex === null) return;
+    const target = comments[selectedIndex];
+    setComment({ text: target.text, author: target.author });
+
+    setIsEditing(true);
+  };
+
+  const handleDelete = () => {
+    if (selectedIndex === null) return;
+    setComments((prev) => prev.filter((_, i) => i !== selectedIndex));
+    setSelectedIndex(null);
+    setIsEditing(false);
+    setComment((prev) => ({ text: "", author: prev.author }));
   };
 
   return (
@@ -88,18 +127,24 @@ body{
           </div>
           <div className="form-row">
             <input
-              className="input"
+              className="input read-only"
               name="author"
               value={comment.author}
               onChange={handleChange}
               placeholder="Email"
               type="email"
-              required
+              readOnly
             />
           </div>
           
-          <div className="form-row">
-            <input type="submit" value="등록" />
+          <div className="form-row form-actions">
+            <button type="button" onClick={handleDelete} className="btn btn-delete">삭제</button>
+            <button type="button" onClick={handleEdit} className="btn btn-edit">
+              {isEditing ? "수정중" : "수정"}
+            </button>
+            <input type="submit" value={isEditing ? "저장" : "등록"}
+            className="btn btn-submit"
+            />
           </div>
         </form>
       </div>
@@ -107,8 +152,11 @@ body{
       {/* 댓글 리스트 */}
       <div className="comments">
         {comments.map((c, idx) => (
-          <div key={idx} className="comment">
-            
+          <div key={idx}
+          className={`comment ${selectedIndex === idx ? "selected" : ""}`}
+          onClick={() => handleSelect(idx)}
+
+          > 
             <div className="comment-box">
               <div className="comment-text">{c.text}</div>
               <div className="comment-footer">
