@@ -40,7 +40,7 @@ export default function PostDetail() {
         <aside className={`postdetail-sidebar ${sidebarOpen ? 'active' : ''}`} aria-hidden={!sidebarOpen} data-sidebar>
           <div className="postdetail-sidebar-info">
             <figure className="postdetail-avatar-box">
-              <img src="https://i.postimg.cc/JzBWVhW4/my-avatar.png" alt="avatar" width="80" />
+              <img src="https://i.postimg.cc/3JXZ4X7n/image.jpg" alt="avatar" width="80"/*작성자 이미지*/ /> 
             </figure>
 
             <div className="postdetail-info-content">
@@ -101,10 +101,15 @@ export default function PostDetail() {
               <section className="postdetail-about-text">
                 <p>I'm Creative Director and UI/UX Designer from Sydney, Australia, working in web development and print media. I enjoy turning complex problems into simple, beautiful and intuitive designs.</p>
                 <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
+                <img src="https://i.postimg.cc/3JXZ4X7n/image.jpg" alt="브이날두"  className="postdetail-about-image" />
                 <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
                 <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
+                <img src="https://i.postimg.cc/6pRT5cXp/image.avif" alt="물총날두"  className="postdetail-about-image" />
                 <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
                 <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
+                <img src="https://i.postimg.cc/HnCBRBd8/image.jpg" alt="성난날두"  className="postdetail-about-image" />
+
+             
               </section>
 
             </article>
