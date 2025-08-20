@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import "./postlist.css";
 import { createGlobalStyle } from "styled-components";
+import Header from '../../components/Header';
 
 function PostList() {
   const PostListStyle = createGlobalStyle`
@@ -57,6 +58,8 @@ function PostList() {
   return (
     <>
       <PostListStyle />
+            <Header />
+
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
