@@ -1,8 +1,4 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box; /* 여기 0에서 border-box로 수정했어! */
-}
+
 
 .home-section {
   width: 100%;
@@ -14,7 +10,7 @@ header {
   height: 20vh;
 }
 
-.container {
+.home-container {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -207,24 +203,7 @@ nav ul {
   height: 0;
 }
 
-.home-footer {
-  height: 20vh;
-}
 
-.social-link-icon {
-  padding-top: 30px;
-  display: flex;
-  justify-content: center;
-}
-
-.social-link-icon div {
-  display: flex;
-  text-align: center;
-}
-
-.social-link-icon div div {
-  margin: 0 10px;
-}
 
 @media screen and (max-width: 991px) {
   nav {
@@ -242,7 +221,7 @@ nav ul {
     position: relative;
   }
 
-  header .container {
+  header .home-container {
     height: 100%;
     width: 90%;
     margin: auto;
@@ -261,7 +240,7 @@ nav ul {
     display: none;
   }
 
-  .container .nav-class {
+  .home-container .nav-class {
     display: block;
     position: absolute;
     background-color: rgba(255, 255, 255, 0.8);
@@ -321,17 +300,17 @@ nav ul {
     width: 0;
   }
 
-  main {
+  .home_main {
     height: 65vh;
   }
 
-  main .design-btn {
+  .home_main .design-btn {
     margin-top: 200px;
     text-align: center;
     color: #ffffff;
   }
 
-  main .design-btn h1 {
+  .home_main .design-btn h1 {
     font-family: 'Nunito', sans-serif;
     letter-spacing: 3px;
     display: inline-block;
@@ -351,7 +330,7 @@ nav ul {
     right: 0;
   }
 
-  main .some-quote {
+  .home_main .some-quote {
     text-align: center;
     padding-top: 50px;
     font-family: 'Dancing Script', cursive;
@@ -370,7 +349,7 @@ nav ul {
     position: relative;
   }
 
-  header .container {
+  header .home-container {
     height: 100%;
     width: 90%;
     margin: auto;
@@ -389,7 +368,7 @@ nav ul {
     display: none;
   }
 
-  .container .nav-class {
+  .home-container .nav-class {
     display: block;
     position: absolute;
     background-color: rgba(255, 255, 255, 0.8);
@@ -450,17 +429,17 @@ nav ul {
   }
 
 
-  main {
+  .home_main {
     height: 65vh;
   }
 
-  main .design-btn {
+  .home_main .design-btn {
     margin-top: 200px;
     text-align: center;
     color: #ffffff;
   }
 
-  main .design-btn h1 {
+  .home_main .design-btn h1 {
     font-family: 'Nunito', sans-serif;
     letter-spacing: 3px;
     display: inline-block;
@@ -480,11 +459,26 @@ nav ul {
     right: 0;
   }
 
-  main .some-quote {
+  .home_main .some-quote {
     text-align: center;
     padding-top: 50px;
     font-family: 'Dancing Script', cursive;
     color: #ffffff;
     font-size: 1.4rem;
   }
+}
+.home-login{
+  border: #000 1px 1px;
+  border-radius: 25%;
+  box-shadow: inset 2px 2px 4px #b0afb4, inset -2px -2px 4px #c7c8cc;
+
+  width: 70px;
+  height: 30px;
+  background-color: #c7c8cc;
+  color: #000;
+
+}
+
+.home-a{
+  color: #fff;
 }
