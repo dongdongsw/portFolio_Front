@@ -25,7 +25,6 @@ function PostList() {
         id: i + 1,
         day: String(10 + ((i * 3) % 20)).padStart(2, "0"),
         month: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"][i % 6],
-        category: ["Photos", "Tech", "Travel"][i % 3],
         title: `Card Title #${i + 1}`,
         subtitle: "The city that never sleeps.",
         img:
@@ -99,7 +98,7 @@ function PostList() {
                   </div>
 
                   <div className="post-content">
-                    <div className="category">{c.category}</div>
+                  
                     <h1 className="title">{c.title}</h1>
                     <h2 className="sub_title">{c.subtitle}</h2>
                     <p className="description">{c.description}</p>

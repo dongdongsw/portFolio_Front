@@ -46,10 +46,7 @@
   box-sizing: border-box; transition: all 0.3s cubic-bezier(0.37,0.75,0.61,1.05);
   
 }
-.post-module .post-content .category {
-  position: absolute; top: -28px; left: 0; background: #c7c8cc; padding: 8px 12px;
-  color: #f9f9f9; font-size: 12px; font-weight: 600; text-transform: uppercase;
-}
+
 .post-module .post-content .title { margin: 0; padding: 0 0 6px; color: #6f6767; font-size: 18px; font-weight: 700; }
 .post-module .post-content .sub_title { margin: 0; padding: 0 0 10px; color: #a0a5a8; font-size: 14px; font-weight: 400; }
 .post-module .post-content .description { display: none; color: #666; font-size: 13px; line-height: 1.6; }
