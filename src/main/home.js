@@ -4,6 +4,7 @@ import styles from './home.css';
 import '../commonness.css';
 import { createGlobalStyle } from 'styled-components';
 
+import Header from '../components/Header';
 import MainBg from './11.jpg'; // <-- 여기에 실제 경로와 파일명을 입력!
 
 function MyHeader() {
