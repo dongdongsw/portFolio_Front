@@ -18,6 +18,11 @@ function PostList() {
       -moz-osx-font-smoothing: grayscale;
       font-family: 'proxima-nova-soft', sans-serif;
     }
+
+    header {
+      height: 200px;
+      margin-bottom: 100px;
+    }
   `;
 
   const cards = useMemo(
@@ -58,7 +63,7 @@ function PostList() {
   return (
     <>
       <PostListStyle />
-            <Header />
+            
 
       <link
         rel="stylesheet"
@@ -66,9 +71,8 @@ function PostList() {
       />
 
       <div className="post-container">
-        <div className="post-info">
-          <h1>PortFolio</h1>
-          <span>postlist</span>
+        <div className="header">
+          <Header />
         </div>
 
         {/* 4열 × 250px 그리드 */}
@@ -152,6 +156,7 @@ function PostList() {
           >
             Next ▶
           </button>
+          
         </div>
       </div>
     </>
