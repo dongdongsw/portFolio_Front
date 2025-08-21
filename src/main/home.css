@@ -2,6 +2,31 @@
 .home-section {
   width: 100%;
   height: 100vh;
+  
+  padding-top: 30px;
+}
+
+/* 슬라이드 들어올 때 애니메이션 */
+@keyframes slideInFromLeft { /* 이름 변경했어! */
+  from {
+    opacity: 0;
+    transform: translateX(-100%); /* 왼쪽 끝에서 시작 */
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0); /* 제자리로 이동 */
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%); /* 오른쪽에서 시작 */
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0); /* 제자리로 이동 */
+  }
 }
 
 /* header, home-container, ham-menu, nav, .nav-class 등등 header 관련 스타일은 Header.css로 이동! */
@@ -12,10 +37,32 @@
   width: 100%;
   position: relative;
   background-color: red;
-  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(https://images.pexels.com/photos/279719/pexels-photo-279719.jpeg?cs=srgb&dl=apartment-chair-clean-contemporary-279719.jpg&fm=jpg);
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4));
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
+  
+  
+  /* 배경 이미지 관련 스타일은 여기 두자! */
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  
+  /* !!!! 여기 중요 !!!! */
+  /* 이전에 animation: slideInFromRight 0.7s ease-out forwards; 로 강제했던 부분을 삭제! */
+  /* 그리고 공통 애니메이션 속성만 남김 */
+  animation-duration: 0.3s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+/* .home_main에 동적으로 추가될 클래스 */
+.slide-right {
+  animation-name: slideInFromRight; /* 오른쪽에서 들어오는 애니메이션 적용 */
+}
+
+.slide-left {
+  animation-name: slideInFromLeft; /* 왼쪽에서 들어오는 애니메이션 적용 */
 }
 
 .navigation {
