@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./postlist.css";
 import { createGlobalStyle } from "styled-components";
 import Header from '../../components/Header';
@@ -13,14 +14,11 @@ function PostList() {
       overflow-x: hidden;
       background-color: #e4e1da;
       color: #6f6767;
-      font-size: 14px;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      font-family: 'proxima-nova-soft', sans-serif;
     }
 
     header {
-      height: 200px;
       margin-bottom: 100px;
     }
   `;
@@ -42,7 +40,7 @@ function PostList() {
       })),
     []
   );
-
+  const navigate = useNavigate();
   const PAGE_SIZE = 12; // 4열 × 3행
   const [page, setPage] = useState(1);
   const pageCount = Math.ceil(cards.length / PAGE_SIZE);
@@ -69,12 +67,10 @@ function PostList() {
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
       />
-
+      <div className="header">
+         <Header />
+      </div>
       <div className="post-container">
-        <div className="header">
-          <Header />
-        </div>
-
         {/* 4열 × 250px 그리드 */}
         <div
           style={{
@@ -95,6 +91,8 @@ function PostList() {
                   className={`post-module ${isHover ? "hover" : ""}`}
                   onMouseEnter={() => setHoverIdx(i)}
                   onMouseLeave={() => setHoverIdx(null)}
+                  onClick={() => navigate(`./postdetail`)} 
+                  style={{ cursor: "pointer" }} 
                 >
                   <div className="thumbnail">
                     <div className="date">
