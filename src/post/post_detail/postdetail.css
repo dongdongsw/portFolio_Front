@@ -2,6 +2,7 @@ body.postdetail-body-styles {
     background-color: hsl(42, 15%, 87%); 
     -webkit-overflow-scrolling: touch; 
     -ms-overflow-style: none; 
+    margin: 0;
 }
 
 body.postdetail-body-styles::-webkit-scrollbar {
@@ -482,5 +483,9 @@ body.postdetail-body-styles::-webkit-scrollbar {
     .postdetail-separator:last-of-type {
         margin: 15px 0;
         opacity: 0;
+    }
+
+    .detail-header {
+        padding-bottom: 100px;
     }
 }

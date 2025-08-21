@@ -4,11 +4,18 @@ import '../post_detail/postdetail.css';
 import '../../commonness.css'; // commonness.css는 그대로 유지
 import Header from '../../components/Header';
 import WysiwygPostEditor from './postEditor';
+import { createGlobalStyle } from "styled-components";
 function normalize(s) {
   return String(s || '').trim().toLowerCase();
 }
 
 export default function PostCreate() {
+  const EditorStyle = createGlobalStyle`
+  .postdetail-article.active {
+    
+    min-height: 681px;
+  `;
+
   const { id } = useParams(); // optional param
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activePage, setActivePage] = useState('about');
@@ -34,6 +41,8 @@ export default function PostCreate() {
   }, [id]);
 
   return (
+    <>
+    <EditorStyle />
     <div className="app-root">
        <Header />
       <main className="postdetail-main"> 
@@ -96,7 +105,6 @@ export default function PostCreate() {
           {/* ABOUT */}
           {activePage === 'about' && (
             <article className="postdetail-article postdetail-about active" data-page="about">
-              <header><h2 className="postdetail-h2 postdetail-article-title">About me</h2></header>
 
               <section className="postdetail-about-text">                
                 <WysiwygPostEditor/>  
@@ -109,5 +117,6 @@ export default function PostCreate() {
         </div>
       </main>
     </div>
+    </>
   );
 }

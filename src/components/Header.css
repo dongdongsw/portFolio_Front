@@ -268,3 +268,9 @@ nav ul {
     }
     /* 이 외 header 관련 스타일은 767px 미디어 쿼리의 영향을 받음 */
 }
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
