@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import './postdetail.css';
+import '../../commonness.css'; // commonness.css는 그대로 유지
 
 function normalize(s) {
   return String(s || '').trim().toLowerCase();
@@ -11,9 +12,16 @@ export default function PostDetail() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activePage, setActivePage] = useState('about');
   
-  /*임시추가*/
   const [showCommentSection, setShowCommentSection] = useState(false); // 초기값은 false로 설정하여 기본적으로 숨김
   const [comments, setComments] = useState([]); // 댓글 데이터 (예시)
+
+  // 페이지 마운트/언마운트 시 body에 클래스 추가/제거
+  useEffect(() => {
+    document.body.classList.add('postdetail-body-styles');
+    return () => {
+      document.body.classList.remove('postdetail-body-styles');
+    };
+  }, []);
 
   useEffect(() => {
     // 실제 앱에서는 API 호출 등으로 댓글 데이터를 불러옵니다.
@@ -34,13 +42,20 @@ export default function PostDetail() {
 
   const toggleSidebar = () => setSidebarOpen(v => !v);
 
+  useEffect(() => {
+    if (id) {
+      setActivePage('portfolio'); // id가 있을 경우 portfolio 페이지 활성화 (현재 JSX에 portfolio 관련 section은 없지만 로직은 유지)
+    }
+  }, [id]);
+
   return (
     <div className="app-root">
-      <main>
+      {/* main 태그에 .postdetail-main 클래스 추가 */}
+      <main className="postdetail-main"> 
         <aside className={`postdetail-sidebar ${sidebarOpen ? 'active' : ''}`} aria-hidden={!sidebarOpen} data-sidebar>
           <div className="postdetail-sidebar-info">
             <figure className="postdetail-avatar-box">
-              <img src="https://i.postimg.cc/3JXZ4X7n/image.jpg" alt="avatar" width="80"/*작성자 이미지*/ /> 
+              <img src="https://i.postimg.cc/JzBWVhW4/my-avatar.png" alt="avatar" width="80" />
             </figure>
 
             <div className="postdetail-info-content">
@@ -98,8 +113,7 @@ export default function PostDetail() {
             <article className="postdetail-article postdetail-about active" data-page="about">
               <header><h2 className="postdetail-h2 postdetail-article-title">About me</h2></header>
 
-              <section className="postdetail-about-text">
-                <p>I'm Creative Director and UI/UX Designer from Sydney, Australia, working in web development and print media. I enjoy turning complex problems into simple, beautiful and intuitive designs.</p>
+              <section className="postdetail-about-text">                <p>I'm Creative Director and UI/UX Designer from Sydney, Australia, working in web development and print media. I enjoy turning complex problems into simple, beautiful and intuitive designs.</p>
                 <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
                 <img src="https://i.postimg.cc/3JXZ4X7n/image.jpg" alt="브이날두"  className="postdetail-about-image" />
                 <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
