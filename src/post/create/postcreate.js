@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import './postcreate.css';
-import PostEditor from "./postEditor";
-
+import '../post_detail/postdetail.css';
+import '../../commonness.css'; // commonness.css는 그대로 유지
+import Header from '../../components/Header';
+import WysiwygPostEditor from './postEditor';
 function normalize(s) {
   return String(s || '').trim().toLowerCase();
 }
@@ -12,21 +13,34 @@ export default function PostCreate() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activePage, setActivePage] = useState('about');
   
-  /*임시추가*/
   const [showCommentSection, setShowCommentSection] = useState(false); // 초기값은 false로 설정하여 기본적으로 숨김
   const [comments, setComments] = useState([]); // 댓글 데이터 (예시)
 
+  // 페이지 마운트/언마운트 시 body에 클래스 추가/제거
+  useEffect(() => {
+    document.body.classList.add('postdetail-body-styles');
+    return () => {
+      document.body.classList.remove('postdetail-body-styles');
+    };
+  }, []);
 
 
   const toggleSidebar = () => setSidebarOpen(v => !v);
 
+  useEffect(() => {
+    if (id) {
+      setActivePage('portfolio'); // id가 있을 경우 portfolio 페이지 활성화 (현재 JSX에 portfolio 관련 section은 없지만 로직은 유지)
+    }
+  }, [id]);
+
   return (
     <div className="app-root">
-      <main>
+       <Header />
+      <main className="postdetail-main"> 
         <aside className={`postdetail-sidebar ${sidebarOpen ? 'active' : ''}`} aria-hidden={!sidebarOpen} data-sidebar>
           <div className="postdetail-sidebar-info">
             <figure className="postdetail-avatar-box">
-              <img src="https://i.postimg.cc/JzBWVhW4/my-avatar.png" alt="avatar" width="80" />
+              <img src="https://i.postimg.cc/hP9yPjCQ/image.jpg" alt="avatar" width="80" />
             </figure>
 
             <div className="postdetail-info-content">
@@ -82,36 +96,16 @@ export default function PostCreate() {
           {/* ABOUT */}
           {activePage === 'about' && (
             <article className="postdetail-article postdetail-about active" data-page="about">
-              <PostEditor/>
+              <header><h2 className="postdetail-h2 postdetail-article-title">About me</h2></header>
+
+              <section className="postdetail-about-text">                
+                <WysiwygPostEditor/>  
+
+              </section>
 
             </article>
           )}
-          {showCommentSection && (
-            <section className="postdetail-comment-section">
-              <h3 className="postdetail-h3 postdetail-comment-title">Comments</h3>
-              <div className="postdetail-comments-container">
-                {comments.length > 0 ? (
-                  <ul className="postdetail-comment-list">
-                    {comments.map(comment => (
-                      <li key={comment.id} className="postdetail-comment-item">
-                        <p className="postdetail-comment-author">{comment.author}</p>
-                        <p className="postdetail-comment-text">{comment.text}</p>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>아직 댓글이 없습니다.</p>
-                )}
-              </div>
-              {/* 필요하다면 댓글 입력 폼 추가 가능 */}
-              {/*
-        <div className="postdetail-comment-input-area">
-          <textarea placeholder="댓글을 입력하세요..."></textarea>
-          <button>댓글 작성</button>
-        </div>
-        */}
-            </section>
-          )}
+         
         </div>
       </main>
     </div>
