@@ -1,20 +1,33 @@
 
+/* 텍스트 우측정렬 */
+.text-right { text-align: right; }
 
-.text-right{ text-align: right; }
-
-.comments-app{
+/* 전체 댓글 앱 영역 */
+.comments-app {
   margin: 50px auto;
   max-width: 680px;
   padding: 0 50px;
   width: 100%;
 }
 
-.comment-form .form{ margin-left: 100px; }
+/* 댓글 입력 폼 */
+.comment-form {
+  margin-bottom: 28px;
+}
 
-.comment-form .form .form-row{ margin-bottom: 10px; }
-.comment-form .form .form-row:last-child{ margin-bottom: 0; }
+.comment-form .form {
+  margin-left: 100px;
+}
 
-.comment-form .form .input{
+.comment-form .form .form-row {
+  margin-bottom: 20px;
+}
+.comment-form .form .form-row:last-child {
+  margin-bottom: 0;
+}
+
+/* 입력창 기본 스타일 */
+.comment-form .form .input {
   background-color: #e4e1da;
   border: none;
   border-radius: 4px;
@@ -25,68 +38,70 @@
   padding: 5px 10px;
   outline: none;
   width: 100%;
-
-  -webkit-transition: 350ms box-shadow;
-  -moz-transition: 350ms box-shadow;
-  -ms-transition: 350ms box-shadow;
-  -o-transition: 350ms box-shadow;
   transition: 350ms box-shadow;
 }
 
-.comment-form .form textarea.input{
-  height: 100px;
-  padding: 15px;
-  resize: none;
-}
+/* textarea wrapper - Email 표시 포함 */
+.textarea-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}  
 
-.comment-form .form label{
-  color: #555f77;
-  font-family: inherit;
+/* Email 표시 텍스트 */
+.email-text {
+  position: absolute;
+  top: 10px;
+  left: 12px;
   font-size: 14px;
+  color: #555;
+  pointer-events: none;
+  user-select: none;
+  line-height: 1;
 }
 
-.comment-form .form input[type=submit]{
-  background-color: #c7c8cc;
-  border: none;
+/* 댓글 입력 textarea */
+.textarea-comment {
+  width: 100%;
+  min-height: 120px;
+  padding: 56px 12px 14px 12px;
   border-radius: 4px;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, .15);
-  color: #fff;
-  cursor: pointer;
-  display: block;
-  margin-left: auto;
-  outline: none;
-  padding: 6px 15px;
-
-  -webkit-transition: 350ms box-shadow;
-  -moz-transition: 350ms box-shadow;
-  -ms-transition: 350ms box-shadow;
-  -o-transition: 350ms box-shadow;
-  transition: 350ms box-shadow;
+  border: 1px solid #ccc;
+  resize: none;
+  line-height: 1.5;
+  box-shadow: inset 2px 2px 4px #b0afb4, inset -2px -2px 4px #c7c8cc;
 }
 
-.comment-form .form .input:focus,
-.comment-form .form input[type=submit]:focus,
-.comment-form .form input[type=submit]:hover{
+.textarea-comment::placeholder {
+  color: #7a8699;
+  opacity: 1;
+}
+
+.textarea-comment:focus {
+  outline: none;
   box-shadow: 0 2px 6px rgba(121, 137, 148, .55);
 }
 
-.comment-form .form.ng-submitted .input.ng-invalid,
-.comment-form .form .input.ng-dirty.ng-invalid{
-  box-shadow: 0 2px 6px rgba(212, 47, 47, .55) !important;
+/* 등록 버튼 */
+.btn-submit {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  padding: 6px 12px;
+  border-radius: 4px;
+  background-color: #c7c8cc;
+  color: #fff;
+  cursor: pointer;
 }
 
-.comment-form .form .input.disabled {
-    background-color: #E8E8E8;
-}
-
-.comment-form,
-.comment{
-  margin-bottom: 20px;
+/* 댓글 리스트 */
+.comment {
+  margin-bottom: 32px;
   position: relative;
   z-index: 0;
 }
 
-.comment .comment-box{
+.comment .comment-box {
   background-color: #e4e1da;
   border-radius: 4px;
   box-shadow: 5px 5px 5px #f3f1e5, -5px -5px 5px #f3f1e5;
@@ -96,20 +111,18 @@
   padding: 15px;
 }
 
-.comment .comment-box:before{
-  border-color: transparent rgba(0, 0, 0, .05);
-   top: 22px;
-}
-
-.comment .comment-text{
+.comment .comment-text {
   color: #555f77;
   font-size: 15px;
   margin-bottom: 25px;
 }
 
-.comment .comment-footer{
-  color: #acb4c2;
+.comment .comment-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
   font-size: 13px;
+  color: #acb4c2;
 }
 
 .comment .comment-footer:after{
@@ -118,44 +131,68 @@
   clear: both;
 }
 
-.comment .comment-footer a{
+.comment .comment-footer a {
   color: #acb4c2;
   text-decoration: none;
-
-  -webkit-transition: 350ms color;
-  -moz-transition: 350ms color;
-  -ms-transition: 350ms color;
-  -o-transition: 350ms color;
   transition: 350ms color;
 }
 
-.comment .comment-footer a:hover{
+.comment .comment-footer a:hover {
   color: #555f77;
   text-decoration: underline;
 }
 
-.comment .comment-info{
-  float: left;
-  width: 85%;
-}
+.comment-info { float: left; width: 85%; }
 
-.comment .comment-date:before{
-  content: "|";
-  margin: 0 10px;
-}
+.comment-date:before { content: "|"; margin: 0 10px; }
 
-.comment-actions{
-  float: left;
-  text-align: right;
-  width: 15%;
-}
-.form-actions {
+.comment-actions {
   display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  flex-direction: row-reverse;
+  gap: 6px;
 }
 
+/* ··· 메뉴 버튼 */
+.btn-more {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #555;
+  padding: 4px 8px;
+}
+
+/* 드롭다운 */
+.dropdown-menu {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+
+.dropdown-item {
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+
+.dropdown-item:hover {
+  background: #f0f0f0;
+}
+
+/* 버튼 공통 */
 .btn {
   border: none;
   border-radius: 4px;
@@ -168,21 +205,7 @@
   justify-content: center;
   line-height: 1;
   color: #fff;
-}
-
-.btn-delete {
-  background-color: #c7c8cc;
-  color: #fff;
-}
-
-.btn-edit {
-  background-color: #c7c8cc;
-  color: #fff;
-}
-
-.btn-submit {
-  background-color: #c7c8cc;
-  color: #fff;
+  white-space: nowrap;
 }
 
 .btn:hover {
@@ -194,16 +217,27 @@
   outline-offset: 2px;
 }
 
-.comment-form .form .input.read-only {
-  background-color: #F3F3F3;
-  cursor: default;
-  user-select: text;
+button.btn.btn-more {
+  color: #555 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.5px;
 }
 
-.form-actions .btn-submit,
-.form-actions input[type=submit].btn-submit {
-display: inline-flex; 
-align-items: center;
-justify-content: center;
+button.btn.btn-more:hover {
+  color: #333 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+div.comments-app div.textarea-wrapper .email-text {
+top: 8px !important;
+left: 12px;
 line-height: 1;
+}
+
+div.comments-app textarea.textarea-comment {
+min-height: 120px;
+padding: 30px 12px 14px 12px !important;
+line-height: 1.5;
 }
