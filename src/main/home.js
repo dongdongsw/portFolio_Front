@@ -1,5 +1,4 @@
-// home.js
-import React, {useState} from 'react'; // useState는 이제 Header.js로 이동!
+import React, {useState} from 'react'; 
 import styles from './home.css'; 
 import '../commonness.css';
 import { createGlobalStyle } from 'styled-components';
@@ -8,7 +7,7 @@ import Header from '../components/Header';
 import MainBg1 from './11.jpg';
 import MainBg2 from './12.png';
 import MainBg3 from './13.jpg'; 
-const backgrounds = [MainBg1, MainBg2, MainBg3]; // 이미지 배열로 관리하면 편해!
+const backgrounds = [MainBg1, MainBg2, MainBg3]; 
 
 function MyHeader() {
   const HomeStyle = createGlobalStyle`
@@ -22,32 +21,26 @@ function MyHeader() {
     }
   `;
   const [currentSlide, setCurrentSlide] = useState(0); 
-  // 슬라이드 방향을 저장할 상태 추가: 초기값은 'right' (첫 로딩 시 오른쪽에서 들어오는 느낌)
   const [slideDirection, setSlideDirection] = useState('right'); 
 
-  // '다음' 버튼 핸들러
   const handleNext = () => {
-    setSlideDirection('right'); // 다음 버튼 누르면 오른쪽에서 새 슬라이드가 들어옴
+    setSlideDirection('right'); 
     setCurrentSlide((prevSlide) => (prevSlide + 1) % backgrounds.length);
   };
 
-  // '이전' 버튼 핸들러
   const handlePrev = () => {
-    setSlideDirection('left'); // 이전 버튼 누르면 왼쪽에서 새 슬라이드가 들어옴
+    setSlideDirection('left'); 
     setCurrentSlide((prevSlide) =>
       prevSlide === 0 ? backgrounds.length - 1 : prevSlide - 1
     );
   };
 
-  // 인디케이터 클릭 핸들러
   const goToSlide = (index) => {
-    // 현재 슬라이드 인덱스와 목표 인덱스를 비교해서 방향 결정
     if (index > currentSlide) {
-      setSlideDirection('right'); // 클릭한 인덱스가 더 크면 오른쪽에서
+      setSlideDirection('right'); 
     } else if (index < currentSlide) {
-      setSlideDirection('left'); // 클릭한 인덱스가 더 작으면 왼쪽에서
+      setSlideDirection('left'); 
     }
-    // 같은 슬라이드를 클릭할 땐 애니메이션 없음 (선택 사항)
     setCurrentSlide(index);
   };
 
@@ -57,12 +50,9 @@ function MyHeader() {
       <Header />
 <section className="home-section">
       <main
-        // key가 변경되면 React는 이 요소를 새로 렌더링하면서 애니메이션을 다시 시작함
-        // slideDirection에 따라 'slide-right' 또는 'slide-left' 클래스 추가
         className={`home_main ${slideDirection === 'right' ? 'slide-right' : 'slide-left'}`} 
         key={currentSlide} 
         style={{
-          // 배경 이미지만 style prop으로 관리
           backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${backgrounds[currentSlide]})`,
         }}
       >
@@ -74,7 +64,7 @@ function MyHeader() {
         </div>
         <div className="navigation">
           <div className="next-prev">
-            <div onClick={handlePrev}> {/* 이전 버튼 */}
+            <div onClick={handlePrev}> 
               <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 172 172" style={{ fill: '#000000', cursor: 'pointer' }}>
                 <g fill="none" fillRule="nonzero" stroke="none" strokeWidth="1" strokeLinecap="butt" strokeLinejoin="miter" strokeMiterlimit="10" strokeDasharray="" strokeDashoffset="0" fontFamily="none" fontWeight="none" fontSize="none" textAnchor="none" style={{ mixBlendMode: 'normal' }}>
                   <path d="M0,172v-172h172v172z" fill="none"></path>
@@ -84,7 +74,7 @@ function MyHeader() {
                 </g>
               </svg>
             </div>
-            <div onClick={handleNext}> {/* 다음 버튼 */}
+            <div onClick={handleNext}> 
               <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 172 172" style={{ fill: '#000000', cursor: 'pointer' }}>
                 <g fill="none" fillRule="nonzero" stroke="none" strokeWidth="1" strokeLinecap="butt" strokeLinejoin="miter" strokeMiterlimit="10" strokeDasharray="" strokeDashoffset="0" fontFamily="none" fontWeight="none" fontSize="none" textAnchor="none" style={{ mixBlendMode: 'normal' }}>
                   <path d="M0,172v-172h172v172z" fill="none"></path>

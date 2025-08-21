@@ -5,7 +5,7 @@ import Postlist from './post/post_list/postlist';
 import PostDetail from './post/post_detail/postdetail';
 import PostCreate from './post/create/postcreate';
 import Comment from './comment/comment';
-
+import Mypage from './mypage/mypage';
 
 function App() {
   return (
@@ -16,6 +16,8 @@ function App() {
       <Route path='/postlist/postdetail' element={<PostDetail/>} />
       <Route path='/create' element={<PostCreate/>}/>
       <Route path='/comment' element={<Comment/>}/>
+      <Route path='/mypage' element={<Mypage/>}/>
+      
       
 
     </Routes>

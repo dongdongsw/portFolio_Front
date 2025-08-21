@@ -1,4 +1,3 @@
-/* home.css (Header 관련 스타일은 다 삭제하고 남은 부분만) */
 .home-section {
   width: 100%;
   height: 100vh;
@@ -7,14 +6,14 @@
 }
 
 /* 슬라이드 들어올 때 애니메이션 */
-@keyframes slideInFromLeft { /* 이름 변경했어! */
+@keyframes slideInFromLeft { 
   from {
     opacity: 0;
     transform: translateX(-100%); /* 왼쪽 끝에서 시작 */
   }
   to {
     opacity: 1;
-    transform: translateX(0); /* 제자리로 이동 */
+    transform: translateX(0); 
   }
 }
 
@@ -25,15 +24,12 @@
   }
   to {
     opacity: 1;
-    transform: translateX(0); /* 제자리로 이동 */
+    transform: translateX(0); 
   }
 }
 
-/* header, home-container, ham-menu, nav, .nav-class 등등 header 관련 스타일은 Header.css로 이동! */
-/* 여기서는 그 부분 다 지우고, .home_main 이하부터 남겨두면 됨! */
-
 .home_main {
-  height: 60vh; /* 반응형 미디어 쿼리 안에서는 65vh로 바뀜 */
+  height: 60vh; 
   width: 100%;
   position: relative;
   background-color: red;
@@ -43,26 +39,21 @@
   background-repeat: no-repeat;
   
   
-  /* 배경 이미지 관련 스타일은 여기 두자! */
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
   
-  /* !!!! 여기 중요 !!!! */
-  /* 이전에 animation: slideInFromRight 0.7s ease-out forwards; 로 강제했던 부분을 삭제! */
-  /* 그리고 공통 애니메이션 속성만 남김 */
   animation-duration: 0.3s;
   animation-timing-function: ease-out;
   animation-fill-mode: forwards;
 }
 
-/* .home_main에 동적으로 추가될 클래스 */
 .slide-right {
-  animation-name: slideInFromRight; /* 오른쪽에서 들어오는 애니메이션 적용 */
+  animation-name: slideInFromRight; 
 }
 
 .slide-left {
-  animation-name: slideInFromLeft; /* 왼쪽에서 들어오는 애니메이션 적용 */
+  animation-name: slideInFromLeft;
 }
 
 .navigation {
@@ -73,7 +64,7 @@
 .next-prev {
   display: flex;
   justify-content: space-between;
-  padding: 0 20px; /* 반응형 미디어 쿼리 안에서는 10px로 바뀜 */
+  padding: 0 20px; 
   position: absolute;
   top: 50%;
   left: 0;
@@ -90,8 +81,7 @@
 }
 
 .indicator div {
-  display: flex; /* 원래는 display: inline-block이 중복되어 있었음 */
-  /* inline-block을 flex 자식 요소로 쓰려면 잘 봐야 함. */
+  display: flex; 
 }
 
 .indicator div div {
@@ -109,14 +99,14 @@
 
 .home_main .some-quote {
   text-align: center;
-  padding-top: 60px; /* 반응형 미디어 쿼리 안에서는 50px로 바뀜 */
+  padding-top: 60px; 
   font-family: 'Dancing Script', cursive;
   color: #ffffff;
-  font-size: 1.2rem; /* 반응형 미디어 쿼리 안에서는 1.4rem로 바뀜 */
+  font-size: 1.2rem; 
 }
 
 .home_main .design-btn {
-  margin-top: 160px; /* 반응형 미디어 쿼리 안에서는 200px로 바뀜 */
+  margin-top: 160px; 
   text-align: center;
   color: #ffffff;
 }
@@ -128,7 +118,6 @@
   padding: 5px 10px;
   position: relative;
   cursor: pointer;
-  /* 반응형 미디어 쿼리 안에서는 1.3rem 또는 1.1rem로 바뀜 */
 }
 
 .home_main .design-btn h1::before {
@@ -165,38 +154,36 @@
   height: 0;
 }
 
-/* @media screen and (max-width: 991px) 이후부터는 home.css에 남은 부분만 남김 */
 @media screen and (max-width: 991px) {
-  /* nav 스타일은 Header.css로 이동했음 */
+  
 }
 
 @media screen and (max-width: 767px) {
   body {
     overflow: hidden;
   }
-  /* header, home-container, ham-menu, nav, .nav-class 관련 스타일은 Header.css로 이동! */
 
   .home_main {
-    height: 65vh; /* 미디어 쿼리에 따른 변화 */
+    height: 65vh; 
   }
 
   .home_main .design-btn {
-    margin-top: 200px; /* 미디어 쿼리에 따른 변화 */
+    margin-top: 200px; 
     text-align: center;
     color: #ffffff;
   }
 
   .home_main .design-btn h1 {
-    font-size: 1.3rem; /* 미디어 쿼리에 따른 변화 */
+    font-size: 1.3rem; 
   }
 
   .next-prev {
-    padding: 0 10px; /* 미디어 쿼리에 따른 변화 */
+    padding: 0 10px; 
   }
 
   .home_main .some-quote {
-    padding-top: 50px; /* 미디어 쿼리에 따른 변화 */
-    font-size: 1.4rem; /* 미디어 쿼리에 따른 변화 */
+    padding-top: 50px; 
+    font-size: 1.4rem; 
   }
 }
 
@@ -204,25 +191,24 @@
   body {
     overflow: hidden;
   }
-  /* header, home-container, ham-menu, nav, .nav-class 관련 스타일은 Header.css로 이동! */
 
   .home_main {
-    height: 65vh; /* 767px과 동일 */
+    height: 65vh; 
   }
 
   .home_main .design-btn {
-    margin-top: 200px; /* 767px과 동일 */
+    margin-top: 200px; 
   }
 
   .home_main .design-btn h1 {
-    font-size: 1.1rem; /* 미디어 쿼리에 따른 변화 */
+    font-size: 1.1rem; 
   }
 
   .next-prev {
-    padding: 0 10px; /* 767px과 동일 */
+    padding: 0 10px; 
   }
 
   .home_main .some-quote {
-    font-size: 1.4rem; /* 767px과 동일 */
+    font-size: 1.4rem; 
   }
 }

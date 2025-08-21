@@ -133,6 +133,37 @@ nav ul {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.home-mypage{
+  border-radius: 8px;
+ border: none;
+   padding: 8px 15px; /* 내부 여백을 줘서 버튼이 답답하지 않게! */
+  
+  /* 기존: background-color: #c7c8cc; -> 회색은 좀 칙칙해 보여 */
+  background-color: #c7c8cc; /* 상큼하고 신뢰감 주는 파란색! 너낌 좋지? */
+  
+  /* 기존: color: #000; -> 배경이 파래지면 글씨는 하얀색이 국룰이지! */
+  color: #fff; /* 글씨색은 흰색으로! */
+  
+  position: absolute;
+  top: 30px;
+  right: 130px;
+  
+  /* 버튼에 마우스 올렸을 때 살짝 변하는 애니메이션 주면 고급짐 +100 */
+  cursor: pointer; /* 마우스 올리면 커서가 손가락 모양으로 변해서 클릭 유도! */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+/* 마우스 올렸을 때 (hover) 효과 추가! 이거 중요함! */
+.home-mypage:hover {
+  background-color: #a7a7a8; /* 마우스 올리면 살짝 더 진한 파란색으로 변하게! */
+  transform: translateY(-2px); /* 살짝 위로 띄우는 효과로 입체감 주기! */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 은은한 그림자로 버튼 뿅! 튀어나오는 느낌 */
+}
+
+/* 클릭했을 때 (active) 효과도 추가하면 완벽! */
+.home-mypage:active {
+  transform: translateY(0); /* 클릭하면 다시 제자리로 돌아오면서 눌리는 느낌! */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 /* 반응형 미디어 쿼리: max-width: 991px */
 @media screen and (max-width: 991px) {
   nav {

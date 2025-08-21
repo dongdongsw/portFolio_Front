@@ -4,6 +4,8 @@ import './Header.css';
 import logo from './10.png'; 
 
 function Header() {
+
+
   const [isNavOpen, setIsNavOpen] = useState(false);
 
   // 햄버거 메뉴 클릭 시 호출될 함수
@@ -20,6 +22,9 @@ function Header() {
           </a>
           <button className="home-login">
             <a className="home-a"  href="http://localhost:3000/login">로그인</a>
+          </button>
+          <button className="home-mypage">
+            <a className="home-a"  href="http://localhost:3000/mypage">마이페이지</a>
           </button>
         </div>
         <div className="ham-menu" onClick={toggleNav}> {/* 햄버거 메뉴 클릭 이벤트 추가! */}
