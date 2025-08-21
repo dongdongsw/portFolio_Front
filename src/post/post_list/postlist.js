@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./postlist.css";
 import { createGlobalStyle } from "styled-components";
-import Header from '../../components/Header';
+import Header from "../../components/Header";
 
 function PostList() {
   const PostListStyle = createGlobalStyle`
@@ -19,7 +19,7 @@ function PostList() {
     }
 
     header {
-      margin-bottom: 100px;
+      margin-bottom: 50px;
     }
   `;
 
@@ -40,6 +40,7 @@ function PostList() {
       })),
     []
   );
+
   const navigate = useNavigate();
   const PAGE_SIZE = 12; // 4열 × 3행
   const [page, setPage] = useState(1);
@@ -61,16 +62,44 @@ function PostList() {
   return (
     <>
       <PostListStyle />
-            
 
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
       />
+
       <div className="header">
-         <Header />
+        <Header />
       </div>
+
       <div className="post-container">
+        {/* ✅ 글 작성 버튼 */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginBottom: "20px",
+          }}
+        >
+          <button
+            onClick={() => navigate("/create")}
+            style={{
+              padding: "10px 16px",
+              borderRadius: "8px",
+              border: "1px solid #ccc",
+              background: "#c7c8cc",
+              color: "black",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "bold",
+              marginRight: 270,
+              marginBottom: 30,
+            }}
+          >
+            글 작성
+          </button>
+        </div>
+
         {/* 4열 × 250px 그리드 */}
         <div
           style={{
@@ -91,8 +120,8 @@ function PostList() {
                   className={`post-module ${isHover ? "hover" : ""}`}
                   onMouseEnter={() => setHoverIdx(i)}
                   onMouseLeave={() => setHoverIdx(null)}
-                  onClick={() => navigate(`./postdetail`)} 
-                  style={{ cursor: "pointer" }} 
+                  onClick={() => navigate(`./postdetail`)}
+                  style={{ cursor: "pointer" }}
                 >
                   <div className="thumbnail">
                     <div className="date">
@@ -103,7 +132,6 @@ function PostList() {
                   </div>
 
                   <div className="post-content">
-                  
                     <h1 className="title">{c.title}</h1>
                     <h2 className="sub_title">{c.subtitle}</h2>
                     <p className="description">{c.description}</p>
@@ -113,7 +141,10 @@ function PostList() {
                       </span>
                       <span className="comments">
                         <i className="fa fa-comments" />
-                        <a href="#!" onClick={prevent}> 39 comments</a>
+                        <a href="#!" onClick={prevent}>
+                          {" "}
+                          39 comments
+                        </a>
                       </span>
                     </div>
                   </div>
@@ -128,7 +159,9 @@ function PostList() {
           <button
             onClick={() => goto(page - 1)}
             disabled={page === 1}
-            className={`pager-btn pager-arrow ${page === 1 ? "is-disabled" : ""}`}
+            className={`pager-btn pager-arrow ${
+              page === 1 ? "is-disabled" : ""
+            }`}
             aria-label="Previous page"
           >
             ◀ Prev
@@ -149,12 +182,13 @@ function PostList() {
           <button
             onClick={() => goto(page + 1)}
             disabled={page === pageCount}
-            className={`pager-btn pager-arrow ${page === pageCount ? "is-disabled" : ""}`}
+            className={`pager-btn pager-arrow ${
+              page === pageCount ? "is-disabled" : ""
+            }`}
             aria-label="Next page"
           >
             Next ▶
           </button>
-          
         </div>
       </div>
     </>
@@ -162,4 +196,3 @@ function PostList() {
 }
 
 export default PostList;
-
