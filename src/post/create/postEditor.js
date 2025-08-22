@@ -1,52 +1,54 @@
-// WysiwygPostEditor.js
+// WysiwygPostEditor.js — full features restored:
+// align icons, bold stable, font-size unify, photo insert, image resize handle + context menu delete
 import React, { useEffect, useRef, useState } from "react";
-
 
 export default function WysiwygPostEditor({
   onSubmit,
   placeholderTitle = "제목을 입력하세요",
   placeholderBody = "여기에 내용을 입력하고, 사진 버튼으로 이미지를 삽입하세요.",
-  imageUpload, // async (file) => string (최종 URL) | 선택
+  imageUpload, // optional async(file) => url
 }) {
-
- 
   const [title, setTitle] = useState("");
   const editorRef = useRef(null);
-  const fileInputRef = useRef(null);
   const savedSelectionRef = useRef(null);
+  const fileInputRef = useRef(null);
 
+  // toolbar state
+  const [boldActive, setBoldActive] = useState(false);
+
+  // image selection/overlay state
   const [selectedImg, setSelectedImg] = useState(null);
   const [overlay, setOverlay] = useState({ top: 0, left: 0, w: 0, h: 0 });
 
-  // 커스텀 컨텍스트 메뉴 상태
-  const [ctx, setCtx] = useState({
-    visible: false,
-    x: 0,
-    y: 0,
-    targetImg: null,
-  });
- 
+  // custom context menu for image
+  const [ctx, setCtx] = useState({ visible: false, x: 0, y: 0, targetImg: null });
+
   useEffect(() => {
-    const el = editorRef.current;
-    if (el) el.setAttribute("data-placeholder", placeholderBody);
+    editorRef.current?.setAttribute("data-placeholder", placeholderBody);
   }, [placeholderBody]);
 
-  // 클릭/리사이즈/스크롤/ESC로 오버레이/컨텍스트 메뉴 갱신/닫기
+  // selection tracking + overlay/esc/resize/scroll
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;
+
+    const onSelectionChange = () => {
+      if (!isSelectionInsideEditor()) {
+        setBoldActive(false);
+        return;
+      }
+      try { setBoldActive(!!document.queryCommandState("bold")); } catch {}
+    };
 
     const onClick = (e) => {
       const img = e.target?.closest?.("img");
       if (img && editor.contains(img)) {
         selectImage(img);
       } else {
-        clearSelection();
+        clearImageSelection();
       }
-      // 외부 클릭 시 컨텍스트 메뉴 닫기
-      if (!(e.target instanceof Node && (e.target === editor || editor.contains(e.target)))) {
-        setCtx({ visible: false, x: 0, y: 0, targetImg: null });
-      }
+      // close context menu if click anywhere
+      if (ctx.visible) setCtx((p) => ({ ...p, visible: false }));
     };
 
     const onResizeOrScroll = () => {
@@ -57,28 +59,34 @@ export default function WysiwygPostEditor({
     const onKeyDown = (e) => {
       if (e.key === "Escape") {
         setCtx({ visible: false, x: 0, y: 0, targetImg: null });
-        clearSelection();
+        clearImageSelection();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        execBold();
       }
     };
 
+    document.addEventListener("selectionchange", onSelectionChange);
     document.addEventListener("click", onClick);
     window.addEventListener("resize", onResizeOrScroll);
     window.addEventListener("scroll", onResizeOrScroll, true);
     document.addEventListener("keydown", onKeyDown);
 
     return () => {
+      document.removeEventListener("selectionchange", onSelectionChange);
       document.removeEventListener("click", onClick);
       window.removeEventListener("resize", onResizeOrScroll);
       window.removeEventListener("scroll", onResizeOrScroll, true);
       document.removeEventListener("keydown", onKeyDown);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedImg, ctx.visible]);
+  }, [ctx.visible, selectedImg]);
 
+  // ---- selection helpers ----
   const saveSelection = () => {
     const sel = window.getSelection?.();
-    if (!sel || sel.rangeCount === 0) return;
-    savedSelectionRef.current = sel.getRangeAt(0);
+    if (sel && sel.rangeCount > 0) savedSelectionRef.current = sel.getRangeAt(0);
   };
   const restoreSelection = () => {
     const range = savedSelectionRef.current;
@@ -88,7 +96,80 @@ export default function WysiwygPostEditor({
     sel.removeAllRanges();
     sel.addRange(range);
   };
+  const isSelectionInsideEditor = () => {
+    const sel = window.getSelection?.();
+    const editor = editorRef.current;
+    if (!sel || sel.rangeCount === 0 || !editor) return false;
+    const container = sel.getRangeAt(0).commonAncestorContainer;
+    return editor.contains(container.nodeType === 1 ? container : container.parentNode);
+  };
 
+  // ---- commands ----
+  // Keep native selection; do not force-restore here (avoids bold “씹힘”).
+  const execCommand = (cmd, value = null) => {
+    document.execCommand(cmd, false, value);
+    try { setBoldActive(!!document.queryCommandState("bold")); } catch {}
+  };
+  const execBold = () => execCommand("bold"); // works for selection + typing
+
+  // ---- font size: unify selection & typing-forward ----
+  const applyFontSizePx = (px) => {
+    // dropdown steals focus → restore just for this action
+    restoreSelection();
+    const sel = window.getSelection?.();
+    if (!sel || sel.rangeCount === 0 || !isSelectionInsideEditor()) return;
+    const range = sel.getRangeAt(0);
+
+    if (range.collapsed) {
+      // typing forward: insert a size-carrying span with ZWSP
+      const span = document.createElement("span");
+      span.style.fontSize = `${px}px`;
+      span.appendChild(document.createTextNode("\u200B"));
+      range.insertNode(span);
+      const r = document.createRange();
+      r.setStart(span.firstChild, 1);
+      r.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(r);
+      return;
+    }
+
+    // selection: normalize & enforce same px on all text nodes
+    const frag = range.extractContents();
+
+    // 1) strip existing inline sizes & legacy <font size>
+    const walkerEl = document.createTreeWalker(frag, NodeFilter.SHOW_ELEMENT, null);
+    while (walkerEl.nextNode()) {
+      const el = /** @type {HTMLElement} */ (walkerEl.currentNode);
+      el.style.fontSize = "";
+      if (el.tagName === "FONT" && el.hasAttribute("size")) el.removeAttribute("size");
+    }
+
+    // 2) wrap real text nodes with chosen px (skip whitespace-only)
+    const walkerText = document.createTreeWalker(frag, NodeFilter.SHOW_TEXT, null);
+    const textNodes = [];
+    while (walkerText.nextNode()) {
+      const tn = walkerText.currentNode;
+      if (/\S/.test(tn.nodeValue || "")) textNodes.push(tn);
+    }
+    textNodes.forEach((tn) => {
+      const span = document.createElement("span");
+      span.style.fontSize = `${px}px`;
+      tn.parentNode.insertBefore(span, tn);
+      span.appendChild(tn);
+    });
+
+    range.insertNode(frag);
+
+    // place caret at end of changed content
+    const after = document.createRange();
+    after.setStartAfter(range.endContainer);
+    after.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(after);
+  };
+
+  // ---- image insert ----
   const handleClickPhoto = () => {
     saveSelection();
     fileInputRef.current?.click();
@@ -106,13 +187,11 @@ export default function WysiwygPostEditor({
       if (!file.type.startsWith("image/")) continue;
 
       const previewSrc = URL.createObjectURL(file);
-      const img = insertImageAtCursor(previewSrc); // 에디터 내부 보장
+      const img = insertImageAtCursor(previewSrc); // guaranteed inside editor
 
-      // 기본 너비: 에디터 폭 80%
+      // default width: 80% of editor (max 1200)
       const editorW = editorRef.current?.clientWidth || 800;
       img.style.width = Math.round(Math.min(editorW * 0.8, 1200)) + "px";
-
-      selectImage(img);
 
       if (imageUpload) {
         try {
@@ -126,8 +205,19 @@ export default function WysiwygPostEditor({
     }
   };
 
-  // selection이 에디터 내부인지
-  const isSelectionInsideEditor = () => {
+  const moveCaretToEditorEnd = () => {
+    const editor = editorRef.current;
+    const sel = window.getSelection?.();
+    if (!editor || !sel) return;
+    if (editor.childNodes.length === 0) editor.appendChild(document.createTextNode(""));
+    const r = document.createRange();
+    r.selectNodeContents(editor);
+    r.collapse(false);
+    sel.removeAllRanges();
+    sel.addRange(r);
+  };
+
+  const isSelectionInside = () => {
     const sel = window.getSelection?.();
     const editor = editorRef.current;
     if (!sel || sel.rangeCount === 0 || !editor) return false;
@@ -135,24 +225,6 @@ export default function WysiwygPostEditor({
     return editor.contains(container.nodeType === 1 ? container : container.parentNode);
   };
 
-  const moveCaretToEditorEnd = () => {
-    const editor = editorRef.current;
-    if (!editor) return;
-    const sel = window.getSelection?.();
-    if (!sel) return;
-
-    if (editor.childNodes.length === 0) {
-      editor.appendChild(document.createTextNode(""));
-    }
-
-    const range = document.createRange();
-    range.selectNodeContents(editor);
-    range.collapse(false);
-    sel.removeAllRanges();
-    sel.addRange(range);
-  };
-
-  // 이미지 삽입 (항상 중앙 정렬)
   const insertImageAtCursor = (src) => {
     const editor = editorRef.current;
     const img = document.createElement("img");
@@ -161,12 +233,12 @@ export default function WysiwygPostEditor({
     img.style.maxWidth = "100%";
     img.style.height = "auto";
     img.style.display = "block";
-    img.style.margin = "8px auto"; // 중앙 정렬 핵심
+    img.style.margin = "8px auto"; // centered
 
     if (!editor) return img;
 
     const sel = window.getSelection?.();
-    if (!sel || sel.rangeCount === 0 || !isSelectionInsideEditor()) {
+    if (!sel || sel.rangeCount === 0 || !isSelectionInside()) {
       moveCaretToEditorEnd();
     }
 
@@ -174,6 +246,7 @@ export default function WysiwygPostEditor({
     if (!sel2 || sel2.rangeCount === 0) {
       editor.appendChild(img);
       placeCaretAfterNode(img);
+      selectImage(img);
       return img;
     }
 
@@ -184,19 +257,22 @@ export default function WysiwygPostEditor({
     const br = document.createElement("br");
     img.after(br);
     placeCaretAfterNode(br);
+    selectImage(img);
     return img;
   };
 
   const placeCaretAfterNode = (node) => {
     const sel = window.getSelection?.();
     if (!sel) return;
-    const range = document.createRange();
-    range.setStartAfter(node);
-    range.collapse(true);
+    const r = document.createRange();
+    r.setStartAfter(node);
+    r.collapse(true);
     sel.removeAllRanges();
-    sel.addRange(range);
+    sel.addRange(r);
+    saveSelection();
   };
 
+  // ---- image selection & overlay ----
   const selectImage = (imgEl) => {
     if (!(imgEl instanceof HTMLImageElement)) return;
     if (selectedImg && selectedImg !== imgEl) selectedImg.style.outline = "none";
@@ -204,20 +280,15 @@ export default function WysiwygPostEditor({
     setSelectedImg(imgEl);
     updateOverlayFromImg(imgEl);
   };
-
-  const clearSelection = () => {
-    if (selectedImg instanceof HTMLImageElement) {
-      selectedImg.style.outline = "none";
-    }
+  const clearImageSelection = () => {
+    if (selectedImg instanceof HTMLImageElement) selectedImg.style.outline = "none";
     setSelectedImg(null);
     setOverlay({ top: 0, left: 0, w: 0, h: 0 });
   };
-
   function updateOverlayFromImg(imgParam) {
     const img = imgParam || selectedImg;
     const editor = editorRef.current;
     if (!(img instanceof HTMLElement) || !editor) return;
-
     const imgRect = img.getBoundingClientRect();
     const edRect = editor.getBoundingClientRect();
     setOverlay({
@@ -228,41 +299,35 @@ export default function WysiwygPostEditor({
     });
   }
 
-  // ========== 드래그 리사이즈 ==========
+  // ---- image resize handle ----
   const dragStateRef = useRef(null);
-
   const onHandleMouseDown = (e) => {
     e.preventDefault();
     if (!(selectedImg instanceof HTMLImageElement)) return;
     const startWidth = selectedImg.getBoundingClientRect().width;
     dragStateRef.current = { startX: e.clientX, startWidth };
 
+    const onDragging = (ev) => {
+      const st = dragStateRef.current;
+      if (!st || !(selectedImg instanceof HTMLImageElement)) return;
+      const dx = ev.clientX - st.startX;
+      let newW = Math.round(st.startWidth + dx);
+      const editorMax = (editorRef.current?.clientWidth || 800) - 8;
+      newW = Math.max(80, Math.min(newW, 1200, editorMax));
+      selectedImg.style.width = newW + "px";
+      updateOverlayFromImg();
+    };
+    const onDragEnd = () => {
+      dragStateRef.current = null;
+      document.removeEventListener("mousemove", onDragging);
+      document.removeEventListener("mouseup", onDragEnd);
+    };
+
     document.addEventListener("mousemove", onDragging);
     document.addEventListener("mouseup", onDragEnd);
   };
 
-  const onDragging = (e) => {
-    const st = dragStateRef.current;
-    if (!st || !(selectedImg instanceof HTMLImageElement)) return;
-
-    const dx = e.clientX - st.startX;
-    let newW = Math.round(st.startWidth + dx);
-
-    // 에디터 패딩 감안 최대 폭
-    const editorMax = (editorRef.current?.clientWidth || 800) - 8;
-    newW = Math.max(80, Math.min(newW, 1200, editorMax));
-
-    selectedImg.style.width = newW + "px";
-    updateOverlayFromImg();
-  };
-
-  const onDragEnd = () => {
-    dragStateRef.current = null;
-    document.removeEventListener("mousemove", onDragging);
-    document.removeEventListener("mouseup", onDragEnd);
-  };
-
-  // ========== 컨텍스트 메뉴(우클릭) ==========
+  // ---- image context menu (delete) ----
   const handleContextMenu = (e) => {
     const editor = editorRef.current;
     if (!editor) return;
@@ -270,49 +335,67 @@ export default function WysiwygPostEditor({
     if (img && editor.contains(img)) {
       e.preventDefault();
       selectImage(img);
-
-      // 화면 밖으로 안 튀게 살짝 보정
-      const padding = 8;
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const menuW = 180;
-      const menuH = 44;
-      let x = e.clientX;
-      let y = e.clientY;
+      const padding = 8, vw = window.innerWidth, vh = window.innerHeight;
+      const menuW = 180, menuH = 44;
+      let x = e.clientX, y = e.clientY;
       if (x + menuW + padding > vw) x = vw - menuW - padding;
       if (y + menuH + padding > vh) y = vh - menuH - padding;
-
       setCtx({ visible: true, x, y, targetImg: img });
     }
   };
-
   const handleDeleteImage = () => {
-    if (ctx.targetImg) {
-      ctx.targetImg.remove();
-    }
+    if (ctx.targetImg) ctx.targetImg.remove();
     setCtx({ visible: false, x: 0, y: 0, targetImg: null });
-    clearSelection();
+    clearImageSelection();
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const html = (editorRef.current?.innerHTML || "").trim();
-    if (!title.trim() && !html) {
-      alert("제목이나 내용을 입력해 주세요.");
-      return;
-    }
-    onSubmit?.({ title: title.trim(), html });
-  };
+  // ---- UI helpers ----
+  const IconBtn = ({ title, onClick, active, children }) => (
+    <button
+      type="button"
+      onMouseDown={(e) => e.preventDefault()} // keep selection in editor
+      onClick={onClick}
+      title={title}
+      aria-pressed={!!active}
+      style={{
+        ...btnStyle,
+        padding: "8px 10px",
+        borderColor: active ? "#3b82f6" : "#d1d5db",
+        background: active ? "rgba(59,130,246,0.08)" : "#fff",
+        lineHeight: 0,
+      }}
+    >
+      {children}
+    </button>
+  );
+
+  // SVG icons — center icon fully symmetric (no left “jut”)
+  const AlignLeftIcon = (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+      <path d="M3 6h14v2H3zM3 11h10v2H3zM3 16h14v2H3z" />
+    </svg>
+  );
+  const AlignCenterIcon = (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+      <path d="M4 6h16v2H4zM7 11h10v2H7zM7 16h10v2H7z" />
+    </svg>
+  );
+  const AlignRightIcon = (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
+      <path d="M7 6h14v2H7zM10 11h11v2H10zM7 16h14v2H7z" />
+    </svg>
+  );
 
   return (
-
-
     <form
-      onSubmit={handleSubmit}
+      onSubmit={(e) => {
+        e.preventDefault();
+        const html = (editorRef.current?.innerHTML || "").trim();
+        onSubmit?.({ title: title.trim(), html });
+      }}
       style={{ maxWidth: 860, margin: "24px auto", display: "grid", gap: 12 }}
     >
       <input
-        type="text"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder={placeholderTitle}
@@ -323,12 +406,51 @@ export default function WysiwygPostEditor({
           fontSize: 18,
           background: "rgba(255,255,255,0.4)",
           marginTop: 50,
-          marginBottom: 60,
+          marginBottom: 12,
         }}
       />
 
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <button type="button" onClick={handleClickPhoto} style={btnStyle} title="사진 삽입">
+      {/* Toolbar */}
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        {/* Align: Left / Center / Right */}
+        <IconBtn title="왼쪽 정렬" onClick={() => execCommand("justifyLeft")}>{AlignLeftIcon}</IconBtn>
+        <IconBtn title="가운데 정렬" onClick={() => execCommand("justifyCenter")}>{AlignCenterIcon}</IconBtn>
+        <IconBtn title="오른쪽 정렬" onClick={() => execCommand("justifyRight")}>{AlignRightIcon}</IconBtn>
+
+        <div style={{ width: 1, height: 22, background: "#e5e7eb" }} />
+
+        {/* Bold '가' — native execCommand('bold') */}
+        <IconBtn title="굵게 (드래그/커서 모두)" onClick={execBold} active={boldActive}>
+          <span style={{ fontSize: 16, fontWeight: 800, lineHeight: 1, display: "inline-block" }}>가</span>
+        </IconBtn>
+
+        {/* Font size */}
+        <label style={{ fontSize: 13, color: "#4b5563" }}>크기</label>
+        <select
+          onMouseDown={saveSelection} // keep selection before dropdown steals focus
+          onChange={(e) => applyFontSizePx(Number(e.target.value))}
+          defaultValue="16"
+          style={{
+            padding: "8px 10px",
+            borderRadius: 10,
+            border: "1px solid #d1d5db",
+            background: "#fff",
+            fontSize: 14,
+          }}
+        >
+          {[12, 14, 16, 18, 20, 24, 28, 32].map((n) => (
+            <option key={n} value={n}>{n}px</option>
+          ))}
+        </select>
+
+        {/* Photo */}
+        <button
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={handleClickPhoto}
+          style={btnStyle}
+          title="사진 삽입"
+        >
           📷 사진
         </button>
         <input
@@ -341,24 +463,19 @@ export default function WysiwygPostEditor({
         />
       </div>
 
-      {/* 에디터 래퍼(핸들 기준) */}
+      {/* Editor wrapper (for resize handle positioning) */}
       <div style={{ position: "relative" }}>
         <div
           ref={editorRef}
           contentEditable
           suppressContentEditableWarning
           onInput={saveSelection}
-          onKeyUp={saveSelection}
-          onMouseUp={() => {
-            saveSelection();
-            if (selectedImg) updateOverlayFromImg();
-          }}
-          onBlur={saveSelection}
+          onMouseUp={() => { saveSelection(); if (selectedImg) updateOverlayFromImg(); }}
           onContextMenu={handleContextMenu}
           style={editorStyle}
         />
 
-        {/* 리사이즈 핸들 */}
+        {/* Image resize handle */}
         {selectedImg && (
           <div
             onMouseDown={onHandleMouseDown}
@@ -378,13 +495,12 @@ export default function WysiwygPostEditor({
         )}
       </div>
 
+      {/* Submit */}
       <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button type="submit" style={btnStyle}>
-          등록
-        </button>
+        <button type="submit" style={btnStyle}>등록</button>
       </div>
 
-      {/* 커스텀 컨텍스트 메뉴 */}
+      {/* Image context menu */}
       {ctx.visible && (
         <div
           style={{
@@ -418,20 +534,11 @@ export default function WysiwygPostEditor({
       )}
 
       <style>{`
-        [contenteditable][data-placeholder]:empty:before {
-          content: attr(data-placeholder);
-          color: #9ca3af;
-        }
-        /* 이미지 기본 스타일: 항상 중앙 정렬 */
-        [contenteditable] img {
-          max-width: 100%;
-          height: auto;
-          display: block;
-          margin: 8px auto;
-        }
+        [contenteditable][data-placeholder]:empty:before { content: attr(data-placeholder); color: #9ca3af; }
+        [contenteditable] img { max-width: 100%; height: auto; display: block; margin: 8px auto; }
+        [contenteditable] b, [contenteditable] strong { font-weight: 800; }
       `}</style>
     </form>
-
   );
 }
 
@@ -446,7 +553,7 @@ const editorStyle = {
   whiteSpace: "pre-wrap",
   wordBreak: "break-word",
   overflow: "auto",
-  background: "rgba(255, 255, 255, 0.4)", // ✅ 흰색+60% 불투명
+  background: "rgba(255, 255, 255, 0.4)",
 };
 
 const btnStyle = {
