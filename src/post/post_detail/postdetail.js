@@ -46,12 +46,6 @@ export default function PostDetail() {
 
   const toggleSidebar = () => setSidebarOpen(v => !v);
 
-  useEffect(() => {
-    if (id) {
-      setActivePage('portfolio'); // id가 있을 경우 portfolio 페이지 활성화 (현재 JSX에 portfolio 관련 section은 없지만 로직은 유지)
-    }
-  }, [id]);
-
   return (
     <div className="app-root">
        <Header />
@@ -141,7 +135,6 @@ export default function PostDetail() {
 
             
               </section>
-
             </article>
           )}
           {showCommentSection && (
