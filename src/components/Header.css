@@ -100,7 +100,7 @@ nav ul {
    padding: 8px 15px; /* 내부 여백을 줘서 버튼이 답답하지 않게! */
   
   /* 기존: background-color: #c7c8cc; -> 회색은 좀 칙칙해 보여 */
-  background-color: #c7c8cc; /* 상큼하고 신뢰감 주는 파란색! 너낌 좋지? */
+  background-color: black; /* 상큼하고 신뢰감 주는 파란색! 너낌 좋지? */
   
   /* 기존: color: #000; -> 배경이 파래지면 글씨는 하얀색이 국룰이지! */
   color: #fff; /* 글씨색은 흰색으로! */
@@ -115,9 +115,9 @@ nav ul {
 }
 
 .home-a {
-  color: black;
+  color: white;
   text-decoration: none;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 /* 마우스 올렸을 때 (hover) 효과 추가! 이거 중요함! */
@@ -139,7 +139,7 @@ nav ul {
    padding: 8px 15px; /* 내부 여백을 줘서 버튼이 답답하지 않게! */
   
   /* 기존: background-color: #c7c8cc; -> 회색은 좀 칙칙해 보여 */
-  background-color: #c7c8cc; /* 상큼하고 신뢰감 주는 파란색! 너낌 좋지? */
+  background-color: black; /* 상큼하고 신뢰감 주는 파란색! 너낌 좋지? */
   
   /* 기존: color: #000; -> 배경이 파래지면 글씨는 하얀색이 국룰이지! */
   color: #fff; /* 글씨색은 흰색으로! */

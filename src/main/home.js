@@ -16,8 +16,21 @@ function MyHeader() {
       padding: 0;
       box-sizing: border-box;
     }
+
     body{
       background-color: #e4e1da;
+    }
+
+    @media screen and (max-width: 767px) {
+        body {
+          overflow: hidden;
+        }
+      }
+    
+    @media screen and (max-width: 575px) {
+      body {
+        overflow: hidden;
+      }
     }
   `;
   const [currentSlide, setCurrentSlide] = useState(0); 

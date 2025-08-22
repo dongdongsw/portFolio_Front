@@ -159,10 +159,7 @@
 }
 
 @media screen and (max-width: 767px) {
-  body {
-    overflow: hidden;
-  }
-
+ 
   .home_main {
     height: 65vh; 
   }
@@ -188,9 +185,7 @@
 }
 
 @media screen and (max-width: 575px) {
-  body {
-    overflow: hidden;
-  }
+  
 
   .home_main {
     height: 65vh; 

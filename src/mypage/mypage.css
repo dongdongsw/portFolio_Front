@@ -1,12 +1,15 @@
 .profile-card {
 	width: 420px;
-	background: var(--popup-bg);
+	background-color: #e4e1da;
 	color: var(--theme-color);
 	padding: 24px;
+	padding-left: 30px;
+	/* padding-top: 50px; */
 	border-radius: var(--modal-radius);
 	box-shadow: 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5;
 	position: relative;
 	border: 1px solid var(--border-color);
+	
 }
 
 .top-right {
@@ -69,12 +72,29 @@
 	color: var(--subtext-color);
 	margin: 4px 0;
 }
+.mypage-container {
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 10px; 
 
-.mypage-field {
-	margin: 14px 0;
+}
+.mypage-pw{
+	gap: 0;
 }
 
+.mypage-field {
+	margin: 12px 0;
+}
+.mypage-field-a {
+	margin: 7px 0;
+}
 .mypage-field label {
+	display: block;
+	font-size: 13px;
+	color: var(--subtext-color);
+	margin-bottom: 4px;
+}
+.mypage-field-a label {
 	display: block;
 	font-size: 13px;
 	color: var(--subtext-color);
@@ -85,13 +105,24 @@
 .mypage-field select {
 	width: 100%;
 	padding: 9px 12px;
-	background: var(--search-bg);
+	background-color: #e4e1da;
 	color: var(--theme-color);
 	border: 1px solid var(--border-color);
 	border-radius: var(--input-radius);
 	font-size: 14px;
+	box-shadow: inset 2px 2px 4px #b0afb4, inset -2px -2px 4px #c7c8cc;;
 }
-
+.mypage-field-a input,
+.mypage-field-a select {
+	width: 100%;
+	padding: 9px 12px;
+	background-color: #e4e1da;
+	color: var(--theme-color);
+	border: 1px solid var(--border-color);
+	border-radius: var(--input-radius);
+	font-size: 14px;
+	box-shadow: inset 2px 2px 4px #b0afb4, inset -2px -2px 4px #c7c8cc;;
+}
 .username-prefix {
 	display: flex;
 	gap: 0;
@@ -113,16 +144,76 @@
 	font-size: 14px;
 }
 
-
+/*------------------버튼---------------------*/
 .cancel-btn {
-	background: var(--button-inactive);
-	color: var(--theme-color);
+	background-color: black;
+	color: white;
+	font-weight: 700;
 }
 
-.save-btn {
-	background: #000000;
-	color: white;
+.cancel-btn:hover {
+  background-color: #a7a7a8; 
+  transform: translateY(-2px); 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
 }
+.cancel-btn:hover {
+  background-color: #a7a7a8; 
+  transform: translateY(-2px); 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+}
+.save-btn {
+	background-color: black;
+	color: white;
+	font-weight: 700;
+}
+.save-btn:hover {
+  background-color: #a7a7a8; 
+  transform: translateY(-2px); 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+}
+.save-btn:hover {
+  background-color: #a7a7a8; 
+  transform: translateY(-2px); 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+}
+.secession-btn{
+	background-color: black;
+	color: white;
+	font-weight: 700;
+	box-shadow: nset 2px 2px 4px #b0afb4, inset -2px -2px 4px #c7c8cc;;
+}
+
+
+.secession-btn:hover {
+  background-color: #a7a7a8; 
+  transform: translateY(-2px); 
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+}
+
+
+.check-duplicate-btn {
+  padding: 9px 14px; 
+  background-color: var(--inactive-color); 
+  color: var(--theme-bg-color); 
+  border: none;
+  border-radius: var(--button-radius);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap; 
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.1); 
+  transition: all 0.2s ease; 
+  width:120px;
+}
+
+.check-duplicate-btn:hover {
+  background-color: var(--subtext-color);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.15); 
+}
+
+/*------------------버튼 끝---------------------*/
+
 
 .mypage-info {
 	display: flex;
@@ -143,9 +234,25 @@
 	font-weight: 500;
 	color: var(--subtext-color);
 	margin-bottom: 2px;
+		margin-left: 45px;
+
 }
 
 .meta-value {
 	color: var(--theme-color);
 	font-weight: 600;
+	margin-left: 45px;
 }
+
+.nickname-input-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+
+.nickname-input-group input {
+  flex-grow: 1; 
+ 
+}
+
