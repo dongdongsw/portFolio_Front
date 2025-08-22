@@ -1,3 +1,9 @@
+.login-header{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .login_main {
     position: relative;
     width: 1000px;

@@ -4,14 +4,14 @@ import '../../commonness.css';
 import { createGlobalStyle } from 'styled-components';
 import FindIdModal from './find_login/find_id';
 import FindPwModal from './find_login/find_pw';
-
+import logo from './10.png'; 
 function Login() {
   const GlobalStyle = createGlobalStyle`
     body {
       width: 100%;
       background-color: #e4e1da; 
       font-size: 14px; 
-      height: 100vh; 
+      height: 100vh;
       -webkit-font-smoothing: antialiased; 
       -moz-osx-font-smoothing: grayscale; 
       font-family: 'proxima-nova-soft', sans-serif; 
@@ -71,7 +71,7 @@ function Login() {
   return (
     <>
       <GlobalStyle />
-
+      
       <div className="login_main">
         {/* 회원가입 폼 */}
         <div className={`containers a-container ${isSignInActive ? 'is-txl' : ''}`}>
@@ -111,6 +111,11 @@ function Login() {
           <div className="switch__circle"></div>
           <div className="switch__circle switch__circle--t"></div>
           <div className={`switch__container ${isSignInActive ? '' : 'is-hidden'}`}>
+            <div className = "login-header">
+        <a href="http://localhost:3000">
+            <img src={logo} width="150" height="150" alt="logo" />
+          </a>
+      </div>
             <h2 className="switch__title title">Welcome Back !</h2>
             <p className="switch__description description">To keep connected with us please login with your personal info</p>
             <button className="switch__button button switch-btn" onClick={handleSignUpClick}>SIGN UP</button>
