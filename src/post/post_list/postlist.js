@@ -23,21 +23,39 @@ function PostList() {
     }
   `;
 
+  // 날짜 포매터 (YYYY-MM-DD HH:mm)
+  const formatDate = (d) => {
+    const pad = (n) => String(n).padStart(2, "0");
+    const y = d.getFullYear();
+    const m = pad(d.getMonth() + 1);
+    const day = pad(d.getDate());
+    const hh = pad(d.getHours());
+    const mm = pad(d.getMinutes());
+    return `${y}-${m}-${day} ${hh}:${mm}`;
+  };
+
   const cards = useMemo(
     () =>
-      Array.from({ length: 50 }, (_, i) => ({
-        id: i + 1,
-        day: String(10 + ((i * 3) % 20)).padStart(2, "0"),
-        month: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"][i % 6],
-        title: `Card Title #${i + 1}`,
-        subtitle: "The city that never sleeps.",
-        img:
-          i % 2 === 0
-            ? "https://s3-us-west-2.amazonaws.com/s.cdpn.io/169963/photo-1429043794791-eb8f26f44081.jpeg"
-            : `https://picsum.photos/seed/post${i}/800/600`,
-        description:
-          "New York, the largest city in the U.S., is an architectural marvel with plenty of historic monuments, magnificent buildings and countless dazzling skyscrapers.",
-      })),
+      Array.from({ length: 50 }, (_, i) => {
+        const base = new Date();
+        // 보기 좋게 카드마다 시간 차이를 줌 (i시간 전)
+        const created = new Date(base.getTime() - i * 60 * 60 * 1000);
+
+        return {
+          id: i + 1,
+          day: String(10 + ((i * 3) % 20)).padStart(2, "0"),
+          month: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"][i % 6],
+          title: `Card Title #${i + 1}`,
+          author: `user${(i % 8) + 1}`,         // ✅ 작성자 닉네임
+          createdAt: formatDate(created),       // ✅ 작성 시간
+          img:
+            i % 2 === 0
+              ? "https://s3-us-west-2.amazonaws.com/s.cdpn.io/169963/photo-1429043794791-eb8f26f44081.jpeg"
+              : `https://picsum.photos/seed/post${i}/800/600`,
+          viewCount: 100 + (i * 7) % 900,       // ✅ 조회수 (예시 데이터)
+          comments:  (i * 3) % 60,              // ✅ 댓글 수 (예시 데이터)
+        };
+      }),
     []
   );
 
@@ -62,7 +80,6 @@ function PostList() {
   return (
     <>
       <PostListStyle />
-
       <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
@@ -72,123 +89,112 @@ function PostList() {
         <Header />
       </div>
 
+      {/* ✅ 오른쪽 하단 글 작성 FAB */}
+      <button
+        className="fab-btn"
+        onClick={() => navigate("/create")}
+        aria-label="글 작성"
+        title="글 작성"
+      >
+        {/* 연필 아이콘 (원하면 fa-plus 로 바꿔도 OK) */}
+        <i className="fa fa-pencil" aria-hidden="true" />
+      </button>
+
       <div className="post-container">
-        {/* ✅ 글 작성 버튼 */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            marginBottom: "20px",
-          }}
-        >
-          <button
-            onClick={() => navigate("/create")}
+        {/* 본문 영역: 중앙 60% 폭 */}
+        <div className="content-60">
+          {/* 4열 × 250px 그리드 */}
+          <div
             style={{
-              padding: "10px 16px",
-              borderRadius: "8px",
-              border: "1px solid #ccc",
-              background: "#c7c8cc",
-              color: "black",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "bold",
-              marginRight: 270,
-              marginBottom: 30,
+              display: "grid",
+              gridTemplateColumns: "repeat(4, 250px)",
+              columnGap: 40,
+              rowGap: 30,
+              justifyContent: "center",
+              width: "100%",
             }}
           >
-            글 작성
-          </button>
-        </div>
-
-        {/* 4열 × 250px 그리드 */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 250px)", // 그리드 칸 폭 = 카드 폭
-            columnGap: 40,
-            rowGap: 30,
-            justifyContent: "center",
-            width: "100%",
-          }}
-        >
-          {current.map((c, idx) => {
-            const i = start + idx;
-            const isHover = hoverIdx === i;
-            return (
-              <div key={c.id}>
-                <div
-                  className={`post-module ${isHover ? "hover" : ""}`}
-                  onMouseEnter={() => setHoverIdx(i)}
-                  onMouseLeave={() => setHoverIdx(null)}
-                  onClick={() => navigate(`./postdetail`)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <div className="thumbnail">
-                    <div className="date">
-                      <div className="day">{c.day}</div>
-                      <div className="month">{c.month}</div>
+            {current.map((c, idx) => {
+              const i = start + idx;
+              const isHover = hoverIdx === i;
+              return (
+                <div key={c.id}>
+                  <div
+                    className={`post-module ${isHover ? "hover" : ""}`}
+                    onMouseEnter={() => setHoverIdx(i)}
+                    onMouseLeave={() => setHoverIdx(null)}
+                    onClick={() => navigate(`./postdetail`)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <div className="thumbnail">
+                      <div className="date">
+                        <div className="day">{c.day}</div>
+                        <div className="month">{c.month}</div>
+                      </div>
+                      <img src={c.img} alt={c.title} />
                     </div>
-                    <img src={c.img} alt={c.title} />
-                  </div>
 
-                  <div className="post-content">
-                    <h1 className="title">{c.title}</h1>
-                    <h2 className="sub_title">{c.subtitle}</h2>
-                    <p className="description">{c.description}</p>
-                    <div className="post-meta">
-                      <span className="timestamp">
-                        <i className="fa fa-clock-o" /> 6 mins ago
-                      </span>
-                      <span className="comments">
-                        <i className="fa fa-comments" />
-                        <a href="#!" onClick={prevent}>
-                          {" "}
-                          39 comments
-                        </a>
-                      </span>
+                    <div className="post-content">
+                      <h1 className="title">{c.title}</h1>
+                      {/* ✅ 부제목 → 작성자 닉네임 */}
+                      <h2 className="sub_title">{c.author}</h2>
+
+                      {/* ✅ 본문 → 작성 시간 */}
+                      <p className="description">{c.createdAt}</p>
+
+                      {/* ✅ 하단 메타: 조회수 + 댓글 수 (작성시간 제거) */}
+                      <div className="post-meta">
+                        <span className="views">
+                          <i className="fa fa-eye" aria-hidden="true" /> {c.viewCount} views
+                        </span>
+                         {"  "} | {"  "} 
+                        <span className="comments">
+                          <i className="fa fa-comments" aria-hidden="true" />{" "}
+                          <a href="#!" onClick={prevent}>
+                            {c.comments} comments
+                          </a>
+                        </span>
+                      </div>
+
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
 
-        {/* 페이징 */}
-        <div className="pager">
-          <button
-            onClick={() => goto(page - 1)}
-            disabled={page === 1}
-            className={`pager-btn pager-arrow ${
-              page === 1 ? "is-disabled" : ""
-            }`}
-            aria-label="Previous page"
-          >
-            ◀ Prev
-          </button>
-
-          {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
+          {/* 페이징 */}
+          <div className="pager">
             <button
-              key={p}
-              onClick={() => goto(p)}
-              className={`pager-btn ${p === page ? "is-active" : ""}`}
-              aria-current={p === page ? "page" : undefined}
-              aria-label={`Page ${p}`}
+              onClick={() => goto(page - 1)}
+              disabled={page === 1}
+              className={`pager-btn pager-arrow ${page === 1 ? "is-disabled" : ""}`}
+              aria-label="Previous page"
             >
-              {p}
+              ◀ Prev
             </button>
-          ))}
 
-          <button
-            onClick={() => goto(page + 1)}
-            disabled={page === pageCount}
-            className={`pager-btn pager-arrow ${
-              page === pageCount ? "is-disabled" : ""
-            }`}
-            aria-label="Next page"
-          >
-            Next ▶
-          </button>
+            {Array.from({ length: pageCount }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                onClick={() => goto(p)}
+                className={`pager-btn ${p === page ? "is-active" : ""}`}
+                aria-current={p === page ? "page" : undefined}
+                aria-label={`Page ${p}`}
+              >
+                {p}
+              </button>
+            ))}
+
+            <button
+              onClick={() => goto(page + 1)}
+              disabled={page === pageCount}
+              className={`pager-btn pager-arrow ${page === pageCount ? "is-disabled" : ""}`}
+              aria-label="Next page"
+            >
+              Next ▶
+            </button>
+          </div>
         </div>
       </div>
     </>
