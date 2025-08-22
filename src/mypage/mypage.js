@@ -41,11 +41,13 @@ function ProfileCard() {
     display: flex; /* 자식 요소들을 flex 아이템으로 만듦 */
     flex-direction: column; /* 자식 요소들을 세로(컬럼) 방향으로 배치 */
     align-items: center; /* 자식 요소들을 수평(가로) 가운데 정렬! */
+
  gap: 80px;
     /* 추가: #root 자체에도 max-width를 줘서 전체 컨텐츠의 최대 너비를 제한할 수도 있어 */
     /* max-width: 1200px; */
     /* margin: 0 auto; */
 }
+    
 * {
 	box-sizing: border-box;
 	font-family: var(--body-font);
