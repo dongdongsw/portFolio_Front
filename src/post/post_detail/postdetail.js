@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import './postdetail.css';
-import '../../commonness.css'; // commonness.css는 그대로 유지
 import Header from '../../components/Header';
 
 function normalize(s) {
@@ -71,7 +70,9 @@ export default function PostDetail() {
             <div className="postdetail-separator" />
             <ul className="postdetail-contacts-list">
               <li className="postdetail-contact-item">
-                <div className="postdetail-icon-box"><ion-icon name="mail-outline" aria-hidden="true"></ion-icon></div>
+                <div className="postdetail-icon-box">
+                  <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/new-post.png" alt="new-post"/>
+                  </div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Email</p>
                   <a href="mailto:richard@example.com" className="postdetail-contact-link">greatPark@example.com</a>
@@ -79,7 +80,9 @@ export default function PostDetail() {
               </li>
 
               <li className="postdetail-contact-item">
-                <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true"></ion-icon></div>
+                <div className="postdetail-icon-box">
+                  <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/phone--v1.png" alt="phone--v1"/>
+                </div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Phone</p>
                   <a href="tel:+12133522795" className="postdetail-contact-link">+1 (213) 352-2795</a>
@@ -87,7 +90,10 @@ export default function PostDetail() {
               </li>
 
               <li className="postdetail-contact-item">
-                <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true"></ion-icon></div>
+                <div className="postdetail-icon-box">
+
+                  <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/birthday.png" alt="birthday"/>
+                </div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Birthday</p>
                   <time dateTime="1982-06-23">June 23, 1982</time>
@@ -95,7 +101,8 @@ export default function PostDetail() {
               </li>
 
               <li className="postdetail-contact-item">
-                <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true"></ion-icon></div>
+                <div className="postdetail-icon-box">
+                  <img width="30" height="30" src="https://img.icons8.com/material-sharp/24/marker.png" alt="marker"/>                </div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Location</p>
                   <address>Sacramento, California, USA</address>
@@ -124,7 +131,7 @@ export default function PostDetail() {
                 <p>안녕 OO아너를처음본순간부터좋아했어방학전에고백하고싶었는데바보같이그땐용기가없더라지금은이수많은사람들앞에서오로지너만사랑한다고말하고싶어서큰마음먹고용기내어봐매일매일버스에서너볼때마다두근댔고동아리랑과활동에서도너만보이고너생각만나고지난3월부터계속그랬어니가남자친구랑헤어지고니맘이아파울때내마음도너무아팠지만내심좋은맘두있었어이런내맘을어떻게말할지고민하다가정말인생에서제일크게용기내어세상에서제일멋지게많은사람들앞에서너한테고백해주고싶었어사랑하는OO님내여자가되줄래?아니나만의태양이되어줄래?난너의달님이될게내일3시반에너수업마치고학관앞에서기다리고있을게너를사랑하는OO이가.</p>
                 <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
                 <img src="https://i.postimg.cc/CKHSGSLR/image.jpg" alt="피곤명수"  className="postdetail-about-image" />
-                <p> 김종국님 결혼 축하드립니다~!</p>
+                <p> 아으 피곤해</p>
                 <img src="https://i.postimg.cc/DwBL6JfG/image.webp" alt="종국이형"  className="postdetail-about-image" />
                 <p> 김종국님 결혼 축하드립니다~!</p>
                 {/* <img src=" https://i.postimg.cc/05JDDdJ6/image.jpg" alt="좌절쿠냐"  className="postdetail-about-image" />

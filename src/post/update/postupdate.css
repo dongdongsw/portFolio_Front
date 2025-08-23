@@ -1,11 +1,9 @@
-/* portFolio_Front\src\post\update\postupdate.css */
-
 /* 게시물 수정 폼 스타일 */
 .postedit-form {
     padding: 20px;
-    background: hsl(68, 30%, 90%); /* PostDetail 배경과 유사하게 설정 */
+    background: hsl(42, 15%, 87%); /* PostDetail 배경과 유사하게 설정 */
     border-radius: 14px;
-    box-shadow: 0px 8px 16px hsla(0, 0%, 0%, .15);
+    box-shadow: inset 2px 2px 4px #b0afb4, inset -2px -2px 4px #c7c8cc;
     margin-top: 20px;
 }
 
@@ -27,10 +25,10 @@
     padding: 10px;
     border: 1px solid hsla(0, 0%, 0%, 0.2);
     border-radius: 8px;
-    background-color: hsl(0, 0%, 99%);
+    background-color: #e4e1da;
     color: hsl(0, 0%, 0%);
     font-size: 14px;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 2px 2px 4px #b0afb4, inset -2px -2px 4px #c7c8cc;
 }
 
 .postedit-textarea {
@@ -44,7 +42,7 @@
     background-color: hsl(0, 0%, 99%);
     color: hsl(0, 0%, 0%);
     font-size: 14px;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: inset 2px 2px 4px #b0afb4, inset -2px -2px 4px #c7c8cc;
     
     resize: none; /* 사용자 크기 조절 핸들 제거 */
     min-height: 300px; /* PostDetail의 글 출력 박스와 유사하게 높이 설정 */
@@ -64,13 +62,13 @@
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color .25s ease, box-shadow .25s ease;
+    transition: background-color .25s ease, box-shadow 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5
 }
 
 .postedit-btn-save {
     background: linear-gradient(to bottom right, hsla(60, 12%, 87%, 0.975) 3%, hsla(252, 3%, 71%, 0.987) 97%);
     color: hsl(0, 0%, 0%);
-    box-shadow: 0px 4px 8px hsla(0, 0%, 0%, .1);
+    box-shadow: 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5
 }
 
 .postedit-btn-save:hover:not(:disabled) {
@@ -81,7 +79,7 @@
 .postedit-btn-cancel {
     background-color: hsl(0, 0%, 80%);
     color: hsl(0, 0%, 20%);
-    box-shadow: 0px 4px 8px hsla(0, 0%, 0%, .1);
+    box-shadow: 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5
 }
 
 .postedit-btn-cancel:hover:not(:disabled) {
@@ -110,7 +108,7 @@
     border-radius: 8px;
     padding: 10px;
     background-color: hsl(0, 0%, 99%);
-    box-shadow: 0px 2px 5px hsla(0, 0%, 0%, .05);
+    box-shadow: 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5
 }
 
 .postedit-image-preview {
@@ -164,7 +162,7 @@
     font-size: 14px;
     color: hsl(0, 0%, 0%);
     box-shadow: 0px 2px 4px hsla(0, 0%, 0%, .1);
-    transition: background-color .25s ease, box-shadow .25s ease;
+    transition: background-color .25s ease, box-shadow 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5;
     display: flex;
     align-items: center;
     gap: 5px;

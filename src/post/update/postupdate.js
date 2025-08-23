@@ -3,9 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header'; 
 import '../post_detail/postdetail.css'; 
 import './postupdate.css'; 
-
-// UpdateEditor 컴포넌트 임포트 경로 (같은 폴더 내에 updateeditor.js 파일이 있을 경우)
-import UpdateEditor from './updateeditor'; 
+import UpdateEditor from './updateeditor'; // UpdateEditor 컴포넌트 임포트
 
 export default function PostUpdate() {
   const { id } = useParams();
@@ -15,7 +13,18 @@ export default function PostUpdate() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  const [sidebarOpen, setSidebarOpen] = useState(false); // <-- sidebarOpen 상태 유지
+  const [sidebarOpen, setSidebarOpen] = useState(false); 
+
+  // 연락처 정보를 관리할 상태
+  const [contactInfo, setContactInfo] = useState({
+    email: '',
+    phone: '',
+    birthday: '', 
+    location: '',
+  });
+
+  const [currentTitle, setCurrentTitle] = useState(''); // 에디터로부터 받을 현재 제목
+  const [currentContent, setCurrentContent] = useState(''); // 에디터로부터 받을 현재 HTML 콘텐츠
 
   // body에 페이지 특정 클래스 추가/제거
   useEffect(() => {
@@ -25,7 +34,7 @@ export default function PostUpdate() {
     };
   }, []);
 
-  // 게시물 데이터 불러오기 (실제 API 호출을 시뮬레이션)
+  // 게시물 데이터 불러오기
   useEffect(() => {
     if (!id) {
       setError('게시물 ID가 없습니다.');
@@ -42,13 +51,22 @@ export default function PostUpdate() {
           content: `
             <p>이것은 게시물 ${id}의 내용입니다. 에디터에서 직접 수정해보세요.</p>
             <p><img src="https://i.postimg.cc/6pRT5cXp/image.avif" alt="물총날두" width="300" /></p>
-            <p>내용 중간에 이미지를 추가하거나 삭제할 수 있습니다.</p>
+            <p>가라 물총날두 하이드로펌프!.</p>
             <p><img src="https://i.postimg.cc/3JXZ4X7n/image.jpg" alt="브이날두" width="300" /></p>
-            <p>이 에디터는 이미지 크기 조절도 가능합니다.</p>
+            <p>물총날두가 전투에서 승리했다.</p>
           `,
+          contact: {
+            email: "",
+            phone: "",
+            birthday: "", 
+            location: ""
+          }
         };
         
-        setPost(fetchedPost); // post 객체에 초기 데이터 저장
+        setPost(fetchedPost); 
+        setCurrentTitle(fetchedPost.title); // UpdateEditor의 초기 제목 설정
+        setCurrentContent(fetchedPost.content); // UpdateEditor의 초기 내용 설정
+        setContactInfo(fetchedPost.contact); 
         setLoading(false);
       } catch (err) {
         setError('게시물 불러오기 실패');
@@ -57,11 +75,50 @@ export default function PostUpdate() {
     }, 500);
   }, [id]);
 
-  // UpdateEditor에서 제출될 때 호출될 함수
-  const handleEditorSubmit = ({ title: submittedTitle, html: submittedHtml }) => {
+  // 연락처 정보 변경 핸들러 (기존과 동일)
+  const handleContactInfoChange = (e) => {
+    const { name, value } = e.target;
+    setContactInfo(prevInfo => ({
+      ...prevInfo,
+      [name]: value
+    }));
+  };
+
+  const handleInputFocus = (e) => {
+    const { name, value } = e.target;
+    if (post && post.contact && value === post.contact[name]) {
+      setContactInfo(prevInfo => ({
+        ...prevInfo,
+        [name]: ''
+      }));
+    }
+  };
+
+  const handleInputBlur = (e) => {
+    const { name, value } = e.target;
+    if (value === '' && post && post.contact && post.contact[name]) {
+      setContactInfo(prevInfo => ({
+        ...prevInfo,
+        [name]: post.contact[name]
+      }));
+    }
+  };
+
+  // !!! 변경: 폼 제출 핸들러는 이제 PostUpdate 자체의 form에서 직접 호출됩니다. !!!
+  const handleSubmit = (e) => {
+    e.preventDefault(); // 폼 기본 제출 동작 방지
+
     setLoading(true);
+    // 모든 데이터를 한 번에 수집하여 제출
+    const finalData = {
+      id,
+      title: currentTitle, // UpdateEditor에서 받아온 제목
+      content: currentContent, // UpdateEditor에서 받아온 HTML 내용
+      contactInfo, // 사이드바 연락처 정보
+    };
+
     setTimeout(() => {
-      console.log('게시물 수정 완료:', { id, title: submittedTitle, content: submittedHtml });
+      console.log('게시물 수정 완료:', finalData); 
       setLoading(false);
       alert('게시물이 성공적으로 수정되었습니다!');
       navigate(`/post/${id}`); 
@@ -72,7 +129,7 @@ export default function PostUpdate() {
     navigate(`/post/${id}`); 
   };
 
-  // 임시 이미지 업로드 함수 (실제로는 백엔드에 파일 전송 후 URL 반환)
+  // 임시 이미지 업로드 함수 (기존과 동일)
   const mockImageUpload = async (file) => {
     console.log("Mock Image Upload:", file.name, file.type);
     return new Promise(resolve => {
@@ -83,7 +140,7 @@ export default function PostUpdate() {
     });
   };
 
-  const toggleSidebar = () => setSidebarOpen(v => !v); // <-- toggleSidebar 함수 유지
+  const toggleSidebar = () => setSidebarOpen(v => !v); 
 
 
   if (loading) {
@@ -137,40 +194,87 @@ export default function PostUpdate() {
             <div className="postdetail-separator" />
             <ul className="postdetail-contacts-list">
               <li className="postdetail-contact-item">
-                <div className="postdetail-icon-box"><ion-icon name="mail-outline" aria-hidden="true"></ion-icon></div>
+                <div className="postdetail-icon-box">
+                  <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/new-post.png" alt="new-post"/>
+                  </div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Email</p>
-                  <a href="mailto:richard@example.com" className="postdetail-contact-link">greatPark@example.com</a>
+                  <input
+                    type="email"
+                    name="email"
+                    value={contactInfo.email}
+                    onChange={handleContactInfoChange}
+                    onFocus={handleInputFocus} 
+                    onBlur={handleInputBlur}   
+                    className="postdetail-contact-link-input"
+                    placeholder="이메일을 입력하세요" 
+                    style={{ border: 'none', background: 'none', color: 'hsl(0, 0%, 0%)', fontSize: '15px', width: '100%', outline: 'none' }} 
+                  />
                 </div>
               </li>
 
               <li className="postdetail-contact-item">
-                <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true"></ion-icon></div>
+                <div className="postdetail-icon-box">
+                  <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/phone--v1.png" alt="phone--v1"/>
+                </div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Phone</p>
-                  <a href="tel:+12133522795" className="postdetail-contact-link">+1 (213) 352-2795</a>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={contactInfo.phone}
+                    onChange={handleContactInfoChange}
+                    onFocus={handleInputFocus} 
+                    onBlur={handleInputBlur}   
+                    className="postdetail-contact-link-input"
+                    placeholder="전화번호를 입력하세요" 
+                    style={{ border: 'none', background: 'none', color: 'hsl(0, 0%, 0%)', fontSize: '15px', width: '100%', outline: 'none' }}
+                  />
                 </div>
               </li>
 
               <li className="postdetail-contact-item">
-                <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true"></ion-icon></div>
+                <div className="postdetail-icon-box">
+                  <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/birthday.png" alt="birthday"/>
+                </div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Birthday</p>
-                  <time dateTime="1982-06-23">June 23, 1982</time>
+                  <input
+                    type="date"
+                    name="birthday"
+                    value={contactInfo.birthday}
+                    onChange={handleContactInfoChange}
+                    onFocus={handleInputFocus} 
+                    onBlur={handleInputBlur}   
+                    className="postdetail-contact-link-input"
+                    placeholder="YYYY-MM-DD" 
+                    style={{ border: 'none', background: 'none', color: 'hsl(0, 0%, 0%)', fontSize: '15px', width: '100%', outline: 'none' }}
+                  />
                 </div>
               </li>
 
               <li className="postdetail-contact-item">
-                <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true"></ion-icon></div>
+                <div className="postdetail-icon-box">
+                  <img width="30" height="30" src="https://img.icons8.com/material-sharp/24/marker.png" alt="marker"/>
+                </div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Location</p>
-                  <address>Sacramento, California, USA</address>
+                  <input
+                    type="text"
+                    name="location"
+                    value={contactInfo.location}
+                    onChange={handleContactInfoChange}
+                    onFocus={handleInputFocus} 
+                    onBlur={handleInputBlur}   
+                    className="postdetail-contact-link-input"
+                    placeholder="주소를 입력하세요" 
+                    style={{ border: 'none', background: 'none', color: 'hsl(0, 0%, 0%)', fontSize: '15px', width: '100%', outline: 'none' }}
+                  />
                 </div>
               </li>
             </ul>
           </div>
         </aside>
-        {/* ===== aside 태그 내용 수정 끝 ===== */}
 
         <div className="postdetail-main-content">
           <article className="postdetail-article active" data-page="edit-post">
@@ -178,21 +282,27 @@ export default function PostUpdate() {
               <h2 className="postdetail-h2 postdetail-article-title">게시물 수정</h2>
             </header>
             
-            {post && ( // post 데이터가 로드된 후에만 에디터를 렌더링합니다.
-              <UpdateEditor
-                onSubmit={handleEditorSubmit} // 에디터의 최종 제목과 HTML을 받을 콜백
-                initialTitle={post.title} // 불러온 게시물 제목 전달
-                initialHtml={post.content} // 불러온 게시물 HTML 내용 전달
-                imageUpload={mockImageUpload} // 이미지 업로드 핸들러 전달 (현재는 모의 함수)
-              />
-            )}
-            
-            <div className="postedit-buttons">
-                {/* submit 버튼은 이제 UpdateEditor 내부에 있습니다. */}
-                <button type="button" onClick={handleCancel} className="postedit-btn postedit-btn-cancel" disabled={loading}>
-                  취소
-                </button>
-            </div>
+            <form onSubmit={handleSubmit} className="postedit-form"> 
+              {post && ( 
+                <UpdateEditor
+                  initialTitle={post.title} 
+                  initialHtml={post.content} 
+                  imageUpload={mockImageUpload}
+                  onTitleChange={setCurrentTitle} 
+                  onContentChange={setCurrentContent} 
+                />
+              )}
+              
+              <div className="postedit-buttons">
+                  <button type="submit" className="postedit-btn postedit-btn-save" disabled={loading}>
+                    {loading ? '저장 중...' : '등록'}
+                  </button>
+                  <button type="button" onClick={handleCancel} className="postedit-btn postedit-btn-cancel" disabled={loading}>
+                    취소
+                  </button>
+              </div>
+            </form> 
+
           </article>
         </div>
       </main>

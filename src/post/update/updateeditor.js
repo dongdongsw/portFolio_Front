@@ -1,15 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 
-export default function UpdateEditor({ // <-- 컴포넌트 이름 변경
-  onSubmit,
+export default function UpdateEditor({
   initialTitle = "",
   initialHtml = "",
   placeholderTitle = "제목을 입력하세요",
   placeholderBody = "여기에 내용을 입력하고, 사진 버튼으로 이미지를 삽입하세요.",
-  imageUpload, // async (file) => string (최종 URL)
+  imageUpload, // 이미지 업로드 핸들러
+  onTitleChange, // 부모의 title 상태를 업데이트하기 위한 콜백
+  onContentChange, // 부모의 content (HTML) 상태를 업데이트하기 위한 콜백
 }) {
  
-  const [title, setTitle] = useState(initialTitle);
+  const [title, setTitle] = useState(initialTitle); // 내부적으로 title 상태 관리
   const editorRef = useRef(null);
   const fileInputRef = useRef(null);
   const savedSelectionRef = useRef(null);
@@ -24,15 +25,16 @@ export default function UpdateEditor({ // <-- 컴포넌트 이름 변경
     targetImg: null,
   });
  
-  // 컴포넌트 마운트 시 initialHtml을 에디터에 설정
+  // 컴포넌트 마운트 시 initialHtml을 에디터에 설정 (contentEditable div)
+  // initialHtml 변경 시 업데이트되도록 종속성 배열에 initialHtml 추가
   useEffect(() => {
     const editor = editorRef.current;
-    if (editor && initialHtml) {
+    if (editor) {
       editor.innerHTML = initialHtml;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialHtml]); // <-- initialHtml 변경될 때 에디터 내용 업데이트
 
+  // 플레이스홀더 설정
   useEffect(() => {
     const el = editorRef.current;
     if (el) el.setAttribute("data-placeholder", placeholderBody);
@@ -295,14 +297,17 @@ export default function UpdateEditor({ // <-- 컴포넌트 이름 변경
     clearSelection();
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const html = (editorRef.current?.innerHTML || "").trim();
-    if (!title.trim() && !html) {
-      alert("제목이나 내용을 입력해 주세요.");
-      return;
-    }
-    onSubmit?.({ title: title.trim(), html });
+
+  // onTitleChange 콜백 (부모에게 title 변경 사항 알림)
+  const handleTitleInputChange = (e) => {
+    setTitle(e.target.value);
+    onTitleChange?.(e.target.value); // 부모에게 변경된 title 전달
+  };
+
+  // onContentChange 콜백 (부모에게 html 변경 사항 알림)
+  // onInput 이벤트 시 호출되며, 에디터의 현재 HTML 내용을 부모에게 전달
+  const handleContentInput = () => {
+    onContentChange?.(editorRef.current?.innerHTML || ""); // 부모에게 변경된 html 전달
   };
 
   // 스타일 정의
@@ -320,7 +325,7 @@ export default function UpdateEditor({ // <-- 컴포넌트 이름 변경
     background: "rgba(255, 255, 255, 0.4)", // ✅ 흰색+60% 불투명
   };
   
-  const btnStyle = {
+  const commonBtnStyle = { 
     padding: "10px 14px",
     borderRadius: 12,
     border: "1px solid #d1d5db",
@@ -331,14 +336,11 @@ export default function UpdateEditor({ // <-- 컴포넌트 이름 변경
 
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      style={{ maxWidth: 860, margin: "24px auto", display: "grid", gap: 12 }}
-    >
+    <div style={{ maxWidth: 860, margin: "24px auto", display: "grid", gap: 12 }}>
       <input
         type="text"
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={handleTitleInputChange}
         placeholder={placeholderTitle}
         style={{
           padding: "12px 14px",
@@ -352,7 +354,7 @@ export default function UpdateEditor({ // <-- 컴포넌트 이름 변경
       />
 
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-        <button type="button" onClick={handleClickPhoto} style={btnStyle} title="사진 삽입">
+        <button type="button" onClick={handleClickPhoto} style={commonBtnStyle} title="사진 삽입">
           📷 사진
         </button>
         <input
@@ -371,7 +373,7 @@ export default function UpdateEditor({ // <-- 컴포넌트 이름 변경
           ref={editorRef}
           contentEditable
           suppressContentEditableWarning
-          onInput={saveSelection}
+          onInput={handleContentInput} 
           onKeyUp={saveSelection}
           onMouseUp={() => {
             saveSelection();
@@ -400,12 +402,6 @@ export default function UpdateEditor({ // <-- 컴포넌트 이름 변경
             }}
           />
         )}
-      </div>
-
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button type="submit" style={btnStyle}>
-          등록
-        </button>
       </div>
 
       {/* 커스텀 컨텍스트 메뉴 */}
@@ -454,6 +450,6 @@ export default function UpdateEditor({ // <-- 컴포넌트 이름 변경
           margin: 8px auto;
         }
       `}</style>
-    </form>
+    </div>
   );
 }

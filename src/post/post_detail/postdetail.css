@@ -20,7 +20,7 @@ body.postdetail-body-styles::-webkit-scrollbar {
     background: hsl(42, 15%, 87%);
     border: 1px solid hsl(252, 3%, 71%, 0.987);
     border-radius: 20px;
-    box-shadow: -4px 8px 24px hsla(0, 0%, 0%, .25);
+    box-shadow: 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5; 
     z-index: 1;
     padding: 15px;
 }
@@ -45,7 +45,7 @@ body.postdetail-body-styles::-webkit-scrollbar {
     align-items: center;
     font-size: 16px;
     color: hsl(0, 0%, 99%);
-    box-shadow: -4px 8px 24px hsla(0, 0%, 0%, .25);
+    box-shadow: 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5; 
     z-index: 1;
 }
 
@@ -162,7 +162,7 @@ body.postdetail-body-styles::-webkit-scrollbar {
     background: linear-gradient(to bottom right, hsl(48, 15%, 87%, 0.975) 0%, hsla(252, 3%, 71%, 0.975) 50%);
     padding: 10px;
     border-color: hsla(252, 3%, 71%, 0.987);
-    box-shadow: 0px 16px 30px hsla(0, 0%, 0%, .25);
+    box-shadow: 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5; 
     transition: .25s ease;
     z-index: 1;
 }
@@ -223,6 +223,22 @@ body.postdetail-body-styles::-webkit-scrollbar {
     margin-bottom: 2px;
 }
 
+.postdetail-contact-link-input {
+    border: none;
+    background: #f3f1e5;
+    color: hsl(0, 0%, 0%); 
+    font-size: 15px; 
+    width: 100%; 
+    outline: none; 
+    padding: 0; 
+    margin: 0; 
+    box-sizing: border-box; 
+}
+.postdetail-contact-link-input:focus {
+    border-bottom: 1px solid hsla(0, 0%, 0%, 0.5);  /* 예시: 아래쪽 테두리 강조 */
+    background-color: rgb(255, 255, 255);  /* 예시: 배경색 살짝 변경 */
+}
+
 /*ABOUT*/
 
 .postdetail-about .postdetail-article-title { 
@@ -250,7 +266,7 @@ body.postdetail-body-styles::-webkit-scrollbar {
     display: block;  /* 이미지를 블록 레벨 요소로 만듦 */
     margin: 20px auto; /* 위아래 20px, 좌우 자동 (가운데 정렬) */
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5; 
 }
 /* COMMENTS */
 .postdetail-comment-section {
@@ -259,7 +275,7 @@ body.postdetail-body-styles::-webkit-scrollbar {
     background: hsl(42, 16%, 87%);
     border: 1px solid hsl(252, 3%, 71%, 1);
     border-radius: 20px;
-    box-shadow: -4px 8px 24px hsla(0, 0%, 0%, .25);
+    box-shadow: 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5; 
     z-index: 1;
 }
 
@@ -287,7 +303,7 @@ body.postdetail-body-styles::-webkit-scrollbar {
     padding: 10px 15px;
     border-radius: 10px;
     margin-bottom: 10px;
-    box-shadow: 0px 4px 8px hsla(0, 0%, 0%, .1);
+    box-shadow: 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5; 
 }
 
 .postdetail-comment-item:last-child {
@@ -397,7 +413,7 @@ body.postdetail-body-styles::-webkit-scrollbar {
 
     .postdetail-sidebar, .postdetail-article {
         width: 950px;
-        box-shadow: 0px 24px 80px hsla(0, 0%, 0%, .25);
+        box-shadow: 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5; 
     }
 
     .postdetail-main-content {
