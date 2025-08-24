@@ -68,9 +68,9 @@
 
 /* 페이징 */
 .pager { display: flex; gap: 8px; justify-content: center; align-items: center; margin: 50px 0 24px; }
-.pager-btn { appearance: none; border: 1px solid #a0a5a8; background: transparent; color: #a0a5a8; padding: 8px 12px; min-width: 36px; border-radius: 9999px; cursor: pointer; font-size: 14px; line-height: 1; }
+.pager-btn { appearance: none; border: 1px solid #a0a5a8; background-color: #fff; color: #a0a5a8; padding: 8px 12px; min-width: 36px; border-radius: 9999px; cursor: pointer; font-size: 14px; line-height: 1; }
 .pager-btn:hover { border-color: #a0a5a8; }
-.pager-btn.is-active { border: 1px solid #a0a5a8; font-weight: 1000; background-color: #ffffff;}
+.pager-btn.is-active { border: 1px solid #a0a5a8; font-weight: 1000; background: transparent;}
 .pager-btn.is-disabled { opacity: 0.45; cursor: default; }
 .pager-btn.pager-arrow { min-width: 56px; padding: 8px 10px; }
 
@@ -103,4 +103,5 @@
 .fab-btn i {
   font-size: 24px; /* 아이콘 크기 */
 }
+
 
