@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "./postlist.css";
 import { createGlobalStyle } from "styled-components";
 import Header from "../../components/Header";
+// ✅ 추가: 상세에서 제공하는 요약 데이터 import
+import { postSummary } from "../post_detail/postdetail";
 
 function PostList() {
   const PostListStyle = createGlobalStyle`
@@ -46,7 +48,7 @@ function PostList() {
           day: String(10 + ((i * 3) % 20)).padStart(2, "0"),
           month: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"][i % 6],
           title: `Card Title #${i + 1}`,
-          author: `user${(i % 8) + 1}`,         // ✅ 작성자 닉네임
+          author: `user${(i % 8) + 1}`,         // ✅ 원래 더미 작성자 (표시는 아래에서 덮어씀)
           createdAt: formatDate(created),       // ✅ 작성 시간
           img:
             i % 2 === 0
@@ -131,18 +133,18 @@ function PostList() {
                         <div className="day">{c.day}</div>
                         <div className="month">{c.month}</div>
                       </div>
-                      <img src={c.img} alt={c.title} />
+                      {/* ✅ 이미지: 상세의 첫 번째 이미지(썸네일)로 통일 */}
+                      <img src={postSummary.thumbnail} alt={postSummary.title} />
                     </div>
 
                     <div className="post-content">
-                      <h1 className="title">{c.title}</h1>
-                      {/* ✅ 부제목 → 작성자 닉네임 */}
-                      <h2 className="sub_title">{c.author}</h2>
+                      {/* ✅ 제목: 상세의 제목으로 통일 */}
+                      <h1 className="title">{postSummary.title}</h1>
+                      {/* ✅ 작성자: 상세의 작성자로 통일 */}
+                      <h2 className="sub_title">{postSummary.author}</h2>
 
-                      {/* ✅ 본문 → 작성 시간 */}
+                      {/* 아래는 기존 정보 유지 (요청: 굳이 제거 안 해도 됨) */}
                       <p className="description">{c.createdAt}</p>
-
-                      {/* ✅ 하단 메타: 조회수 + 댓글 수 (작성시간 제거) */}
                       <div className="post-meta">
                         <span className="views">
                           <i className="fa fa-eye" aria-hidden="true" /> {c.viewCount} views

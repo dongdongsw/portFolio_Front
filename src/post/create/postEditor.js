@@ -1,13 +1,17 @@
-// WysiwygPostEditor.js — full features restored:
+// WysiwygPostEditor.js
 // align icons, bold stable, font-size unify, photo insert, image resize handle + context menu delete
 import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function WysiwygPostEditor({
   onSubmit,
+  onCancel, // 선택: 부모 콜백
   placeholderTitle = "제목을 입력하세요",
   placeholderBody = "여기에 내용을 입력하고, 사진 버튼으로 이미지를 삽입하세요.",
   imageUpload, // optional async(file) => url
 }) {
+  const navigate = useNavigate();
+
   const [title, setTitle] = useState("");
   const editorRef = useRef(null);
   const savedSelectionRef = useRef(null);
@@ -27,7 +31,6 @@ export default function WysiwygPostEditor({
     editorRef.current?.setAttribute("data-placeholder", placeholderBody);
   }, [placeholderBody]);
 
-  // selection tracking + overlay/esc/resize/scroll
   useEffect(() => {
     const editor = editorRef.current;
     if (!editor) return;
@@ -47,7 +50,6 @@ export default function WysiwygPostEditor({
       } else {
         clearImageSelection();
       }
-      // close context menu if click anywhere
       if (ctx.visible) setCtx((p) => ({ ...p, visible: false }));
     };
 
@@ -105,23 +107,20 @@ export default function WysiwygPostEditor({
   };
 
   // ---- commands ----
-  // Keep native selection; do not force-restore here (avoids bold “씹힘”).
   const execCommand = (cmd, value = null) => {
     document.execCommand(cmd, false, value);
     try { setBoldActive(!!document.queryCommandState("bold")); } catch {}
   };
-  const execBold = () => execCommand("bold"); // works for selection + typing
+  const execBold = () => execCommand("bold");
 
-  // ---- font size: unify selection & typing-forward ----
+  // ---- font size ----
   const applyFontSizePx = (px) => {
-    // dropdown steals focus → restore just for this action
     restoreSelection();
     const sel = window.getSelection?.();
     if (!sel || sel.rangeCount === 0 || !isSelectionInsideEditor()) return;
     const range = sel.getRangeAt(0);
 
     if (range.collapsed) {
-      // typing forward: insert a size-carrying span with ZWSP
       const span = document.createElement("span");
       span.style.fontSize = `${px}px`;
       span.appendChild(document.createTextNode("\u200B"));
@@ -134,10 +133,8 @@ export default function WysiwygPostEditor({
       return;
     }
 
-    // selection: normalize & enforce same px on all text nodes
     const frag = range.extractContents();
 
-    // 1) strip existing inline sizes & legacy <font size>
     const walkerEl = document.createTreeWalker(frag, NodeFilter.SHOW_ELEMENT, null);
     while (walkerEl.nextNode()) {
       const el = /** @type {HTMLElement} */ (walkerEl.currentNode);
@@ -145,7 +142,6 @@ export default function WysiwygPostEditor({
       if (el.tagName === "FONT" && el.hasAttribute("size")) el.removeAttribute("size");
     }
 
-    // 2) wrap real text nodes with chosen px (skip whitespace-only)
     const walkerText = document.createTreeWalker(frag, NodeFilter.SHOW_TEXT, null);
     const textNodes = [];
     while (walkerText.nextNode()) {
@@ -161,7 +157,6 @@ export default function WysiwygPostEditor({
 
     range.insertNode(frag);
 
-    // place caret at end of changed content
     const after = document.createRange();
     after.setStartAfter(range.endContainer);
     after.collapse(true);
@@ -187,9 +182,8 @@ export default function WysiwygPostEditor({
       if (!file.type.startsWith("image/")) continue;
 
       const previewSrc = URL.createObjectURL(file);
-      const img = insertImageAtCursor(previewSrc); // guaranteed inside editor
+      const img = insertImageAtCursor(previewSrc);
 
-      // default width: 80% of editor (max 1200)
       const editorW = editorRef.current?.clientWidth || 800;
       img.style.width = Math.round(Math.min(editorW * 0.8, 1200)) + "px";
 
@@ -233,7 +227,7 @@ export default function WysiwygPostEditor({
     img.style.maxWidth = "100%";
     img.style.height = "auto";
     img.style.display = "block";
-    img.style.margin = "8px auto"; // centered
+    img.style.margin = "8px auto";
 
     if (!editor) return img;
 
@@ -349,11 +343,26 @@ export default function WysiwygPostEditor({
     clearImageSelection();
   };
 
+  // ---- 취소/등록 라우팅 ----
+  const handleCancel = () => {
+    const ok = window.confirm("글 작성을 정말 취소하시겠습니까?");
+    if (!ok) return;
+    if (typeof onCancel === "function") onCancel();
+    navigate("/postlist"); // 취소 → 목록
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const html = (editorRef.current?.innerHTML || "").trim();
+    onSubmit?.({ title: title.trim(), html });
+    navigate("/postlist/postdetail"); // 등록 → 상세 (라우트에 맞게 수정)
+  };
+
   // ---- UI helpers ----
   const IconBtn = ({ title, onClick, active, children }) => (
     <button
       type="button"
-      onMouseDown={(e) => e.preventDefault()} // keep selection in editor
+      onMouseDown={(e) => e.preventDefault()}
       onClick={onClick}
       title={title}
       aria-pressed={!!active}
@@ -369,7 +378,6 @@ export default function WysiwygPostEditor({
     </button>
   );
 
-  // SVG icons — center icon fully symmetric (no left “jut”)
   const AlignLeftIcon = (
     <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden>
       <path d="M3 6h14v2H3zM3 11h10v2H3zM3 16h14v2H3z" />
@@ -387,14 +395,7 @@ export default function WysiwygPostEditor({
   );
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        const html = (editorRef.current?.innerHTML || "").trim();
-        onSubmit?.({ title: title.trim(), html });
-      }}
-      style={{ maxWidth: 860, margin: "24px auto", display: "grid", gap: 12 }}
-    >
+    <form onSubmit={handleSubmit} style={{ maxWidth: 860, margin: "24px auto", display: "grid", gap: 12 }}>
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
@@ -406,28 +407,25 @@ export default function WysiwygPostEditor({
           fontSize: 18,
           background: "rgba(255,255,255,0.4)",
           marginTop: 50,
-          marginBottom: 12,
+          marginBottom: 40,
         }}
       />
 
       {/* Toolbar */}
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-        {/* Align: Left / Center / Right */}
         <IconBtn title="왼쪽 정렬" onClick={() => execCommand("justifyLeft")}>{AlignLeftIcon}</IconBtn>
         <IconBtn title="가운데 정렬" onClick={() => execCommand("justifyCenter")}>{AlignCenterIcon}</IconBtn>
         <IconBtn title="오른쪽 정렬" onClick={() => execCommand("justifyRight")}>{AlignRightIcon}</IconBtn>
 
         <div style={{ width: 1, height: 22, background: "#e5e7eb" }} />
 
-        {/* Bold '가' — native execCommand('bold') */}
         <IconBtn title="굵게 (드래그/커서 모두)" onClick={execBold} active={boldActive}>
           <span style={{ fontSize: 16, fontWeight: 800, lineHeight: 1, display: "inline-block" }}>가</span>
         </IconBtn>
 
-        {/* Font size */}
         <label style={{ fontSize: 13, color: "#4b5563" }}>크기</label>
         <select
-          onMouseDown={saveSelection} // keep selection before dropdown steals focus
+          onMouseDown={saveSelection}
           onChange={(e) => applyFontSizePx(Number(e.target.value))}
           defaultValue="16"
           style={{
@@ -443,7 +441,6 @@ export default function WysiwygPostEditor({
           ))}
         </select>
 
-        {/* Photo */}
         <button
           type="button"
           onMouseDown={(e) => e.preventDefault()}
@@ -495,9 +492,10 @@ export default function WysiwygPostEditor({
         )}
       </div>
 
-      {/* Submit */}
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button type="submit" style={btnStyle}>등록</button>
+      {/* Buttons: 취소 + 등록 (스타일 분리) */}
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+        <button type="button" onClick={handleCancel} style={cancelBtnStyle}>취소</button>
+        <button type="submit" style={submitBtnStyle}>등록</button>
       </div>
 
       {/* Image context menu */}
@@ -542,9 +540,21 @@ export default function WysiwygPostEditor({
   );
 }
 
+// 공통 툴바/기본 버튼 스타일
+const btnStyle = {
+  padding: "10px 14px",
+  borderRadius: 12,
+  border: "1px solid #d1d5db",
+  background: "#fff",
+  cursor: "pointer",
+  fontSize: 14,
+};
+
+// 에디터 영역 스타일
 const editorStyle = {
   minHeight: 260,
   padding: 14,
+  marginBottom: 40,
   borderRadius: 12,
   border: "1px solid #e5e7eb",
   fontSize: 16,
@@ -556,11 +566,19 @@ const editorStyle = {
   background: "rgba(255, 255, 255, 0.4)",
 };
 
-const btnStyle = {
-  padding: "10px 14px",
-  borderRadius: 12,
-  border: "1px solid #d1d5db",
-  background: "#fff",
-  cursor: "pointer",
-  fontSize: 14,
+// ✅ 취소 / 등록 버튼 전용 스타일 (다른 버튼과 다르게)
+const cancelBtnStyle = {
+  ...btnStyle,
+  
+  background: "#f3f4f6", // 연한 회색
+  color: "#374151",
+  borderColor: "#e5e7eb",
+};
+
+const submitBtnStyle = {
+  ...btnStyle,
+  background: "#c7c8cc",
+  color: "#374151",
+  border: "none",
+  boxShadow: "0 2px 6px rgba(59,130,246,0.35)",
 };

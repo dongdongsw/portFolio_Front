@@ -5,6 +5,7 @@ import '../../commonness.css'; // commonness.css는 그대로 유지
 import Header from '../../components/Header';
 import WysiwygPostEditor from './postEditor';
 import { createGlobalStyle } from "styled-components";
+
 function normalize(s) {
   return String(s || '').trim().toLowerCase();
 }
@@ -23,6 +24,14 @@ export default function PostCreate() {
   const [showCommentSection, setShowCommentSection] = useState(false); // 초기값은 false로 설정하여 기본적으로 숨김
   const [comments, setComments] = useState([]); // 댓글 데이터 (예시)
 
+  // ✅ 사이드바 연락처 입력 상태 (추가)
+  const [contactInfo, setContactInfo] = useState({
+    email: '',
+    phone: '',
+    birthday: '',
+    location: '',
+  });
+
   // 페이지 마운트/언마운트 시 body에 클래스 추가/제거
   useEffect(() => {
     document.body.classList.add('postdetail-body-styles');
@@ -31,7 +40,6 @@ export default function PostCreate() {
     };
   }, []);
 
-
   const toggleSidebar = () => setSidebarOpen(v => !v);
 
   useEffect(() => {
@@ -39,6 +47,12 @@ export default function PostCreate() {
       setActivePage('portfolio'); // id가 있을 경우 portfolio 페이지 활성화 (현재 JSX에 portfolio 관련 section은 없지만 로직은 유지)
     }
   }, [id]);
+
+  // ✅ 사이드바 입력 변경 핸들러 (추가)
+  const handleContactInfoChange = (e) => {
+    const { name, value } = e.target;
+    setContactInfo(prev => ({ ...prev, [name]: value }));
+  };
 
   return (
     <>
@@ -59,42 +73,78 @@ export default function PostCreate() {
 
             <button className="postdetail-info-more-btn" data-sidebar-btn onClick={toggleSidebar} aria-expanded={sidebarOpen}>
               <span>Show Contacts</span>
-              <ion-icon name="chevron-down" aria-hidden="true"></ion-icon>
+              <ion-icon name="chevron-down" aria-hidden="true" />
             </button>
           </div>
 
           <div className="postdetail-sidebar-info-more">
             <div className="postdetail-separator" />
             <ul className="postdetail-contacts-list">
+              {/* ✅ Email (링크 → 입력창) */}
               <li className="postdetail-contact-item">
-                <div className="postdetail-icon-box"><ion-icon name="mail-outline" aria-hidden="true"></ion-icon></div>
+                <div className="postdetail-icon-box"><ion-icon name="mail-outline" aria-hidden="true" /></div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Email</p>
-                  <a href="mailto:richard@example.com" className="postdetail-contact-link">richard@example.com</a>
+                  <input
+                    type="email"
+                    name="email"
+                    value={contactInfo.email}
+                    onChange={handleContactInfoChange}
+                    className="postdetail-contact-link-input"
+                    placeholder="이메일을 입력하세요"
+                    style={{ border: 'none', background: 'none', color: 'hsl(0, 0%, 0%)', fontSize: '15px', width: '100%', outline: 'none' }}
+                  />
                 </div>
               </li>
 
+              {/* ✅ Phone */}
               <li className="postdetail-contact-item">
-                <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true"></ion-icon></div>
+                <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true" /></div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Phone</p>
-                  <a href="tel:+12133522795" className="postdetail-contact-link">+1 (213) 352-2795</a>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={contactInfo.phone}
+                    onChange={handleContactInfoChange}
+                    className="postdetail-contact-link-input"
+                    placeholder="전화번호를 입력하세요"
+                    style={{ border: 'none', background: 'none', color: 'hsl(0, 0%, 0%)', fontSize: '15px', width: '100%', outline: 'none' }}
+                  />
                 </div>
               </li>
 
+              {/* ✅ Birthday */}
               <li className="postdetail-contact-item">
-                <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true"></ion-icon></div>
+                <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true" /></div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Birthday</p>
-                  <time dateTime="1982-06-23">June 23, 1982</time>
+                  <input
+                    type="date"
+                    name="birthday"
+                    value={contactInfo.birthday}
+                    onChange={handleContactInfoChange}
+                    className="postdetail-contact-link-input"
+                    placeholder="YYYY-MM-DD"
+                    style={{ border: 'none', background: 'none', color: 'hsl(0, 0%, 0%)', fontSize: '15px', width: '100%', outline: 'none' }}
+                  />
                 </div>
               </li>
 
+              {/* ✅ Location */}
               <li className="postdetail-contact-item">
-                <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true"></ion-icon></div>
+                <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true" /></div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Location</p>
-                  <address>Sacramento, California, USA</address>
+                  <input
+                    type="text"
+                    name="location"
+                    value={contactInfo.location}
+                    onChange={handleContactInfoChange}
+                    className="postdetail-contact-link-input"
+                    placeholder="주소를 입력하세요"
+                    style={{ border: 'none', background: 'none', color: 'hsl(0, 0%, 0%)', fontSize: '15px', width: '100%', outline: 'none' }}
+                  />
                 </div>
               </li>
             </ul>
@@ -108,9 +158,9 @@ export default function PostCreate() {
 
               <section className="postdetail-about-text">                
                 <WysiwygPostEditor/>  
-
+              
               </section>
-
+              
             </article>
           )}
          
