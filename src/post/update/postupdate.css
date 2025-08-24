@@ -3,7 +3,6 @@
     padding: 20px;
     background: hsl(42, 15%, 87%); /* PostDetail 배경과 유사하게 설정 */
     border-radius: 14px;
-    box-shadow: inset 2px 2px 4px #b0afb4, inset -2px -2px 4px #c7c8cc;
     margin-top: 20px;
 }
 
@@ -183,7 +182,7 @@
     }
     .postedit-input,
     .postedit-textarea,
-    .postedit-image-url-input { /* postedit-image-url-input도 여기서 패딩 적용 */
+    .postedit-image-url-input { 
         padding: 15px;
     }
 }

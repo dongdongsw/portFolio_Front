@@ -104,7 +104,6 @@ export default function PostUpdate() {
     }
   };
 
-  // !!! 변경: 폼 제출 핸들러는 이제 PostUpdate 자체의 form에서 직접 호출됩니다. !!!
   const handleSubmit = (e) => {
     e.preventDefault(); // 폼 기본 제출 동작 방지
 
