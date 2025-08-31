@@ -4,19 +4,23 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './postdetail.css';
 import Header from '../../components/Header';
 import { createGlobalStyle } from 'styled-components';
+import axios from 'axios';
 
-// ── 로컬 API 헬퍼 ─────────────────────────────────────────────
+// axios 인스턴스
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_BASE || "",
+  withCredentials: false,
+});
+
+// ── 로컬 API 헬퍼 (axios)
 async function apiFetchPost(id) {
-  const res = await fetch(`/api/posts/detail/${id}`, { method: "GET" });
-  if (!res.ok) throw new Error(await res.text().catch(() => res.statusText));
-  return await res.json();
+  const { data } = await api.get(`/api/posts/detail/${id}`);
+  return data;
 }
 async function apiDeletePost(id) {
-  const res = await fetch(`/api/posts/delete/${id}`, { method: "DELETE" });
-  if (!res.ok) throw new Error(await res.text().catch(() => res.statusText));
+  await api.delete(`/api/posts/delete/${id}`);
   return true;
 }
-// ─────────────────────────────────────────────────────────────
 
 const PostDetailGlobalStyle = createGlobalStyle`
   .pd-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
@@ -61,7 +65,7 @@ function replaceBlobImages(html = '', imagePaths = []) {
       return match.replace(/src=["'][^"']+["']/, `src="${src}"`);
     }
   );
-  return { html: replaced, usedCount: idx };
+  return { html: replaced };
 }
 
 export default function PostDetail() {

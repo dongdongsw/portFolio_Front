@@ -5,12 +5,18 @@ import Header from '../../components/Header';
 import '../post_detail/postdetail.css'; // 레이아웃/사이드바 스타일 재사용
 import UpdateEditor from './updateeditor';
 import styled, { createGlobalStyle } from 'styled-components';
+import axios from 'axios';
 
-/* ── 로컬 API 헬퍼 ────────────────────────────────────────── */
+/* axios 인스턴스 */
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_BASE || "",
+  withCredentials: false,
+});
+
+/* ── 로컬 API 헬퍼 (axios) ─────────────────────────── */
 async function apiFetchPost(id) {
-  const res = await fetch(`/api/posts/detail/${id}`, { method: 'GET' });
-  if (!res.ok) throw new Error(await res.text().catch(() => res.statusText));
-  return await res.json();
+  const { data } = await api.get(`/api/posts/detail/${id}`);
+  return data;
 }
 async function apiUpdatePost({ id, title, content, files }) {
   const fd = new FormData();
@@ -18,13 +24,12 @@ async function apiUpdatePost({ id, title, content, files }) {
   fd.append('content', content ?? '');
   (files || []).forEach(f => fd.append('files', f));
 
-  const res = await fetch(`/api/posts/modify/${id}`, { method: 'PUT', body: fd });
-  if (!res.ok) throw new Error(await res.text().catch(() => res.statusText));
-  try { return await res.json(); } catch { return null; }
+  const { data } = await api.put(`/api/posts/modify/${id}`, fd); // 헤더 자동
+  return data;
 }
-/* ────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────── */
 
-/* ── styled-components ───────────────────────────────────── */
+/* ── styled-components ─────────────────────────────── */
 const PostUpdateStyle = createGlobalStyle`
   .postdetail-article[data-page="edit-post"] { min-height: 681px; }
 `;
@@ -65,9 +70,9 @@ const SidebarInput = styled.input`
   width: 100%;
   outline: none;
 `;
-/* ────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────── */
 
-/* ── 유틸 ───────────────────────────────────────────────── */
+/* ── 유틸 ─────────────────────────────────────────── */
 const looksLikeHtml = (s = '') => /<\/?[a-z][\s\S]*>/i.test(s);
 
 function toEditableHtml(content = '') {
@@ -92,7 +97,7 @@ function replaceBlobImages(html = '', imagePaths = []) {
       return match.replace(/src=["'][^"']+["']/, `src="${src}"`);
     }
   );
-  return { html: replaced, usedCount: idx };
+  return { html: replaced };
 }
 
 const hasNonBlobImage = (html = '') =>
@@ -116,7 +121,7 @@ function stripEditArtifacts(html = '') {
   });
   return out;
 }
-/* ───────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────── */
 
 export default function PostUpdate() {
   const { id } = useParams();

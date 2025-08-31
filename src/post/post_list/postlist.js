@@ -4,15 +4,20 @@ import { useNavigate } from "react-router-dom";
 import "./postlist.css";
 import { createGlobalStyle } from "styled-components";
 import Header from "../../components/Header";
-import defaultThumb from "../../main/10.png"; // ✅ 업로드 없는 경우 기본 썸네일
+import defaultThumb from "../../main/10.png";
+import axios from "axios";
 
-// ── 로컬 API 헬퍼 ─────────────────────────────────────────────
+// ── axios 인스턴스 (프록시 사용 시 baseURL 비워두면 /api/... 상대경로로 호출됨)
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_BASE || "", // 배포 시 .env로 절대경로 지원
+  withCredentials: false,
+});
+
+// ── 로컬 API 헬퍼 (axios)
 async function apiFetchPosts() {
-  const res = await fetch("/api/posts", { method: "GET" });
-  if (!res.ok) throw new Error(await res.text().catch(() => res.statusText));
-  return await res.json();
+  const { data } = await api.get("/api/posts");
+  return data;
 }
-// ─────────────────────────────────────────────────────────────
 
 export default function PostList() {
   const PostListStyle = createGlobalStyle`
@@ -46,7 +51,7 @@ export default function PostList() {
     })();
   }, []);
 
-  const PAGE_SIZE = 12; // 4열 × 3행
+  const PAGE_SIZE = 12;
   const [page, setPage] = useState(1);
 
   const formatDate = (d) => {
@@ -128,7 +133,7 @@ export default function PostList() {
               const i = start + idx;
               const isHover = hoverIdx === i;
 
-              // ✅ 업로드 이미지가 있으면 그걸, 없으면 로컬 기본 썸네일
+              // 업로드 이미지(맨 앞) 없으면 기본 썸네일
               const uploadedThumb =
                 p?.imagepath0 || p?.imagepath1 || p?.imagepath2 || p?.imagepath3 || p?.imagepath4 || null;
               const thumb = uploadedThumb || defaultThumb;

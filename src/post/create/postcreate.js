@@ -6,17 +6,19 @@ import '../post_detail/postdetail.css';
 import '../../commonness.css';
 import WysiwygPostEditor from './postEditor';
 import { createGlobalStyle } from "styled-components";
+import axios from "axios";
 
-// ── 로컬 API 헬퍼 ─────────────────────────────────────────────
+// axios 인스턴스
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_BASE || "",
+  withCredentials: false,
+});
+
+// ── 로컬 API 헬퍼 (axios)
 async function apiCreatePost(formData) {
-  const res = await fetch("/api/posts", {
-    method: "POST",
-    body: formData, // ✅ FormData: Content-Type 헤더 지정 금지 (자동 설정)
-  });
-  if (!res.ok) throw new Error(await res.text().catch(() => res.statusText));
-  try { return await res.json(); } catch { return null; }
+  const { data } = await api.post("/api/posts", formData); // Content-Type 자동
+  return data;
 }
-// ─────────────────────────────────────────────────────────────
 
 export default function PostCreate() {
   const navigate = useNavigate();
@@ -47,7 +49,7 @@ export default function PostCreate() {
     return () => document.body.classList.remove('postdetail-body-styles');
   }, []);
 
-  // ✅ 에디터가 넘겨주는 { title, html } 사용
+  // 에디터가 넘겨주는 { title, html } 사용
   const handleSubmit = async ({ title: submittedTitle, html: submittedHtml }) => {
     const fd = new FormData();
     fd.append("loginid", loginid);
@@ -94,36 +96,60 @@ export default function PostCreate() {
                   <div className="postdetail-icon-box"><ion-icon name="mail-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
                     <p className="postdetail-contact-title">Email</p>
-                    <input type="email" name="email" value={contactInfo.email} onChange={handleContactInfoChange}
-                      className="postdetail-contact-link-input" placeholder="이메일을 입력하세요"
-                      style={{ border:'none', background:'none', color:'hsl(0,0%,0%)', fontSize:'15px', width:'100%', outline:'none' }} />
+                    <input
+                      type="email"
+                      name="email"
+                      value={contactInfo.email}
+                      onChange={handleContactInfoChange}
+                      className="postdetail-contact-link-input"
+                      placeholder="이메일을 입력하세요"
+                      style={{ border:'none', background:'none', color:'hsl(0,0%,0%)', fontSize:'15px', width:'100%', outline:'none' }}
+                    />
                   </div>
                 </li>
                 <li className="postdetail-contact-item">
                   <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
                     <p className="postdetail-contact-title">Phone</p>
-                    <input type="tel" name="phone" value={contactInfo.phone} onChange={handleContactInfoChange}
-                      className="postdetail-contact-link-input" placeholder="전화번호를 입력하세요"
-                      style={{ border:'none', background:'none', color:'hsl(0,0%,0%)', fontSize:'15px', width:'100%', outline:'none' }} />
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={contactInfo.phone}
+                      onChange={handleContactInfoChange}
+                      className="postdetail-contact-link-input"
+                      placeholder="전화번호를 입력하세요"
+                      style={{ border:'none', background:'none', color:'hsl(0,0%,0%)', fontSize:'15px', width:'100%', outline:'none' }}
+                    />
                   </div>
                 </li>
                 <li className="postdetail-contact-item">
                   <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
                     <p className="postdetail-contact-title">Birthday</p>
-                    <input type="date" name="birthday" value={contactInfo.birthday} onChange={handleContactInfoChange}
-                      className="postdetail-contact-link-input" placeholder="YYYY-MM-DD"
-                      style={{ border:'none', background:'none', color:'hsl(0,0%,0%)', fontSize:'15px', width:'100%', outline:'none' }} />
+                    <input
+                      type="date"
+                      name="birthday"
+                      value={contactInfo.birthday}
+                      onChange={handleContactInfoChange}
+                      className="postdetail-contact-link-input"
+                      placeholder="YYYY-MM-DD"
+                      style={{ border:'none', background:'none', color:'hsl(0,0%,0%)', fontSize:'15px', width:'100%', outline:'none' }}
+                    />
                   </div>
                 </li>
                 <li className="postdetail-contact-item">
                   <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
                     <p className="postdetail-contact-title">Location</p>
-                    <input type="text" name="location" value={contactInfo.location} onChange={handleContactInfoChange}
-                      className="postdetail-contact-link-input" placeholder="주소를 입력하세요"
-                      style={{ border:'none', background:'none', color:'hsl(0,0%,0%)', fontSize:'15px', width:'100%', outline:'none' }} />
+                    <input
+                      type="text"
+                      name="location"
+                      value={contactInfo.location}
+                      onChange={handleContactInfoChange}
+                      className="postdetail-contact-link-input"
+                      placeholder="주소를 입력하세요"
+                      style={{ border:'none', background:'none', color:'hsl(0,0%,0%)', fontSize:'15px', width:'100%', outline:'none' }}
+                    />
                   </div>
                 </li>
               </ul>
@@ -139,7 +165,7 @@ export default function PostCreate() {
                   placeholderTitle="제목을 입력하세요"
                   placeholderBody="내용을 입력하세요"
                   imageUpload={async (file) => {
-                    setFiles(prev => [...prev, file]);      // 실제 파일 모아두기
+                    setFiles(prev => [...prev, file]);      // 실제 파일 모으기
                     return URL.createObjectURL(file);       // 미리보기 URL
                   }}
                   onTitleChange={setTitle}
