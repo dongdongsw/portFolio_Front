@@ -354,8 +354,9 @@ export default function WysiwygPostEditor({
   const handleSubmit = (e) => {
     e.preventDefault();
     const html = (editorRef.current?.innerHTML || "").trim();
-    onSubmit?.({ title: title.trim(), html });
-    navigate("/postlist/postdetail"); // 등록 → 상세 (라우트에 맞게 수정)
+    const titleVal = title.trim();
+    console.log("[EDITOR SUBMIT]", { titleVal, html }); // ✅ 실제로 값이 있는지
+    onSubmit?.({ title: titleVal, html });              // 부모로 전달
   };
 
   // ---- UI helpers ----
