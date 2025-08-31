@@ -14,7 +14,6 @@ function App() {
       <Route path='/' element={<Home />}/>
       <Route path='/login' element={<Login/>}/>
       <Route path='/postlist' element={<Postlist/>} />
-      <Route path='/postlist/postdetail' element={<PostDetail/>} />
       <Route path='/postlist/postdetail/:id' element={<PostDetail/>} />
       <Route path='/create' element={<PostCreate/>}/>
       <Route path='/update/:id' element={<PostUpdate/>}/>

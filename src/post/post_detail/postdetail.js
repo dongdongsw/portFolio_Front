@@ -1,107 +1,182 @@
+// src/post/post_detail/postdetail.jsx
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import './postdetail.css';
 import Header from '../../components/Header';
+import { fetchPost, deletePost } from '../../api/postApi';
 
-// ✅ 리스트에서 쓰게 될 요약 정보(제목/작성자/첫번째 이미지)를 export
-//   - 파일 추가 없이 이 파일에서만 제공하고, PostList가 import 해서 사용
-export const postSummary = {
-  id: 1,
-  title: '신날두~~',
-  author: '박명수',
-  thumbnail: 'https://i.postimg.cc/3JXZ4X7n/image.jpg', // 상세의 첫 번째 이미지
-};
+const pad = (n) => String(n).padStart(2, '0');
+function formatDate(v) {
+  if (!v) return '';
+  const d = new Date(v);
+  if (isNaN(d)) return '';
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+const looksLikeHtml = (s='') => /<\/?[a-z][\s\S]*>/i.test(s);
 
-function normalize(s) {
-  return String(s || '').trim().toLowerCase();
+// 평문/이스케이프된 HTML → 렌더 가능한 HTML
+function toDisplayHtml(content='') {
+  if (!content) return '';
+  if (looksLikeHtml(content)) return content;
+
+  const ta = document.createElement('textarea');
+  ta.innerHTML = content;
+  const decoded = ta.value;
+  if (looksLikeHtml(decoded)) return decoded;
+
+  return String(content)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\r?\n/g,'<br/>');
 }
 
-export default function PostDetail() {
-  const { id } = useParams(); // optional param
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activePage, setActivePage] = useState('about');
-  
-  const [showCommentSection, setShowCommentSection] = useState(false); // 초기값은 false로 설정하여 기본적으로 숨김
-  const [comments, setComments] = useState([]); // 댓글 데이터 (예시)
+// blob 이미지를 서버 저장 경로로 치환
+function replaceBlobImages(html = '', imagePaths = []) {
+  let idx = 0;
+  const replaced = html.replace(
+    /<img\b[^>]*src=["']blob:[^"']*["'][^>]*>/gi,
+    (match) => {
+      if (idx >= imagePaths.length) return ''; // 더 없으면 해당 blob 이미지는 제거
+      const src = imagePaths[idx++];
+      return match.replace(/src=["'][^"']+["']/, `src="${src}"`);
+    }
+  );
+  return { html: replaced, usedCount: idx };
+}
+const hasNonBlobImage = (html='') =>
+  /<img\b[^>]*src=["'](?!blob:)[^"']+["'][^>]*>/i.test(html);
 
-  // 페이지 마운트/언마운트 시 body에 클래스 추가/제거
+export default function PostDetail() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [post, setPost] = useState(null);
+  const [error, setError] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const toggleSidebar = () => setSidebarOpen(v => !v);
+
   useEffect(() => {
     document.body.classList.add('postdetail-body-styles');
-    return () => {
-      document.body.classList.remove('postdetail-body-styles');
-    };
+    return () => document.body.classList.remove('postdetail-body-styles');
   }, []);
 
   useEffect(() => {
-    // 실제 앱에서는 API 호출 등으로 댓글 데이터를 불러옵니다.
-    // const fetchedComments = await fetch('/api/comments');
-    const sampleComments = [
-      { id: 1, author: '유재현', text: '신갓두!' },
-      { id: 2, author: '김민석', text: '물총 날두 멋있다....' },
-      { id: 3, author: '이철우', text: '날두 꿀밤 때려주고싶다' },
-      { id: 4, author: '펩 과르디올라', text: '몰락하는 올드트래프트, 살아나는 에티하드 스타디움' },
-      { id: 5, author: '후벵 아모림', text: '아 몰라 망했쩌 오또케오또케' }
-    ];
-    setComments(sampleComments); // 댓글 데이터를 상태에 저장
-
-    // 댓글 데이터가 있다면 댓글 섹션 보이게 설정
-    if (sampleComments.length > 0) {
-      setShowCommentSection(true);
-    } else {
-      setShowCommentSection(false);
+    if (!id || isNaN(Number(id))) {
+      setError('잘못된 게시글 주소입니다.');
+      return;
     }
-  }, []); // 컴포넌트 마운트 시 한 번만 실행
+    (async () => {
+      try {
+        const data = await fetchPost(id);
+        setPost(data);
+      } catch (e) {
+        setError('게시글을 불러오지 못했습니다.');
+      }
+    })();
+  }, [id]);
 
-  const toggleSidebar = () => setSidebarOpen(v => !v);
+  const onEdit = () => navigate(`/update/${id}`);
+  const onDelete = async () => {
+    if (!window.confirm('정말 삭제할까요?')) return;
+    try {
+      await deletePost(id);
+      alert('삭제되었습니다.');
+      navigate('/postlist');
+    } catch {
+      alert('삭제에 실패했습니다.');
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="app-root">
+        <Header />
+        <main className="postdetail-main">
+          <div className="postdetail-main-content">
+            <p className="postdetail-h3">{error}</p>
+            <button onClick={() => navigate('/postlist')}>목록으로</button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+  if (!post) {
+    return (
+      <div className="app-root">
+        <Header />
+        <main className="postdetail-main">
+          <div className="postdetail-main-content">
+            <p className="postdetail-h3">게시글을 불러오는 중...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // DTO 매핑
+  const title   = post.title || '(제목 없음)';
+  const author  = post.nickname || post.loginid || '작성자';
+
+  // ✅ 작성일 / 최종 수정일 계산 (작성일은 uploaddate, 수정일이 있고 서로 다를 때만 표시)
+  const uploadStr = formatDate(post.uploaddate);
+  const modifyStr =
+    post.modifydate &&
+    new Date(post.modifydate).getTime() !== new Date(post.uploaddate || 0).getTime()
+      ? formatDate(post.modifydate)
+      : null;
+
+  const content = post.content || '';
+
+  // 서버 저장 이미지들
+  const uploadedImages = [
+    post.imagepath0, post.imagepath1, post.imagepath2, post.imagepath3, post.imagepath4
+  ].filter(Boolean);
+
+  // 본문 HTML 준비 + blob→서버 경로 치환
+  const baseHtml = toDisplayHtml(content);
+  const { html: htmlNoBlob } = replaceBlobImages(baseHtml, uploadedImages);
 
   return (
     <div className="app-root">
-       <Header />
-      <main className="postdetail-main"> 
+      <Header />
+      <main className="postdetail-main">
+        {/* 사이드바 유지 */}
         <aside className={`postdetail-sidebar ${sidebarOpen ? 'active' : ''}`} aria-hidden={!sidebarOpen} data-sidebar>
           <div className="postdetail-sidebar-info">
             <figure className="postdetail-avatar-box">
               <img src="https://i.postimg.cc/hP9yPjCQ/image.jpg" alt="avatar"/>
             </figure>
-
             <div className="postdetail-info-content">
-              {/* ✅ 작성자 표시도 postSummary.author와 일치 */}
-              <h1 className="postdetail-name" title="Richard Hanrick">{postSummary.author}</h1>
+              <h1 className="postdetail-name" title="Writer">{author}</h1>
               <p className="postdetail-title">Web Developer</p>
             </div>
-
             <button className="postdetail-info-more-btn" data-sidebar-btn onClick={toggleSidebar} aria-expanded={sidebarOpen}>
               <span>Show Contacts</span>
               <ion-icon name="chevron-down" aria-hidden="true"></ion-icon>
             </button>
           </div>
-
           <div className="postdetail-sidebar-info-more">
             <div className="postdetail-separator" />
             <ul className="postdetail-contacts-list">
               <li className="postdetail-contact-item">
                 <div className="postdetail-icon-box">
                   <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/new-post.png" alt="new-post"/>
-                  </div>
+                </div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Email</p>
-                  <a href="mailto:richard@example.com" className="postdetail-contact-link">greatPark@example.com</a>
+                  <a href="#!" className="postdetail-contact-link">greatPark@example.com</a>
                 </div>
               </li>
-
               <li className="postdetail-contact-item">
                 <div className="postdetail-icon-box">
                   <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/phone--v1.png" alt="phone--v1"/>
                 </div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Phone</p>
-                  <a href="tel:+12133522795" className="postdetail-contact-link">+1 (213) 352-2795</a>
+                  <a href="#!" className="postdetail-contact-link">+82-10-0000-0000</a>
                 </div>
               </li>
-
               <li className="postdetail-contact-item">
                 <div className="postdetail-icon-box">
-
                   <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/birthday.png" alt="birthday"/>
                 </div>
                 <div className="postdetail-contact-info">
@@ -109,75 +184,72 @@ export default function PostDetail() {
                   <time dateTime="1982-06-23">June 23, 1982</time>
                 </div>
               </li>
-
               <li className="postdetail-contact-item">
                 <div className="postdetail-icon-box">
-                  <img width="30" height="30" src="https://img.icons8.com/material-sharp/24/marker.png" alt="marker"/>                </div>
+                  <img width="30" height="30" src="https://img.icons8.com/material-sharp/24/marker.png" alt="marker"/>
+                </div>
                 <div className="postdetail-contact-info">
                   <p className="postdetail-contact-title">Location</p>
-                  <address>Sacramento, California, USA</address>
+                  <address>Seoul, Korea</address>
                 </div>
               </li>
             </ul>
           </div>
         </aside>
 
+        {/* 본문 + 수정/삭제 버튼 */}
         <div className="postdetail-main-content">
-          {/* ABOUT */}
-          {activePage === 'about' && (
-            <article className="postdetail-article postdetail-about active" data-page="about">
-              {/* ✅ 제목도 postSummary.title과 일치 */}
-              <header><h2 className="postdetail-h2 postdetail-article-title">{postSummary.title}</h2></header>
-
-              <section className="postdetail-about-text">                
-                <p>I'm Creative Director and UI/UX Designer from Sydney, Australia, working in web development and print media. I enjoy turning complex problems into simple, beautiful and intuitive designs.</p>
-                <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
-
-                {/* ✅ 첫 번째 이미지 (썸네일과 동일) */}
-                <img src={postSummary.thumbnail} alt="브이날두"  className="postdetail-about-image" />
-
-                <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
-                <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
-
-                <img src="https://i.postimg.cc/6pRT5cXp/image.avif" alt="물총날두"  className="postdetail-about-image" />
-
-                <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
-                <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
-
-                <img src="https://i.postimg.cc/HnCBRBd8/image.jpg" alt="성난날두"  className="postdetail-about-image" />
-
-                <p>안녕 OO아너를처음본순간부터좋아했어방학전에고백하고싶었는데바보같이그땐용기가없더라지금은이수많은사람들앞에서오로지너만사랑한다고말하고싶어서큰마음먹고용기내어봐매일매일버스에서너볼때마다두근댔고동아리랑과활동에서도너만보이고너생각만나고지난3월부터계속그랬어니가남자친구랑헤어지고니맘이아파울때내마음도너무아팠지만내심좋은맘두있었어이런내맘을어떻게말할지고민하다가정말인생에서제일크게용기내어세상에서제일멋지게많은사람들앞에서너한테고백해주고싶었어사랑하는OO님내여자가되줄래?아니나만의태양이되어줄래?난너의달님이될게내일3시반에너수업마치고학관앞에서기다리고있을게너를사랑하는OO이가.</p>
-
-                <p>My job is to build your website so that it is functional and user-friendly but at the same time attractive. Moreover, I add personal touch to your product and make sure that is eye-catching and easy to use. My aim is to bring across your message and identity in the most creative way. I created web design for many famous brand companies.</p>
-
-                <img src="https://i.postimg.cc/CKHSGSLR/image.jpg" alt="피곤명수"  className="postdetail-about-image" />
-                <p> 아으 피곤해</p>
-                <img src="https://i.postimg.cc/DwBL6JfG/image.webp" alt="종국이형"  className="postdetail-about-image" />
-                <p> 김종국님 결혼 축하드립니다~!</p>
-              </section>
-            </article>
-          )}
-          {showCommentSection && (
-            <section className="postdetail-comment-section">
-              <h3 className="postdetail-h3 postdetail-comment-title">Comments</h3>
-              <div className="postdetail-comments-container">
-                {comments.length > 0 ? (
-                  <ul className="postdetail-comment-list">
-                    {comments.map(comment => (
-                      <li key={comment.id} className="postdetail-comment-item">
-                        <p className="postdetail-comment-author">{comment.author}</p>
-                        <p className="postdetail-comment-text">{comment.text}</p>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>아직 댓글이 없습니다.</p>
-                )}
+          <article className="postdetail-article postdetail-about active" data-page="about">
+            <header style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
+              <div>
+                <h2 className="postdetail-h2 postdetail-article-title" style={{ marginBottom: 6 }}>{title}</h2>
+                <p style={{margin: 0, color: '#666'}}>
+                  {uploadStr && <> <span>작성일 {uploadStr}</span></>}
+                  {modifyStr && <span style={{ color: '#8a8a8a' }}> (최종 수정일: {modifyStr})</span>}
+                </p>
               </div>
+
+              {/* 작성/취소 스타일과 동일 */}
+              <div style={{ display:'flex', gap:10 }}>
+                <button onClick={onEdit} style={submitBtnStyle}>수정</button>
+                <button onClick={onDelete} style={cancelBtnStyle}>삭제</button>
+              </div>
+            </header>
+
+            <section className="postdetail-about-text">
+              {htmlNoBlob ? (
+                <div dangerouslySetInnerHTML={{ __html: htmlNoBlob }} />
+              ) : (
+                <p>(내용 없음)</p>
+              )}
             </section>
-          )}
+          </article>
         </div>
       </main>
     </div>
   );
 }
+
+const btnStyle = {
+  padding: "10px 14px",
+  borderRadius: 12,
+  border: "1px solid #d1d5db",
+  background: "#fff",
+  cursor: "pointer",
+  fontSize: 14,
+};
+
+const cancelBtnStyle = {
+  ...btnStyle,
+  background: "#f3f4f6",     // 연한 회색 (취소/삭제)
+  color: "#374151",
+  borderColor: "#e5e7eb",
+};
+
+const submitBtnStyle = {
+  ...btnStyle,
+  background: "#c7c8cc",     // 작성/수정
+  color: "#374151",
+  border: "none",
+  boxShadow: "0 2px 6px rgba(59,130,246,0.35)",
+};
