@@ -4,8 +4,15 @@ import { useNavigate } from "react-router-dom";
 import "./postlist.css";
 import { createGlobalStyle } from "styled-components";
 import Header from "../../components/Header";
-import { fetchPosts } from "../../api/postApi";
-import defaultThumb from "../../main/10.png"; // ✅ 업로드 없는 경우 사용할 기본 썸네일
+import defaultThumb from "../../main/10.png"; // ✅ 업로드 없는 경우 기본 썸네일
+
+// ── 로컬 API 헬퍼 ─────────────────────────────────────────────
+async function apiFetchPosts() {
+  const res = await fetch("/api/posts", { method: "GET" });
+  if (!res.ok) throw new Error(await res.text().catch(() => res.statusText));
+  return await res.json();
+}
+// ─────────────────────────────────────────────────────────────
 
 export default function PostList() {
   const PostListStyle = createGlobalStyle`
@@ -25,15 +32,13 @@ export default function PostList() {
 
   const navigate = useNavigate();
 
-  // 서버에서 받아온 게시글
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 최초 로드
   useEffect(() => {
     (async () => {
       try {
-        const data = await fetchPosts(); // GET /api/posts
+        const data = await apiFetchPosts();
         setPosts(Array.isArray(data) ? data : []);
       } finally {
         setLoading(false);
@@ -44,7 +49,6 @@ export default function PostList() {
   const PAGE_SIZE = 12; // 4열 × 3행
   const [page, setPage] = useState(1);
 
-  // 날짜 포맷
   const formatDate = (d) => {
     if (!d) return "";
     const dt = new Date(d);
@@ -124,10 +128,10 @@ export default function PostList() {
               const i = start + idx;
               const isHover = hoverIdx === i;
 
-              // ✅ 업로드 이미지가 하나라도 있으면 그걸 사용, 없으면 기본 썸네일 사용
+              // ✅ 업로드 이미지가 있으면 그걸, 없으면 로컬 기본 썸네일
               const uploadedThumb =
                 p?.imagepath0 || p?.imagepath1 || p?.imagepath2 || p?.imagepath3 || p?.imagepath4 || null;
-              const thumb = uploadedThumb || defaultThumb; // 외부 링크 절대 사용 X
+              const thumb = uploadedThumb || defaultThumb;
 
               const title = p?.title || "(제목 없음)";
               const author = p?.nickname || p?.loginid || "작성자";
