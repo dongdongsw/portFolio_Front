@@ -7,6 +7,8 @@ import UpdateEditor from './updateeditor';
 import styled, { createGlobalStyle } from 'styled-components';
 import axios from 'axios';
 
+axios.defaults.withCredentials = true;
+
 /* axios 인스턴스 */
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_BASE || "",
@@ -121,6 +123,18 @@ function stripEditArtifacts(html = '') {
   });
   return out;
 }
+
+/* ✅ 내용이 비었는지 판정: 텍스트가 없고 이미지(<img>)도 없으면 빈 내용으로 간주 */
+function isEmptyContent(html = "") {
+  if (!html) return true;
+  const hasImage = /<img\b/i.test(html);
+  const textOnly = html
+    .replace(/<br\s*\/?>/gi, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/<[^>]+>/g, "")
+    .trim();
+  return !hasImage && textOnly.length === 0;
+}
 /* ─────────────────────────────────────────────────── */
 
 export default function PostUpdate() {
@@ -188,13 +202,27 @@ export default function PostUpdate() {
 
   const handleSubmit = async (e) => {
     e?.preventDefault?.();
+
+    // ✅ 제목/내용 검증 (이미지만 있어도 내용 OK)
+    const t = (title ?? '').trim();
+    const cleaned = stripEditArtifacts(html ?? '').trim();
+
+    if (!t) {
+      alert('제목을 입력하세요.');
+      return;
+    }
+    if (isEmptyContent(cleaned)) {
+      alert('내용을 입력하세요.');
+      return;
+    }
+
     try {
       setLoading(true);
-      const cleaned = stripEditArtifacts(html);
-      await apiUpdatePost({ id, title, content: cleaned, files });
+      await apiUpdatePost({ id, title: t, content: cleaned, files });
       alert('수정되었습니다.');
       navigate(`/postlist/postdetail/${id}`);
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert('수정에 실패했습니다.');
     } finally {
       setLoading(false);
@@ -328,10 +356,6 @@ export default function PostUpdate() {
           {/* 본문: 에디터 + 버튼 */}
           <div className="postdetail-main-content">
             <article className="postdetail-article active" data-page="edit-post">
-              <header>
-                <h2 className="postdetail-h2 postdetail-article-title">게시물 수정</h2>
-              </header>
-
               <form onSubmit={handleSubmit} className="postedit-form">
                 <UpdateEditor
                   initialTitle={title}

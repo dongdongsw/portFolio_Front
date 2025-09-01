@@ -8,6 +8,8 @@ import WysiwygPostEditor from './postEditor';
 import { createGlobalStyle } from "styled-components";
 import axios from "axios";
 
+axios.defaults.withCredentials = true;
+
 // axios 인스턴스
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_BASE || "",
@@ -18,6 +20,17 @@ const api = axios.create({
 async function apiCreatePost(formData) {
   const { data } = await api.post("/api/posts", formData); // Content-Type 자동
   return data;
+}
+
+// ✅ 내용 비었는지 판정: 텍스트가 없고 이미지(<img>)도 없으면 빈 내용
+function isEmptyContent(html = "") {
+  const hasImage = /<img\b/i.test(html);
+  const textOnly = html
+    .replace(/<br\s*\/?>/gi, "")    // <br> 제거
+    .replace(/&nbsp;/gi, " ")       // &nbsp;를 공백으로
+    .replace(/<[^>]+>/g, "")        // 태그 제거
+    .trim();
+  return !hasImage && textOnly.length === 0;
 }
 
 export default function PostCreate() {
@@ -49,20 +62,35 @@ export default function PostCreate() {
     return () => document.body.classList.remove('postdetail-body-styles');
   }, []);
 
-  // 에디터가 넘겨주는 { title, html } 사용
+  // ✅ 에디터가 넘겨주는 { title, html } 사용 + 빈 값 검증
   const handleSubmit = async ({ title: submittedTitle, html: submittedHtml }) => {
+    const t = (submittedTitle ?? "").trim();
+    const h = (submittedHtml ?? "").trim();
+
+    if (!t) {
+      alert("제목을 입력하세요.");
+      return;
+    }
+    if (isEmptyContent(h)) {
+      alert("내용을 입력하세요.");
+      return;
+    }
+
     const fd = new FormData();
     fd.append("loginid", loginid);
     fd.append("nickname", nickname);
-    fd.append("title", submittedTitle ?? "");
-    fd.append("content", submittedHtml ?? "");
+    fd.append("title", t);
+    fd.append("content", h);
     (files || []).forEach(f => fd.append("files", f));
 
-    console.log("FD ENTRIES:", Array.from(fd.entries()));
-
-    await apiCreatePost(fd);
-    alert("작성 완료!");
-    navigate("/postlist");
+    try {
+      await apiCreatePost(fd);
+      alert("작성 완료!");
+      navigate("/postlist");
+    } catch (err) {
+      console.error(err);
+      alert("작성 중 오류가 발생했습니다.");
+    }
   };
 
   return (

@@ -7,6 +7,8 @@ import Header from "../../components/Header";
 import defaultThumb from "../../main/10.png";
 import axios from "axios";
 
+axios.defaults.withCredentials = true;
+
 // ── axios 인스턴스 (프록시 사용 시 baseURL 비워두면 /api/... 상대경로로 호출됨)
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_BASE || "", // 배포 시 .env로 절대경로 지원

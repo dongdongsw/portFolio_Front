@@ -36,6 +36,7 @@ const EditorGlobalStyle = createGlobalStyle`
     cursor: pointer;
     font-size: 14px;
     line-height: 0;
+    height: 40px;
   }
   .we-btn--active {
     border-color: #3b82f6;
@@ -56,9 +57,7 @@ const EditorGlobalStyle = createGlobalStyle`
     font-size: 14px;
   }
 
-  .we-editor-wrap {
-    position: relative;
-  }
+  .we-editor-wrap { position: relative; }
 
   .we-editor {
     min-height: 260px;
@@ -84,11 +83,9 @@ const EditorGlobalStyle = createGlobalStyle`
     height: auto;
     display: block;
     margin: 8px auto;
-    outline: none;            /* 저장 시 파란 테두리 남지 않게 */
+    outline: none;
   }
-  [contenteditable] b, [contenteditable] strong {
-    font-weight: 800;
-  }
+  [contenteditable] b, [contenteditable] strong { font-weight: 800; }
 
   .we-handle {
     position: absolute;
@@ -146,11 +143,13 @@ const EditorGlobalStyle = createGlobalStyle`
   }
 `;
 
+const MAX_IMAGES = 5;
+
 export default function WysiwygPostEditor({
   onSubmit,
-  onCancel, // 선택
-  onTitleChange, // 선택: 부모로 제목 변경 알림
-  onContentChange, // 선택: 부모로 내용 변경 알림
+  onCancel,
+  onTitleChange,
+  onContentChange,
   placeholderTitle = "제목을 입력하세요",
   placeholderBody = "여기에 내용을 입력하고, 사진 버튼으로 이미지를 삽입하세요.",
   imageUpload, // optional async(file) => url
@@ -162,24 +161,18 @@ export default function WysiwygPostEditor({
   const savedSelectionRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // toolbar state
   const [boldActive, setBoldActive] = useState(false);
 
-  // image selection/overlay state
   const [selectedImg, setSelectedImg] = useState(null);
   const [overlay, setOverlay] = useState({ top: 0, left: 0, w: 0, h: 0 });
 
-  // custom context menu for image
   const [ctx, setCtx] = useState({ visible: false, x: 0, y: 0, targetImg: null });
 
   useEffect(() => {
     editorRef.current?.setAttribute("data-placeholder", placeholderBody);
   }, [placeholderBody]);
 
-  // 제목/본문 변경 시 부모에게 알려주기(선택)
-  useEffect(() => {
-    onTitleChange?.(title);
-  }, [title, onTitleChange]);
+  useEffect(() => { onTitleChange?.(title); }, [title, onTitleChange]);
 
   const notifyContentChange = () => {
     const html = (editorRef.current?.innerHTML || "").trim();
@@ -261,6 +254,27 @@ export default function WysiwygPostEditor({
     return editor.contains(container.nodeType === 1 ? container : container.parentNode);
   };
 
+  // 이미지 개수 세기 (blob: + /images/ 만 카운트)
+  const countEditorImages = () => {
+    const editor = editorRef.current;
+    if (!editor) return 0;
+    return editor.querySelectorAll('img[src^="blob:"], img[src^="/images/"]').length;
+  };
+
+  // 파일 리스트에서 이미지 + 중복 제거
+  const filterAndDedupeImageFiles = (fileList) => {
+    const seen = new Set();
+    const out = [];
+    for (const f of fileList) {
+      if (!f || !f.type?.startsWith?.("image/")) continue;
+      const sig = `${f.name}:${f.size}:${f.lastModified}`;
+      if (seen.has(sig)) continue;
+      seen.add(sig);
+      out.push(f);
+    }
+    return out;
+  };
+
   // ---- commands ----
   const selectionHasImage = () => {
     const sel = window.getSelection?.();
@@ -275,10 +289,10 @@ export default function WysiwygPostEditor({
     try { setBoldActive(!!document.queryCommandState("bold")); } catch {}
   };
 
-  // ✅ 이미지가 선택 범위에 있으면 굵게 적용 방지
+  // 이미지 선택 영역이면 Bold 방지
   const execBold = () => {
     if (!isSelectionInsideEditor()) return;
-    if (selectionHasImage()) return; // 이미지에는 Bold 적용하지 않음
+    if (selectionHasImage()) return;
     execCommand("bold");
   };
 
@@ -289,9 +303,9 @@ export default function WysiwygPostEditor({
     if (!sel || sel.rangeCount === 0 || !isSelectionInsideEditor()) return;
     const range = sel.getRangeAt(0);
 
-    // 이미지만 선택된 경우 크기 변경 방지
+    // 이미지 단독 선택 시 크기 변경 X
     const fragCheck = range.cloneContents();
-    if (fragCheck.querySelector?.("img") && fragCheck.textContent?.trim() === "") {
+    if (fragCheck.querySelector?.("img") && (fragCheck.textContent?.trim() ?? "") === "") {
       return;
     }
 
@@ -341,21 +355,38 @@ export default function WysiwygPostEditor({
 
   // ---- image insert ----
   const handleClickPhoto = () => {
+    // ✅ 파일 선택창 열기 전 현재 수정사항 부모에 반영
     saveSelection();
+    notifyContentChange();
     fileInputRef.current?.click();
   };
 
   const handleFilesSelected = async (e) => {
-    const files = Array.from(e.target.files || []);
+    const raw = Array.from(e.target.files || []);
     e.target.value = "";
+    if (!raw.length) return;
+
+    // 이미지 + 중복 제거
+    let files = filterAndDedupeImageFiles(raw);
     if (!files.length) return;
+
+    // 현재 이미지 수 확인
+    const current = countEditorImages();
+    if (current >= MAX_IMAGES) {
+      alert("이미지는 최대 5장 삽입 가능합니다. 현재 5장입니다.");
+      return;
+    }
+
+    const available = MAX_IMAGES - current;
+    if (files.length > available) {
+      alert(`이미지는 최대 5장 삽입 가능합니다.\n현재 ${current}장, 선택 ${files.length}장 → ${available}장만 추가됩니다.`);
+      files = files.slice(0, available);
+    }
 
     editorRef.current?.focus();
     restoreSelection();
 
     for (const file of files) {
-      if (!file.type.startsWith("image/")) continue;
-
       const previewSrc = URL.createObjectURL(file);
       const img = insertImageAtCursor(previewSrc);
 
@@ -446,7 +477,7 @@ export default function WysiwygPostEditor({
   const selectImage = (imgEl) => {
     if (!(imgEl instanceof HTMLImageElement)) return;
     if (selectedImg && selectedImg !== imgEl) selectedImg.style.outline = "none";
-    imgEl.style.outline = "2px solid rgba(59,130,246,.8)"; // 편집 중에만 보이는 테두리
+    imgEl.style.outline = "2px solid rgba(59,130,246,.8)";
     setSelectedImg(imgEl);
     updateOverlayFromImg(imgEl);
   };
@@ -521,7 +552,7 @@ export default function WysiwygPostEditor({
     notifyContentChange();
   };
 
-  // ---- 취소/등록 라우팅 ----
+  // ---- 취소/등록 ----
   const handleCancel = () => {
     const ok = window.confirm("글 작성을 정말 취소하시겠습니까?");
     if (!ok) return;
@@ -620,7 +651,7 @@ export default function WysiwygPostEditor({
           />
         </div>
 
-        {/* Editor wrapper (for resize handle positioning) */}
+        {/* Editor wrapper */}
         <div className="we-editor-wrap">
           <div
             ref={editorRef}
@@ -646,7 +677,7 @@ export default function WysiwygPostEditor({
           )}
         </div>
 
-        {/* Buttons: 취소 + 등록 */}
+        {/* Buttons */}
         <div className="we-actions">
           <button type="button" onClick={handleCancel} className="we-btn--cancel">취소</button>
           <button type="submit" className="we-btn--submit">등록</button>

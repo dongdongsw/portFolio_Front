@@ -6,6 +6,7 @@ import Header from '../../components/Header';
 import { createGlobalStyle } from 'styled-components';
 import axios from 'axios';
 
+axios.defaults.withCredentials = true;
 // axios 인스턴스
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_BASE || "",
