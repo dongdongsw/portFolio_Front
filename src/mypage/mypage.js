@@ -236,109 +236,82 @@ function ProfileCard() {
 
   // 이메일 인증 코드 검증
   const handleVerifyCodeClick = async () => {
-    if (!verificationCode) {
+  if (!verificationCode) {
 
-      alert("인증번호를 입력해주세요.");
+    alert("인증번호를 입력해주세요.");
 
-      return;
-    }
-    try {
-      const response = await axios.post('/api/mypage/email/verify-code', { code: verificationCode });
+    return;
 
-      alert(response.data); // 백엔드 메시지 출력
+  }
+  try {
+    const response = await axios.post('/api/mypage/email/verify-code', { code: verificationCode });
 
-      setShowVerificationInput(false); // 인증 성공하면 입력창 숨기기
+    alert(response.data); // "이메일 인증이 성공적으로 완료되었습니다."
 
-      // '저장' 버튼 클릭 시 새 이메일이 백엔드로 전송됨
-      setEditedUserInfo((prev) => ({ ...prev, email: newEmail }));
+    // 기존 이메일은 건드리지 않고, 단지 인증 성공 상태만 유지
+    setShowVerificationInput(false);
+    // 인증 성공 표시만 하고 email은 바꾸지 않음
+  } catch (err) {
 
-      setNewEmail(''); // 새로운 이메일 입력 필드 초기화
-      setVerificationCode(''); // 인증번호 입력 필드 초기화
-    } catch (err) {
+    console.error("인증번호 확인 중 오류:", err);
+    alert(err.response?.data || "인증번호 확인에 실패했습니다. 다시 시도해주세요.");
 
-      console.error("인증번호 확인 중 오류:", err);
-
-      if (err.response && err.response.data) {
-
-        alert(err.response.data); // 백엔드 메시지 출력
-
-      } else {
-
-        alert('인증번호 확인에 실패했습니다. 다시 시도해주세요.');
-
-      }
-    }
-  };
+  }
+};
 
 
   // 최종 정보 저장
-  const handleSaveClick = async () => {
-    // 비밀번호 유효성 검사 (프론트 단에서 1차)
-    if (currentPassword || newPassword || confirmNewPassword) { // 하나라도 입력되면 비밀번호 변경 시도로 간주
+const handleSaveClick = async () => {
+  // 비밀번호 유효성 검사
+  if (currentPassword || newPassword || confirmNewPassword) {
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      alert("비밀번호를 변경하려면 현재 비밀번호, 새 비밀번호, 새 비밀번호 확인을 모두 입력해야 합니다.");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      alert("새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다.");
+      return;
+    }
+    if (newPassword.length < 8 || newPassword.length > 20) {
+      alert("새 비밀번호는 8자 이상 20자 이하여야 합니다.");
+      return;
+    }
+  }
 
-      if (!currentPassword || !newPassword || !confirmNewPassword) {
+  try {
+    const updateData = {
+      newNickname: editedUserInfo.nickname,
+      newEmail: newEmail || null,  // ✅ 새 이메일만 PATCH로 보냄 (기존 email은 유지)
+      currentPassword: currentPassword || null,
+      newPassword: newPassword || null,
+      newPasswordConfirm: confirmNewPassword || null
+    };
 
-        alert("비밀번호를 변경하려면 현재 비밀번호, 새 비밀번호, 새 비밀번호 확인을 모두 입력해야 합니다.");
+    console.log("PATCH payload", updateData); // 디버깅용
 
-        return;
-      }
-      if (newPassword !== confirmNewPassword) {
+    const response = await axios.patch('/api/mypage', updateData);
 
-        alert("새 비밀번호와 새 비밀번호 확인이 일치하지 않습니다.");
-
-        return;
-      }
-      if (newPassword.length < 8 || newPassword.length > 20) {
-
-        alert("새 비밀번호는 8자 이상 20자 이하여야 합니다.");
-
-        return;
-      }
-      
+    // ✅ 저장 성공 시 기존 이메일을 새 이메일로 갱신
+    if (newEmail) {
+      setEditedUserInfo((prev) => ({ ...prev, email: newEmail }));
+      setNewEmail('');
     }
 
-    try {
-      const updateData = {
+    setUserInfo({ ...editedUserInfo });
+    setIsEditing(false);
 
-        newNickname: editedUserInfo.nickname,
-        // 이메일은 MyPageUpdateRequestDto에 있지만, 프론트에서 별도로 이메일 인증 프로세스 거치므로
-        // 이메일 인증이 완료되었다는 가정하에 editedUserInfo.email 값을 백엔드로 보냄
-        newEmail: editedUserInfo.email, // 이메일 변경 완료 후 editedUserInfo.email에 반영된 값을 보냄
+    // 비밀번호 필드 초기화
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmNewPassword('');
 
-        // 비밀번호는 입력 필드가 비어있지 않은 경우에만 전송
-        currentPassword: currentPassword || null,
-        newPassword: newPassword || null,
-        newPasswordConfirm: confirmNewPassword || null,
-        // 이메일 인증 코드는 MyPageUpdateRequestDto에 있지만,
-        // 이메일 인증 시 verifyCode에서 이미 사용되었으므로 최종 업데이트 시엔 굳이 안 보냄
-        emailVerificationCode: verificationCode || null // 혹시 몰라 추가 (백엔드 MyPageUpdateRequestDto에 포함되어있으니)
+    alert(response.data);
+  } catch (err) {
+    console.error("정보 저장 중 오류 발생:", err);
+    alert(err.response?.data || '정보 저장에 실패했습니다. 다시 시도해주세요.');
+  }
+};
 
-      };
-
-      const response = await axios.patch('/api/mypage', updateData);
-
-      setUserInfo({ ...editedUserInfo }); // 최종 반영
-      setIsEditing(false);
-      
-      // 비밀번호 필드 초기화 (저장 후)
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmNewPassword('');
-
-      alert(response.data); // 백엔드 메시지 출력
-    } catch (err) {
-      console.error("정보 저장 중 오류 발생:", err);
-      if (err.response && err.response.data) {
-
-        alert(`저장 실패: ${err.response.data}`); // 백엔드 메시지 출력
-
-      } else {
-
-        alert('정보 저장에 실패했습니다. 다시 시도해주세요.');
-
-      }
-    }
-  };
 
   // 탈퇴 (현재 컨트롤러에 없음, 프론트에만 있음)
   const handlesecessionClick = async () => {
@@ -563,46 +536,49 @@ function ProfileCard() {
                 </div>
               </div>
 
-              <div className="mypage-field-a">
-                <label>새 이메일 주소</label>
-                <div className="nickname-input-group">
-                  <input
-                    type="email"
-                    name="newEmail"
-                    value={newEmail} 
-                    placeholder='새로운 이메일 주소 (변경)'
-                    onChange={handleNewEmailChange}
-                  />
-                  <button
-                    type="button"
-                    className="check-duplicate-btn"
-                    onClick={handleEmailVerificationClick}
-                  >
-                    인증 요청
-                  </button>
-                </div>
-                {showVerificationInput && (
-                  <div className="nickname-input-group" style={{ marginTop: '10px' }}>
-                    <input
-                      type="text"
-                      name="verificationCode"
-                      placeholder="인증번호 6자리 입력"
-                      value={verificationCode}
-                      onChange={handleVerificationCodeChange}
-                      maxLength="7"
-                      autoComplete="off"
-                    />
-                    <button
-                      type="button"
-                      className="check-duplicate-btn"
-                      onClick={handleVerifyCodeClick}
-                    >
-                      인증 확인
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+               {/* 새 이메일 */}
+  <div className="mypage-field-a">
+    <label>새 이메일 주소</label>
+    <div className="nickname-input-group">
+      <input
+        type="email"
+        name="newEmail"
+        value={newEmail}
+        placeholder="새로운 이메일 주소 입력"
+        onChange={handleNewEmailChange}
+      />
+      <button
+        type="button"
+        className="check-duplicate-btn"
+        onClick={handleEmailVerificationClick}
+      >
+        인증 요청
+      </button>
+    </div>
+
+    {/* 인증번호 입력창 */}
+    {showVerificationInput && (
+      <div className="nickname-input-group" style={{ marginTop: '10px' }}>
+        <input
+          type="text"
+          name="verificationCode"
+          placeholder="인증번호 6자리 입력"
+          value={verificationCode}
+          onChange={handleVerificationCodeChange}
+          maxLength="7"
+          autoComplete="off"
+        />
+        <button
+          type="button"
+          className="check-duplicate-btn"
+          onClick={handleVerifyCodeClick}
+        >
+          인증 확인
+        </button>
+      </div>
+    )}
+  </div>
+</div>
           </>
         )}
         {/* 버튼 영역 */}

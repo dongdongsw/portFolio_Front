@@ -20,8 +20,8 @@ header {
 }
 
 nav {
-  width: 60%; /* 반응형 미디어 쿼리 안에서는 75%로 바뀜 */
   transform: translateY(0) translateX(0);
+   width: 100%;
 }
 
 .nav-class {
@@ -38,6 +38,11 @@ nav ul {
   display: flex;
   list-style: none;
   justify-content: space-evenly;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+  border-radius: 10px;
+  padding : 10px 10px;
+ 
 }
 
 .home_li a {

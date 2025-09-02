@@ -39,7 +39,6 @@ function Header() {
             <li className="home_li"><a href="http://localhost:3000/postlist">게시판</a></li>
             <li className="home_li"><a href="#">CONTACT US</a></li>
             <li className="home_li"><a href="#">ABOUT</a></li>
-            <li className="home_li"><a href="#">ABOUT</a></li>
             <li className="home_li"><a href="http://localhost:3000/login">로그인</a></li>
             <li className="home_li"><a href="http://localhost:3000/mypage">마이페이지</a></li>
 
