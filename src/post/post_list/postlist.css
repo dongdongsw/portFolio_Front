@@ -32,7 +32,7 @@
 
 .post-module .thumbnail .date {
   position: absolute; top: 12px; right: 12px; z-index: 1;
-  background: #c7c8cc; width: 48px; height: 48px; padding: 8px 0;
+  background: #666666; width: 48px; height: 48px; padding: 8px 0;
   border-radius: 100%; color: #f9f9f9; font-weight: 700; text-align: center;
   box-sizing: border-box;
 }
@@ -63,16 +63,17 @@
   position: relative;
   overflow: visible !important;
   max-height: none !important;
+  margin-top: 100px;
 }
 
 
 /* 페이징 */
 .pager { display: flex; gap: 8px; justify-content: center; align-items: center; margin: 50px 0 24px; }
-.pager-btn { appearance: none; border: 1px solid #a0a5a8; background-color: #fff; color: #a0a5a8; padding: 8px 12px; min-width: 36px; border-radius: 9999px; cursor: pointer; font-size: 14px; line-height: 1; }
+.pager-btn { appearance: none; border: 0px solid #a0a5a8; background-color: transparent; color: #a0a5a8; padding: 8px 12px; min-width: 36px; border-radius: 9999px; cursor: pointer; font-size: 14px; line-height: 1; }
 .pager-btn:hover { border-color: #a0a5a8; }
 .pager-btn.is-active { border: 1px solid #a0a5a8; font-weight: 1000; background: transparent;}
-.pager-btn.is-disabled { opacity: 0.45; cursor: default; }
-.pager-btn.pager-arrow { min-width: 56px; padding: 8px 10px; }
+.pager-btn.is-disabled { opacity: 0.45; cursor: default; background-color: transparent;}
+.pager-btn.pager-arrow { min-width: 56px; padding: 8px 10px; background-color: transparent;}
 
 .fab-btn {
   position: fixed;
