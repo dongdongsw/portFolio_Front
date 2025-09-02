@@ -96,8 +96,8 @@ nav ul {
 
 .home-login {
   border-radius: 8px;
- border: none;
-   padding: 8px 15px; /* 내부 여백을 줘서 버튼이 답답하지 않게! */
+  border: none;
+  padding: 8px 50px; /* 내부 여백을 줘서 버튼이 답답하지 않게! */
   
   /* 기존: background-color: #c7c8cc; -> 회색은 좀 칙칙해 보여 */
   background-color: black; /* 상큼하고 신뢰감 주는 파란색! 너낌 좋지? */
@@ -136,7 +136,7 @@ nav ul {
 .home-mypage{
   border-radius: 8px;
  border: none;
-   padding: 8px 15px; /* 내부 여백을 줘서 버튼이 답답하지 않게! */
+   padding: 8px 50px; /* 내부 여백을 줘서 버튼이 답답하지 않게! */
   
   /* 기존: background-color: #c7c8cc; -> 회색은 좀 칙칙해 보여 */
   background-color: black; /* 상큼하고 신뢰감 주는 파란색! 너낌 좋지? */
@@ -146,7 +146,7 @@ nav ul {
   
   position: absolute;
   top: 30px;
-  right: 130px;
+  right: 200px;
   
   /* 버튼에 마우스 올렸을 때 살짝 변하는 애니메이션 주면 고급짐 +100 */
   cursor: pointer; /* 마우스 올리면 커서가 손가락 모양으로 변해서 클릭 유도! */

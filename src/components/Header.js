@@ -20,14 +20,9 @@ function Header() {
           <a href="http://localhost:3000">
             <img src={logo} width="150" height="150" alt="logo" />
           </a>
-          <button className="home-login">
-            <a className="home-a"  href="http://localhost:3000/login">로그인</a>
-          </button>
-          <button className="home-mypage">
-            <a className="home-a"  href="http://localhost:3000/mypage">마이페이지</a>
-          </button>
+          
         </div>
-        <div className="ham-menu" onClick={toggleNav}> {/* 햄버거 메뉴 클릭 이벤트 추가! */}
+        <div className="ham-menu" onClick={toggleNav}> 
           <div>
             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="25" height="25" viewBox="0 0 172 172" style={{ fill: '#000000' }}>
               <g fill="none" fillRule="nonzero" stroke="none" strokeWidth="1" strokeLinecap="butt" strokeLinejoin="miter" strokeMiterlimit="10" strokeDasharray="" strokeDashoffset="0" fontFamily="none" fontWeight="none" fontSize="none" textAnchor="none" style={{ mixBlendMode: 'normal' }}>
@@ -44,6 +39,18 @@ function Header() {
             <li className="home_li"><a href="http://localhost:3000/postlist">게시판</a></li>
             <li className="home_li"><a href="#">CONTACT US</a></li>
             <li className="home_li"><a href="#">ABOUT</a></li>
+            <li className="home_li"><a href="#">ABOUT</a></li>
+            <li className="home_li"><a href="http://localhost:3000/login">로그인</a></li>
+            <li className="home_li"><a href="http://localhost:3000/mypage">마이페이지</a></li>
+
+
+
+            {/* <button className="home-login">
+            <a className="home-a"  href="http://localhost:3000/login">로그인</a>
+          </button>
+          <button className="home-mypage">
+            <a className="home-a"  href="http://localhost:3000/mypage">마이페이지</a>
+          </button> */}
           </ul>
         </nav>
         {/* isNavOpen 상태에 따라 클래스 추가 (나중에 애니메이션 연결 가능) */}
