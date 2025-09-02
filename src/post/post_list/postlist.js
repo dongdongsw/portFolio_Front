@@ -21,6 +21,18 @@ async function apiFetchPosts() {
   return data;
 }
 
+/* ── 본문 요약 헬퍼 (HTML 태그 제거 + 길이 제한) ───────────── */
+function stripHtml(html) {
+  if (!html) return "";
+  const el = document.createElement("div");
+  el.innerHTML = html;
+  return (el.textContent || el.innerText || "").trim();
+}
+function getExcerpt(html, max = 30) {
+  const text = stripHtml(html).replace(/\s+/g, " ");
+  return text.length > max ? text.slice(0, max) + "…" : text;
+}
+
 export default function PostList() {
   const PostListStyle = createGlobalStyle`
     html, body {
@@ -35,6 +47,25 @@ export default function PostList() {
       -moz-osx-font-smoothing: grayscale;
     }
     header { margin-bottom: 50px; }
+    .post-content .description {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.4;
+    
+      /* 여러 줄 말줄임 */
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+      font-size: 13px;
+    
+      /* 부드러운 표시 */
+      word-break: break-word;
+      white-space: normal;
+      max-height: 3.8em; /* 줄 수 맞춰 높이 제한 (line-height * 줄수) */
   `;
 
   const navigate = useNavigate();
@@ -154,9 +185,19 @@ export default function PostList() {
                     style={{ cursor: "pointer" }}
                   >
                     <div className="thumbnail">
+                      {/* ✅ 날짜 스티커 유지 */}
                       <div className="date">
-                        <div className="day">{String(new Date(p?.uploaddate || p?.modifydate || Date.now()).getDate()).padStart(2, "0")}</div>
-                        <div className="month">{["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][new Date(p?.uploaddate || p?.modifydate || Date.now()).getMonth()]}</div>
+                        <div className="day">
+                          {String(
+                            new Date(p?.uploaddate || p?.modifydate || Date.now()).getDate()
+                          ).padStart(2, "0")}
+                        </div>
+                        <div className="month">
+                          {[
+                            "Jan","Feb","Mar","Apr","May","Jun",
+                            "Jul","Aug","Sep","Oct","Nov","Dec",
+                          ][new Date(p?.uploaddate || p?.modifydate || Date.now()).getMonth()]}
+                        </div>
                       </div>
                       <img src={thumb} alt={title} />
                     </div>
@@ -164,7 +205,10 @@ export default function PostList() {
                     <div className="post-content">
                       <h1 className="title">{title}</h1>
                       <h2 className="sub_title">{author}</h2>
-                      <p className="description">{createdAt}</p>
+
+                      {/* ✅ description: 본문 일부 (스티커는 썸네일에 그대로 남아있음) */}
+                      <p className="description">{getExcerpt(p?.content, 30)}</p>
+
                       <div className="post-meta">
                         <span className="views">
                           <i className="fa fa-eye" aria-hidden="true" /> {p?.viewcount ?? 0} views
@@ -177,6 +221,10 @@ export default function PostList() {
                           </a>
                         </span>
                       </div>
+
+                      {/* 필요 시 텍스트로 날짜도 함께 보여주고 싶다면 아래 주석 해제:
+                      <p className="posted-at">{createdAt}</p>
+                      */}
                     </div>
                   </div>
                 </div>
