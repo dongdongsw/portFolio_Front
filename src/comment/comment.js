@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./comment.css";
 import { createGlobalStyle } from 'styled-components';
 
@@ -21,7 +21,65 @@ function CommentsApp() {
   ]);
   const [editingCommentIndex, setEditingCommentIndex] = useState(null);
   const [editingText, setEditingText] = useState("");
+  const [deleteConfirmIdx, setDeleteConfirmIdx] = useState(null);
   
+  const menuRefs = useRef({});
+  const buttonRefs = useRef({});
+  const closeGuardRef = useRef(false);
+
+  useEffect(() => {
+    if (openMenuIndex === null) return;
+
+    closeGuardRef.current = false;
+    const enableGuard = setTimeout(() => { closeGuardRef.current = true; }, 0);
+
+    const ac = new AbortController();
+    const { signal } = ac;
+
+    const handlePointerDown = (e) => {
+      if (!closeGuardRef.current) return;
+
+      const menuEl = menuRefs.current[openMenuIndex];
+      const btnEl = buttonRefs.current[openMenuIndex];
+
+      const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
+      const pathHas = (node) => node ? path.includes(node) : false;
+
+      const inMenu = path.length ? pathHas(menuEl) : !!(menuEl && menuEl.contains(e.target));
+      const inBtn = path.length ? pathHas(btnEl) : !!(btnEl && btnEl.contains(e.target));
+
+      if (!inMenu && !inBtn) {
+        setOpenMenuIndex(null);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown, { capture: true, signal });
+
+    const onWindowBlur = () => setOpenMenuIndex(null);
+    window.addEventListener('blur', onWindowBlur, { signal });
+
+    const onKeyDown = (e) => { if (e.key === 'Escape') setOpenMenuIndex(null); };
+    document.addEventListener('keydown', onKeyDown, { signal });
+
+    const onFocusIn = (e) => {
+      if (!closeGuardRef.current) return;
+      const menuEl = menuRefs.current[openMenuIndex];
+      const btnEl = buttonRefs.current[openMenuIndex];
+      const t = e.target;
+      const outside = !(menuEl && menuEl.contains(t)) && !(btnEl && btnEl.contains(t));
+      if (outside) setOpenMenuIndex(null);
+    };
+    document.addEventListener('focusin', onFocusIn, { signal });
+
+    window.addEventListener('scroll', onWindowBlur, { signal, passive: true });
+    window.addEventListener('resize', onWindowBlur, { signal, passive: true });
+
+    return () => {
+      clearTimeout(enableGuard);
+      ac.abort();
+    };
+  }, [openMenuIndex]);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setComment((prev) => ({ ...prev, [name]: value }));
@@ -46,13 +104,11 @@ function CommentsApp() {
 
   const handleEditSubmit = (idx) => {
     if (!editingText.trim()) return;
-  
     setComments((prev) => {
       const next = [...prev];
       next[idx] = { ...next[idx], text: editingText, date: new Date() };
       return next;
     });
-
     setEditingCommentIndex(null);
     setEditingText("");
   };
@@ -70,13 +126,15 @@ function CommentsApp() {
         <div className="comment-form">
           <form className="form" onSubmit={handleSubmit} noValidate>
             <div className="textarea-wrapper">
-            <div className="email-text">Email</div>
+            <div className="email-text">닉네임</div>
+            <div className="char-counter">{comment.text.length}/300</div>
             <textarea
               className="input textarea-comment"
               name="text"
               value={comment.text}
               onChange={handleChange}
               placeholder="댓글을 남겨보세요"
+              maxLength={300}
               required
             />
             <input type="submit" value="등록" className="btn btn-submit"/>
@@ -87,16 +145,20 @@ function CommentsApp() {
       {/* 댓글 리스트 */}
       <div className="comments">
         {comments.map((c, idx) => (
-          <div key={idx} className="comment">
+          <div key={c.id ?? idx} className="comment">
              <div className="comment-box">
                {editingCommentIndex === idx ? (
                 <>
-                  <textarea 
-                    className="input textarea-edit"
-                    value={editingText}
-                    onChange={handleEditChange}
-                    required
-                  />
+                  <div className="textarea-edit-wrapper">
+                    <div className="char-counter">{editingText.length}/300</div>
+                    <textarea 
+                      className="input textarea-edit"
+                      value={editingText}
+                      onChange={handleEditChange}
+                      maxLength={300}
+                      required
+                    />
+                  </div>
                   <div className="edit-actions">
                     <button 
                       className="btn btn-cancel"
@@ -117,11 +179,27 @@ function CommentsApp() {
                       <span className="comment-date">
                         {c.date instanceof Date ? c.date.toLocaleString() : new Date(c.date).toLocaleString()}</span>
                     </div>
-                    <div className="comment-actions">
+
+                    <div 
+                      className="comment-actions"
+                      ref={(el) => { menuRefs.current[idx] = el; }}
+                      onMouseLeave={() => {
+                        if (openMenuIndex === idx) {
+                          const t = setTimeout(() => {
+                            setOpenMenuIndex(prev => (prev === idx ? null : prev));
+                          }, 150);
+                        }
+                      }}
+                    >
                       <button
                         className="btn btn-more"
-                        onClick={() => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}
+                        ref={(el) => { buttonRefs.current[idx] = el; }}
+                        onClick={() => {
+                          const nextOpen = openMenuIndex === idx ? null : idx;
+                          setTimeout(() => { setOpenMenuIndex(nextOpen); }, 0);
+                        }}
                       >···</button>
+
                       {openMenuIndex === idx && (
                         <div className="dropdown-menu">
                           <button
@@ -130,8 +208,10 @@ function CommentsApp() {
                           >수정</button>
                           <button
                             className="dropdown-item"
-                            onClick={() => { setComments((prev) => prev.filter((_, i) => i !== idx));
-                              setOpenMenuIndex(null); }}
+                            onClick={() => {
+                              setDeleteConfirmIdx(idx);
+                              setOpenMenuIndex(null);
+                            }}
                           >삭제</button>
                         </div>
                       )}
@@ -142,10 +222,39 @@ function CommentsApp() {
             </div>
           </div>
         ))}        
-       </div>
-     </div>
-   </>
- );
+        </div>
+
+        {openMenuIndex !== null && (
+          <div
+            className="dropdown-backdrop"
+            onClick={() => setOpenMenuIndex(null)}
+          />
+        )}
+
+        {deleteConfirmIdx !== null && (
+          <div className="delete-confirm-modal">
+            <div className="delete-confirm-content">
+              <p className="delete-message">삭제하시겠습니까?</p>
+              <div className="delete-actions">
+                <button
+                  className="btn btn-cancel"
+                  onClick={() => setDeleteConfirmIdx(null)}
+                >취소</button>
+                <button
+                  className="btn btn-delete"
+                  onClick={() => {
+                    setComments((prev) => prev.filter((_, i) => i !== deleteConfirmIdx));
+                    setDeleteConfirmIdx(null);
+                  }}
+                >확인</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </>
+  );
 }
 
 export default CommentsApp;

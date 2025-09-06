@@ -12,7 +12,7 @@
 
 /* 댓글 입력 폼 */
 .comment-form {
-  margin-bottom: 28px;
+  margin-bottom: 16px;
 }
 
 .comment-form .form {
@@ -51,10 +51,9 @@
 /* Email 표시 텍스트 */
 .email-text {
   position: absolute;
-  top: 10px;
   left: 12px;
   font-size: 14px;
-  color: #555;
+  color: #6f6767;
   pointer-events: none;
   user-select: none;
   line-height: 1;
@@ -64,7 +63,7 @@
 .textarea-comment {
   width: 100%;
   min-height: 120px;
-  padding: 56px 12px 14px 12px;
+  padding: 30px 12px 14px 12px;
   border-radius: 4px;
   border: 1px solid #ccc;
   resize: none;
@@ -89,14 +88,14 @@
   right: 10px;
   padding: 6px 12px;
   border-radius: 4px;
-  background-color: #c7c8cc;
+  background-color: #8b9dc3;
   color: #fff;
   cursor: pointer;
 }
 
 /* 댓글 리스트 */
 .comment {
-  margin-bottom: 32px;
+  margin-bottom: 20px;
   position: relative;
   z-index: 0;
 }
@@ -104,7 +103,9 @@
 .comment .comment-box {
   background-color: #e4e1da;
   border-radius: 4px;
-  box-shadow: 5px 5px 5px #f3f1e5, -5px -5px 5px #f3f1e5;
+  box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.1), 
+              -1px -1px 3px rgba(255, 255, 255, 0.8),
+              inset 1px 1px 2px rgba(255, 255, 255, 0.3);
   margin-left: 100px;
   min-height: 60px;
   position: relative;
@@ -112,7 +113,7 @@
 }
 
 .comment .comment-text {
-  color: #555f77;
+  color: #6f6767;
   font-size: 15px;
   margin-bottom: 25px;
 }
@@ -122,7 +123,7 @@
   justify-content: space-between;
   align-items: flex-end;
   font-size: 13px;
-  color: #acb4c2;
+  color: #7a8699;
 }
 
 .comment .comment-footer:after{
@@ -132,13 +133,13 @@
 }
 
 .comment .comment-footer a {
-  color: #acb4c2;
+  color: #5a6b8c;
   text-decoration: none;
   transition: 350ms color;
 }
 
 .comment .comment-footer a:hover {
-  color: #555f77;
+  color: #4a5a7c;
   text-decoration: underline;
 }
 
@@ -148,7 +149,12 @@
 
 .comment-actions {
   display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
   gap: 6px;
+  z-index: 2001;
+  min-height: 24px;
+  padding: 0;
 }
 
 /* ··· 메뉴 버튼 */
@@ -162,6 +168,7 @@
   cursor: pointer;
   color: #555;
   padding: 4px 8px;
+  line-height: 1;
 }
 
 /* 드롭다운 */
@@ -169,13 +176,16 @@
   position: absolute;
   top: 30px;
   right: 0;
-  background: #fff;
-  border: 1px solid #ddd;
+  background: #f0ede6;
+  border: 1px solid #d8d5ce;
   border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,.2);
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
   display: flex;
   flex-direction: column;
-  z-index: 10;
+  z-index: 1;
+  width: max-content;
+  max-width: 220px;
+  white-space: nowrap;
 }
 
 .dropdown-item {
@@ -185,11 +195,24 @@
   text-align: left;
   cursor: pointer;
   font-size: 14px;
-  color: #333;
+  color: #6f6767;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dropdown-item:hover {
-  background: #f0f0f0;
+  background: #ddd9d0;
+  color: #5a5552;
+}
+
+/* 백드롭 */
+.dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  pointer-events: none;
+  z-index: 1500;
 }
 
 /* 버튼 공통 */
@@ -231,7 +254,7 @@ button.btn.btn-more:hover {
 }
 
 div.comments-app div.textarea-wrapper .email-text {
-top: 8px !important;
+top: 8px;
 left: 12px;
 line-height: 1;
 }
@@ -244,7 +267,7 @@ line-height: 1.5;
 
 .textarea-edit {
   width: 100%;
-  min-height: 100px;
+  min-height: 120px;
   padding: 12px;
   border-radius: 4px;
   border: 1px solid #ccc;
@@ -255,6 +278,11 @@ line-height: 1.5;
   box-shadow: inset 2px 2px 4px #b0afb4, inset -2px -2px 4px #c7c8cc;
 }
 
+.textarea-edit-wrapper {
+  position: relative;
+  width: 100%;
+}
+
 .edit-actions {
   display: flex;
   justify-content: flex-end;
@@ -262,12 +290,68 @@ line-height: 1.5;
   margin-top: 10px;
 }
 
-.btn-cancle {
-  background-color: #c7c8cc;
-  color: #555;
+.delete-confirm-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+}
+
+.delete-confirm-content {
+  background-color: #f5f2ed;
+  padding: 25px;
+  border-radius: 8px;
+  width: 320px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.delete-message {
+  font-size: 18px;
+  margin-bottom: 25px;
+  text-align: center;
+  color: #6f6767;
+}
+
+.delete-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.btn-delete {
+  background-color: #c08b7f;
+  color: #fff;
 }
 
 .btn-save {
-  background-color: #4da3ff;
+  background-color: #8b9dc3;
   color: #fff;
+}
+
+.btn-cancel {
+  background-color: #d4d1c8;
+  color: #6f6767;
+}
+
+.btn-edit {
+  background-color: #b39c7d;
+  color: #fff;
+}
+
+.char-counter {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 14px;
+  color: #7a8699;
+  background-color: rgba(228, 225, 218, 0.9);
+  padding: 2px 6px;
+  border-radius: 4px;
+  z-index: 5;
 }
