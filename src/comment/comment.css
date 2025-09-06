@@ -241,3 +241,33 @@ min-height: 120px;
 padding: 30px 12px 14px 12px !important;
 line-height: 1.5;
 }
+
+.textarea-edit {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  resize: none;
+  line-height: 1.5;
+  margin-bottom: 10px;
+  background-color: #f3f1e5;
+  box-shadow: inset 2px 2px 4px #b0afb4, inset -2px -2px 4px #c7c8cc;
+}
+
+.edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-cancle {
+  background-color: #c7c8cc;
+  color: #555;
+}
+
+.btn-save {
+  background-color: #4da3ff;
+  color: #fff;
+}

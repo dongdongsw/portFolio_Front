@@ -19,8 +19,8 @@ function CommentsApp() {
     { text: "예시1", author: "CHEOLWOO", date: new Date("2013-02-02T23:32:04") },
     { text: "예시2", author: "Ximme", date: new Date("1986-01-31T23:32:04") }
   ]);
-  const [selectedIndex, setSelectedIndex] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [editingCommentIndex, setEditingCommentIndex] = useState(null);
+  const [editingText, setEditingText] = useState("");
   
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -30,18 +30,36 @@ function CommentsApp() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!comment.text) return;
-    if (isEditing && selectedIndex !== null) {
-      setComments((prev) => {
-        const next = [...prev];
-        next[selectedIndex] = { ...next[selectedIndex], text: comment.text, author: comment.author, date: new Date() };
-        return next;
-      });
-      setIsEditing(false);
-      setSelectedIndex(null);
-    } else  {
-      setComments (prev => [{ ...comment, date: new Date() }, ...prev]);
-    }
+    setComments (prev => [{ ...comment, date: new Date() }, ...prev]);
     setComment(prev => ({ text: "", author: prev.author }));
+  };
+
+  const handleEditStart = (idx, text) => {
+    setEditingCommentIndex(idx);
+    setEditingText(text);
+    setOpenMenuIndex(null);
+  };
+
+  const handleEditChange = (e) => {
+    setEditingText(e.target.value);
+  };
+
+  const handleEditSubmit = (idx) => {
+    if (!editingText.trim()) return;
+  
+    setComments((prev) => {
+      const next = [...prev];
+      next[idx] = { ...next[idx], text: editingText, date: new Date() };
+      return next;
+    });
+
+    setEditingCommentIndex(null);
+    setEditingText("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCommentIndex(null);
+    setEditingText("");
   };
 
   return (
@@ -61,7 +79,7 @@ function CommentsApp() {
               placeholder="댓글을 남겨보세요"
               required
             />
-            <input type="submit" value={isEditing ? "저장" : "등록"} className="btn btn-submit"/>
+            <input type="submit" value="등록" className="btn btn-submit"/>
           </div>
         </form>
       </div>
@@ -71,25 +89,59 @@ function CommentsApp() {
         {comments.map((c, idx) => (
           <div key={idx} className="comment">
              <div className="comment-box">
-               <div className="comment-text">{c.text}</div>
-               <div className="comment-footer">
-                 <div className="comment-info">
-                   <span className="comment-author"><a href={`mailto:${c.author}`}>{c.author}</a></span>
-                   <span className="comment-date">{c.date instanceof Date ? c.date.toLocaleString() : new Date(c.date).toLocaleString()}</span>
-                 </div>
-                 <div className="comment-actions">
-                   <button className="btn btn-more" onClick={() => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}>···</button>
-                   {openMenuIndex === idx && (
-                     <div className="dropdown-menu">
-                       <button className="dropdown-item" onClick={() => { setComment({ text: c.text, author: c.author }); setIsEditing(true); setSelectedIndex(idx); setOpenMenuIndex(null); }}>수정</button>
-                       <button className="dropdown-item" onClick={() => { setComments((prev) => prev.filter((_, i) => i !== idx)); setOpenMenuIndex(null); }}>삭제</button>
-                     </div>
-                   )}
-                 </div> 
-               </div>
-             </div>
-           </div>
-         ))}        
+               {editingCommentIndex === idx ? (
+                <>
+                  <textarea 
+                    className="input textarea-edit"
+                    value={editingText}
+                    onChange={handleEditChange}
+                    required
+                  />
+                  <div className="edit-actions">
+                    <button 
+                      className="btn btn-cancel"
+                      onClick={handleCancelEdit}
+                    >취소</button>
+                    <button
+                      className="btn btn-save"
+                      onClick={() => handleEditSubmit(idx)}
+                    >저장</button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="comment-text">{c.text}</div>
+                  <div className="comment-footer">
+                    <div className="comment-info">
+                      <span className="comment-author"><a href={`mailto:${c.author}`}>{c.author}</a></span>
+                      <span className="comment-date">
+                        {c.date instanceof Date ? c.date.toLocaleString() : new Date(c.date).toLocaleString()}</span>
+                    </div>
+                    <div className="comment-actions">
+                      <button
+                        className="btn btn-more"
+                        onClick={() => setOpenMenuIndex(openMenuIndex === idx ? null : idx)}
+                      >···</button>
+                      {openMenuIndex === idx && (
+                        <div className="dropdown-menu">
+                          <button
+                            className="dropdown-item"
+                            onClick={() => handleEditStart(idx, c.text)}
+                          >수정</button>
+                          <button
+                            className="dropdown-item"
+                            onClick={() => { setComments((prev) => prev.filter((_, i) => i !== idx));
+                              setOpenMenuIndex(null); }}
+                          >삭제</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        ))}        
        </div>
      </div>
    </>
