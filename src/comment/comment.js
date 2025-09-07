@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import "./comment.css";
 import { createGlobalStyle } from 'styled-components';
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const CommentStyle = createGlobalStyle`
   * { box-sizing: border-box; margin: 0; padding: 0; 
@@ -15,13 +16,14 @@ const CommentStyle = createGlobalStyle`
 function CommentsApp() {
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const [comment, setComment] = useState({ text: "", author: "", });
-  const [comments, setComments] = useState([
-    { id: 1, text: "댓글", author: "CHEOLWOO", authorId: "user-1", createdAt: new Date("2025-07-21T09:00:00"), displayedAt: new Date("2025-07-21T09:00:00") }, 
-    { id: 2, text: "팀장/마이페이지", author: "DONGHYUN", authorId: "user-2", createdAt: new Date("2025-07-21T10:00:00"), displayedAt: new Date("2025-07-21T10:00:00") },
-    { id: 3, text: "부팀장/로그인", author: "JUSEOP", authorId: "user-3", createdAt: new Date("2025-07-21T11:00:00"), displayedAt: new Date("2025-07-21T11:00:00") },
-    { id: 4, text: "게시판1", author: "JAEHYUN", authorId: "user-4", createdAt: new Date("2025-07-21T12:00:00"), displayedAt: new Date("2025-07-21T12:00:00") },
-    { id: 5, text: "게시판2", author: "MINSEOK", authorId: "user-5", createdAt: new Date("2025-07-21T13:00:00"), displayedAt: new Date("2025-07-21T13:00:00") }
-  ]);
+  const [comments, setComments] = useState([]);
+  //   { id: 1, text: "댓글", author: "CHEOLWOO", authorId: "user-1", createdAt: new Date("2025-07-21T09:00:00"), displayedAt: new Date("2025-07-21T09:00:00") }, 
+  //   { id: 2, text: "팀장/마이페이지", author: "DONGHYUN", authorId: "user-2", createdAt: new Date("2025-07-21T10:00:00"), displayedAt: new Date("2025-07-21T10:00:00") },
+  //   { id: 3, text: "부팀장/로그인", author: "JUSEOP", authorId: "user-3", createdAt: new Date("2025-07-21T11:00:00"), displayedAt: new Date("2025-07-21T11:00:00") },
+  //   { id: 4, text: "게시판1", author: "JAEHYUN", authorId: "user-4", createdAt: new Date("2025-07-21T12:00:00"), displayedAt: new Date("2025-07-21T12:00:00") },
+  //   { id: 5, text: "게시판2", author: "MINSEOK", authorId: "user-5", createdAt: new Date("2025-07-21T13:00:00"), displayedAt: new Date("2025-07-21T13:00:00") }
+  // ]);
+  const POST_ID = 1;
   const [editingCommentIndex, setEditingCommentIndex] = useState(null);
   const [editingText, setEditingText] = useState("");
   const [deleteConfirmIdx, setDeleteConfirmIdx] = useState(null);
@@ -43,6 +45,29 @@ function CommentsApp() {
     return () => clearInterval(t);
   }, []);
 
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const res = await axios.get(`http://localhost:8080/api/comments/post/${POST_ID}`);
+        const mapped = (res.data || []).map(c => ({
+          id: c.id,
+          text: c.content,
+          author: c.nickname,
+          authorId: c.loginId,
+          createdAt: c.uploadDate ? new Date(c.uploadDate) : null,
+          displayedAt: c.modifyDate ? new Date(c.modifyDate) : (c.uploadDate ? new Date(c.uploadDate) : null),
+        }));
+
+        mapped.sort((a, b) => new Date(b.displayedAt ?? 0) - new Date(a.displayedAt ?? 0));
+        setComments(mapped);
+      }
+      catch (err) {
+        console.error("GET /api/comments/post failed", err);
+      }
+    };
+    fetchComments();
+  }, []);
+  
   useEffect(() => {
     if (openMenuIndex === null) return;
     closeGuardRef.current = false;
