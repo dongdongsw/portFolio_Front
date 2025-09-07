@@ -41,15 +41,15 @@
   transition: 350ms box-shadow;
 }
 
-/* textarea wrapper - Email 표시 포함 */
+/* textarea wrapper - 닉네임 표시 포함 */
 .textarea-wrapper {
   position: relative;
   display: flex;
   flex-direction: column;
 }  
 
-/* Email 표시 텍스트 */
-.email-text {
+/* 닉네임 표시 텍스트 */
+.nickname-text {
   position: absolute;
   left: 12px;
   font-size: 14px;
@@ -206,6 +206,19 @@
   color: #5a5552;
 }
 
+.date-dropdown {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 4px 8px;
+  background: #f0ede6;
+  border: 1px solid #d8d5ce;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+  font-size: 12px;
+  color: #6f6767;
+  white-space: nowrap;
+}
+
 /* 백드롭 */
 .dropdown-backdrop {
   position: fixed;
@@ -253,7 +266,7 @@ button.btn.btn-more:hover {
   font-weight: 700 !important;
 }
 
-div.comments-app div.textarea-wrapper .email-text {
+div.comments-app div.textarea-wrapper .nickname-text {
 top: 8px;
 left: 12px;
 line-height: 1;
@@ -352,6 +365,21 @@ line-height: 1.5;
   color: #fff;
 }
 
+.btn-date-more {
+  background-color: transparent;
+  border: none;
+  color: #5a6b8c;
+  cursor: pointer;
+  margin-left: 6px;
+  padding: 2px 4px;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.btn-date-more:hover {
+  color: #4a5a7c;
+}
+
 .char-counter {
   position: absolute;
   top: 8px;
@@ -362,4 +390,35 @@ line-height: 1.5;
   padding: 2px 6px;
   border-radius: 4px;
   z-index: 5;
+}
+
+.auth-modal {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+}
+
+.auth-modal-content {
+  background-color: #f5f2ed;
+  padding: 24px;
+  border-radius: 8px;
+  width: 320px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.auth-message {
+  font-size: 16px;
+  color: #6f6767;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.auth-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
 }

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./comment.css";
 import { createGlobalStyle } from 'styled-components';
-
+import { useNavigate } from "react-router-dom";
 
 const CommentStyle = createGlobalStyle`
   * { box-sizing: border-box; margin: 0; padding: 0; 
@@ -16,41 +16,49 @@ function CommentsApp() {
   const [openMenuIndex, setOpenMenuIndex] = useState(null);
   const [comment, setComment] = useState({ text: "", author: "", });
   const [comments, setComments] = useState([
-    { text: "예시1", author: "CHEOLWOO", date: new Date("2013-02-02T23:32:04") },
-    { text: "예시2", author: "Ximme", date: new Date("1986-01-31T23:32:04") }
+    { id: 1, text: "댓글", author: "CHEOLWOO", authorId: "user-1", createdAt: new Date("2025-07-21T09:00:00"), displayedAt: new Date("2025-07-21T09:00:00") }, 
+    { id: 2, text: "팀장/마이페이지", author: "DONGHYUN", authorId: "user-2", createdAt: new Date("2025-07-21T10:00:00"), displayedAt: new Date("2025-07-21T10:00:00") },
+    { id: 3, text: "부팀장/로그인", author: "JUSEOP", authorId: "user-3", createdAt: new Date("2025-07-21T11:00:00"), displayedAt: new Date("2025-07-21T11:00:00") },
+    { id: 4, text: "게시판1", author: "JAEHYUN", authorId: "user-4", createdAt: new Date("2025-07-21T12:00:00"), displayedAt: new Date("2025-07-21T12:00:00") },
+    { id: 5, text: "게시판2", author: "MINSEOK", authorId: "user-5", createdAt: new Date("2025-07-21T13:00:00"), displayedAt: new Date("2025-07-21T13:00:00") }
   ]);
   const [editingCommentIndex, setEditingCommentIndex] = useState(null);
   const [editingText, setEditingText] = useState("");
   const [deleteConfirmIdx, setDeleteConfirmIdx] = useState(null);
   
+  const [isMember, setIsMember] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [currentUserId] = useState("user-1");
+
   const menuRefs = useRef({});
   const buttonRefs = useRef({});
   const closeGuardRef = useRef(false);
+  const navigate = useNavigate();
+
+  const [originalOpenIndex, setOriginalOpenIndex] = useState(null);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 60 * 1000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     if (openMenuIndex === null) return;
-
     closeGuardRef.current = false;
     const enableGuard = setTimeout(() => { closeGuardRef.current = true; }, 0);
-
     const ac = new AbortController();
     const { signal } = ac;
 
     const handlePointerDown = (e) => {
       if (!closeGuardRef.current) return;
-
       const menuEl = menuRefs.current[openMenuIndex];
       const btnEl = buttonRefs.current[openMenuIndex];
-
       const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
       const pathHas = (node) => node ? path.includes(node) : false;
-
       const inMenu = path.length ? pathHas(menuEl) : !!(menuEl && menuEl.contains(e.target));
       const inBtn = path.length ? pathHas(btnEl) : !!(btnEl && btnEl.contains(e.target));
-
-      if (!inMenu && !inBtn) {
-        setOpenMenuIndex(null);
-      }
+      if (!inMenu && !inBtn) setOpenMenuIndex(null);
     };
 
     document.addEventListener("pointerdown", handlePointerDown, { capture: true, signal });
@@ -81,18 +89,32 @@ function CommentsApp() {
   }, [openMenuIndex]);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setComment((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!isMember) {
+      setShowAuthModal(true);
+      return;
+    }
     if (!comment.text) return;
-    setComments (prev => [{ ...comment, date: new Date() }, ...prev]);
+    const ts = new Date();
+    setComments(prev => [
+      { id: Date.now(), text: comment.text, author: comment.author || "ME", authorId: currentUserId, createdAt: ts, displayedAt: ts },
+      ...prev
+    ]);
     setComment(prev => ({ text: "", author: prev.author }));
+    navigate(0);
   };
 
   const handleEditStart = (idx, text) => {
+    const c = comments[idx];
+    if (!c || c.authorId !== currentUserId) {
+      setOpenMenuIndex(null);
+      return;
+    }
     setEditingCommentIndex(idx);
     setEditingText(text);
     setOpenMenuIndex(null);
@@ -103,10 +125,12 @@ function CommentsApp() {
   };
 
   const handleEditSubmit = (idx) => {
+    const c = comments[idx];
+    if (!c || c.authorId !== currentUserId) return;
     if (!editingText.trim()) return;
     setComments((prev) => {
       const next = [...prev];
-      next[idx] = { ...next[idx], text: editingText, date: new Date() };
+      next[idx] = { ...next[idx], text: editingText, displayedAt: new Date() };
       return next;
     });
     setEditingCommentIndex(null);
@@ -118,6 +142,10 @@ function CommentsApp() {
     setEditingText("");
   };
 
+  const goLogin = () => {
+    navigate("/login");
+  };
+
   return (
     <>
       <CommentStyle />
@@ -126,7 +154,7 @@ function CommentsApp() {
         <div className="comment-form">
           <form className="form" onSubmit={handleSubmit} noValidate>
             <div className="textarea-wrapper">
-            <div className="email-text">닉네임</div>
+            <div className="nickname-text">닉네임</div>
             <div className="char-counter">{comment.text.length}/300</div>
             <textarea
               className="input textarea-comment"
@@ -144,116 +172,145 @@ function CommentsApp() {
 
       {/* 댓글 리스트 */}
       <div className="comments">
-        {comments.map((c, idx) => (
-          <div key={c.id ?? idx} className="comment">
-             <div className="comment-box">
-               {editingCommentIndex === idx ? (
-                <>
-                  <div className="textarea-edit-wrapper">
-                    <div className="char-counter">{editingText.length}/300</div>
-                    <textarea 
-                      className="input textarea-edit"
-                      value={editingText}
-                      onChange={handleEditChange}
-                      maxLength={300}
-                      required
-                    />
-                  </div>
-                  <div className="edit-actions">
-                    <button 
-                      className="btn btn-cancel"
-                      onClick={handleCancelEdit}
-                    >취소</button>
-                    <button
-                      className="btn btn-save"
-                      onClick={() => handleEditSubmit(idx)}
-                    >저장</button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="comment-text">{c.text}</div>
-                  <div className="comment-footer">
-                    <div className="comment-info">
-                      <span className="comment-author"><a href={`mailto:${c.author}`}>{c.author}</a></span>
-                      <span className="comment-date">
-                        {c.date instanceof Date ? c.date.toLocaleString() : new Date(c.date).toLocaleString()}</span>
+        {comments.map((c, idx) => {
+          const isOwner = c.authorId === currentUserId;
+          
+          return (
+            <div key={c.id ?? idx} className="comment">
+              <div className="comment-box">
+                {editingCommentIndex === idx ? (
+                  <>
+                    <div className="textarea-edit-wrapper">
+                      <div className="char-counter">{editingText.length}/300</div>
+                      <textarea
+                        className="input textarea-edit"
+                        value={editingText}
+                        onChange={handleEditChange}
+                        maxLength={300}
+                        required
+                      />
                     </div>
+                    <div className="edit-actions">
+                      <button className="btn btn-cancel" onClick={handleCancelEdit}>취소</button>
+                      <button className="btn btn-save" onClick={() => handleEditSubmit(idx)}>저장</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="comment-text">{c.text}</div>
+                    
+                    <div className="comment-footer">
+                      <div className="comment-info">
+                        <span className="comment-author"><a href={`mailto:${c.author}`}>{c.author}</a></span>
+                        <span className="comment-date">
+                          {(c.displayedAt instanceof Date ? c.displayedAt : new Date(c.displayedAt)).toLocaleString()}
+                        </span>
+                        <button
+                          type="button"
+                          className="btn btn-date-more"
+                          onClick={() => setOriginalOpenIndex(prev => prev === idx ? null : idx)}
+                          aria-label="show original created date"
+                        >▽</button>
+                        {originalOpenIndex === idx && (
+                          <div className="date-dropdown">
+                            최초 등록일: {(c.createdAt instanceof Date ? c.createdAt : new Date(c.createdAt)).toLocaleString()}
+                          </div>
+                        )}
+                      </div>
 
-                    <div 
-                      className="comment-actions"
-                      ref={(el) => { menuRefs.current[idx] = el; }}
-                      onMouseLeave={() => {
-                        if (openMenuIndex === idx) {
-                          const t = setTimeout(() => {
-                            setOpenMenuIndex(prev => (prev === idx ? null : prev));
-                          }, 150);
-                        }
-                      }}
-                    >
-                      <button
-                        className="btn btn-more"
-                        ref={(el) => { buttonRefs.current[idx] = el; }}
-                        onClick={() => {
-                          const nextOpen = openMenuIndex === idx ? null : idx;
-                          setTimeout(() => { setOpenMenuIndex(nextOpen); }, 0);
-                        }}
-                      >···</button>
-
-                      {openMenuIndex === idx && (
-                        <div className="dropdown-menu">
+                      {isOwner && (
+                        <div
+                          className="comment-actions"
+                          ref={(el) => { menuRefs.current[idx] = el; }}
+                          onMouseLeave={() => {
+                            if (openMenuIndex === idx) {
+                              setTimeout(() => {
+                                setOpenMenuIndex(prev => (prev === idx ? null : prev));
+                              }, 150);
+                            }
+                          }}
+                        >
                           <button
-                            className="dropdown-item"
-                            onClick={() => handleEditStart(idx, c.text)}
-                          >수정</button>
-                          <button
-                            className="dropdown-item"
+                            className="btn btn-more"
+                            ref={(el) => { buttonRefs.current[idx] = el; }}
                             onClick={() => {
-                              setDeleteConfirmIdx(idx);
-                              setOpenMenuIndex(null);
+                              const nextOpen = openMenuIndex === idx ? null : idx;
+                              setTimeout(() => { setOpenMenuIndex(nextOpen); }, 0);
                             }}
-                          >삭제</button>
+                          >···</button>
+
+                          {openMenuIndex === idx && (
+                            <div className="dropdown-menu">
+                              <button
+                                className="dropdown-item"
+                                onClick={() => handleEditStart(idx, c.text)}
+                              >수정</button>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => {
+                                  if (!isOwner) return;
+                                  setDeleteConfirmIdx(idx);
+                                  setOpenMenuIndex(null);
+                                }}
+                              >삭제</button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        ))}        
-        </div>
-
-        {openMenuIndex !== null && (
-          <div
-            className="dropdown-backdrop"
-            onClick={() => setOpenMenuIndex(null)}
-          />
-        )}
-
-        {deleteConfirmIdx !== null && (
-          <div className="delete-confirm-modal">
-            <div className="delete-confirm-content">
-              <p className="delete-message">삭제하시겠습니까?</p>
-              <div className="delete-actions">
-                <button
-                  className="btn btn-cancel"
-                  onClick={() => setDeleteConfirmIdx(null)}
-                >취소</button>
-                <button
-                  className="btn btn-delete"
-                  onClick={() => {
-                    setComments((prev) => prev.filter((_, i) => i !== deleteConfirmIdx));
-                    setDeleteConfirmIdx(null);
-                  }}
-                >확인</button>
+                  </>
+                )}
               </div>
             </div>
-          </div>
-        )}
-
+          );
+        })}        
       </div>
-    </>
+
+      {/* 백드롭 */}
+      {openMenuIndex !== null && (
+        <div className="dropdown-backdrop" onClick={() => setOpenMenuIndex(null)} />
+      )}
+
+      {/* 삭제 확인 모달 */}
+      {deleteConfirmIdx !== null && (
+        <div className="delete-confirm-modal">
+          <div className="delete-confirm-content">
+            <p className="delete-message">삭제하시겠습니까?</p>
+            <div className="delete-actions">
+              <button className="btn btn-cancel" onClick={() => setDeleteConfirmIdx(null)}>취소</button>
+              <button
+                className="btn btn-delete"
+                onClick={() => {
+                  const idx = deleteConfirmIdx;
+                  const target = comments[idx];
+                  if (!target || target.authorId !== currentUserId) {
+                    setDeleteConfirmIdx(null);
+                    return;
+                  }
+                  setComments((prev) => prev.filter((_, i) => i !== idx));
+                  setDeleteConfirmIdx(null);
+                  navigate(0);
+                }}
+              >확인</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 회원 전용 안내 모달 */}
+      {showAuthModal && (
+        <div className="auth-modal">
+          <div className="auth-modal-content">
+            <p className="auth-message">회원만 댓글 작성이 가능합니다</p>
+            <div className="auth-actions">
+              <button className="btn btn-cancel" onClick={() => setShowAuthModal(false)}>취소</button>
+              <button className="btn btn-save" onClick={() => navigate("/login")}>로그인</button>
+            </div>
+           </div>
+         </div>
+       )}
+     </div>
+   </>
   );
 }
 
