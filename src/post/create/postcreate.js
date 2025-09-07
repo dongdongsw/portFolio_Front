@@ -10,16 +10,20 @@ import axios from "axios";
 
 axios.defaults.withCredentials = true;
 
-// axios 인스턴스
+// axios 인스턴스 (✅ 세션 쿠키 포함)
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_BASE || "",
-  withCredentials: false,
+  withCredentials: true,
 });
 
 // ── 로컬 API 헬퍼 (axios)
 async function apiCreatePost(formData) {
   const { data } = await api.post("/api/posts", formData); // Content-Type 자동
   return data;
+}
+async function apiGetSession() {
+  const res = await api.get("/api/user/session-info", { validateStatus: () => true });
+  return res.status === 200 ? res.data : null;
 }
 
 // ✅ 내용 비었는지 판정: 텍스트가 없고 이미지(<img>)도 없으면 빈 내용
@@ -47,9 +51,9 @@ export default function PostCreate() {
   const [html, setHtml] = useState("");
   const [files, setFiles] = useState([]);
 
-  // 로그인 연동 전 임시 값
-  const [loginid] = useState("demoUser");
-  const [nickname] = useState("홀란드");
+  // ✅ 세션 사용자
+  const [me, setMe] = useState(null);
+  const [loadingMe, setLoadingMe] = useState(true);
 
   const [contactInfo, setContactInfo] = useState({ email:'', phone:'', birthday:'', location:'' });
   const handleContactInfoChange = (e) => {
@@ -62,8 +66,27 @@ export default function PostCreate() {
     return () => document.body.classList.remove('postdetail-body-styles');
   }, []);
 
+  // ✅ 세션 로드
+  useEffect(() => {
+    (async () => {
+      const user = await apiGetSession();
+      if (!user) {
+        alert("로그인이 필요합니다.");
+        // 필요하면 로그인 페이지로 보내기
+        // navigate("/login");
+      }
+      setMe(user);
+      setLoadingMe(false);
+    })();
+  }, [navigate]);
+
   // ✅ 에디터가 넘겨주는 { title, html } 사용 + 빈 값 검증
   const handleSubmit = async ({ title: submittedTitle, html: submittedHtml }) => {
+    if (!me) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
     const t = (submittedTitle ?? "").trim();
     const h = (submittedHtml ?? "").trim();
 
@@ -76,9 +99,16 @@ export default function PostCreate() {
       return;
     }
 
+    // ⬇️ 서버가 세션에서 작성자 정보를 셋팅하도록 하는 게 가장 안전하지만,
+    // 만약 현재 백엔드가 nickname/loginid를 바디에서 기대한다면 세션 값으로 넣어줍니다.
+    const nickname = me?.nickName ?? me?.nickname ?? ""; // 백엔드 DTO: UserLoginResponseDto.nickName
+    const loginid = me?.loginid ?? me?.loginId ?? "";
+
     const fd = new FormData();
+    // 서버가 세션으로 처리한다면 아래 두 줄은 주석 처리해도 됨
     fd.append("loginid", loginid);
     fd.append("nickname", nickname);
+
     fd.append("title", t);
     fd.append("content", h);
     (files || []).forEach(f => fd.append("files", f));
@@ -92,6 +122,24 @@ export default function PostCreate() {
       alert("작성 중 오류가 발생했습니다.");
     }
   };
+
+  if (loadingMe) {
+    return (
+      <>
+        <EditorStyle />
+        <div className="app-root">
+          <Header />
+          <main className="postdetail-main">
+            <div className="postdetail-main-content">
+              <p className="postdetail-h3">세션을 확인하는 중...</p>
+            </div>
+          </main>
+        </div>
+      </>
+    );
+  }
+
+  const nickname = me?.nickName ?? me?.nickname ?? "(알 수 없음)";
 
   return (
     <>
@@ -107,6 +155,7 @@ export default function PostCreate() {
               </figure>
 
               <div className="postdetail-info-content">
+                {/* ✅ 세션 닉네임 사용: '홀란드' 제거 */}
                 <h1 className="postdetail-name">{nickname}</h1>
                 <p className="postdetail-title">Web Developer</p>
               </div>

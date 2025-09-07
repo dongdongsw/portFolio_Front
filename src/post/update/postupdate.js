@@ -12,7 +12,7 @@ axios.defaults.withCredentials = true;
 /* axios 인스턴스 */
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_BASE || "",
-  withCredentials: false,
+  withCredentials: true, // ✅ 세션 쿠키 포함
 });
 
 /* ── 로컬 API 헬퍼 (axios) ─────────────────────────── */
@@ -28,6 +28,10 @@ async function apiUpdatePost({ id, title, content, files }) {
 
   const { data } = await api.put(`/api/posts/modify/${id}`, fd); // 헤더 자동
   return data;
+}
+async function apiGetSession() {
+  const res = await api.get('/api/user/session-info', { validateStatus: () => true });
+  return res.status === 200 ? res.data : null;
 }
 /* ─────────────────────────────────────────────────── */
 
@@ -141,12 +145,18 @@ export default function PostUpdate() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState('');
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState('');
 
   const [title, setTitle] = useState('');
   const [html, setHtml]   = useState('');
   const [files, setFiles] = useState([]); // 새로 추가되는 파일만
+
+  // ✅ 세션 사용자(본인 이름/권한 체크용)
+  const [me, setMe] = useState(null);
+  const [loadingMe, setLoadingMe] = useState(true);
+
+  const [post, setPost] = useState(null); // 작성자 비교용으로 전체 보관
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(v => !v);
@@ -161,16 +171,24 @@ export default function PostUpdate() {
     return () => document.body.classList.remove('postdetail-body-styles');
   }, []);
 
-  // 기존 글 로드
+  // 기존 글 + 세션 로드
   useEffect(() => {
     if (!id || isNaN(Number(id))) {
       setError('잘못된 게시글 주소입니다.');
       setLoading(false);
+      setLoadingMe(false);
       return;
     }
     (async () => {
       try {
-        const data = await apiFetchPost(id);
+        const [data, meData] = await Promise.all([
+          apiFetchPost(id),
+          apiGetSession()
+        ]);
+
+        setPost(data);
+        setMe(meData);
+
         const uploadedImages = [
           data?.imagepath0, data?.imagepath1, data?.imagepath2, data?.imagepath3, data?.imagepath4
         ].filter(Boolean);
@@ -191,9 +209,34 @@ export default function PostUpdate() {
         setError('게시글을 불러오지 못했습니다.');
       } finally {
         setLoading(false);
+        setLoadingMe(false);
       }
     })();
   }, [id]);
+
+  // ✅ 작성자 검증 (본인 글만 수정 가능)
+  const postAuthorLoginId =
+    post?.loginid ??
+    post?.writerLoginId ??
+    post?.authorLoginId ??
+    post?.userLoginId ??
+    null;
+  const meLoginId = me?.loginid ?? me?.loginId ?? null;
+  const isOwner = !!(meLoginId && postAuthorLoginId && meLoginId === postAuthorLoginId);
+
+  useEffect(() => {
+    if (!loading && !loadingMe) {
+      if (!me) {
+        alert('로그인이 필요합니다.');
+        navigate(`/postlist/postdetail/${id}`);
+        return;
+      }
+      if (!isOwner) {
+        alert('작성자만 수정할 수 있습니다.');
+        navigate(`/postlist/postdetail/${id}`);
+      }
+    }
+  }, [loading, loadingMe, me, isOwner, id, navigate]);
 
   const handleImageUpload = async (file) => {
     setFiles(prev => [...prev, file]);
@@ -202,6 +245,11 @@ export default function PostUpdate() {
 
   const handleSubmit = async (e) => {
     e?.preventDefault?.();
+
+    if (!isOwner) {
+      alert('작성자만 수정할 수 있습니다.');
+      return;
+    }
 
     // ✅ 제목/내용 검증 (이미지만 있어도 내용 OK)
     const t = (title ?? '').trim();
@@ -231,7 +279,7 @@ export default function PostUpdate() {
 
   const handleCancel = () => navigate(`/postlist/postdetail/${id}`);
 
-  if (loading) {
+  if (loading || loadingMe) {
     return (
       <div className="app-root">
         <Header />
@@ -256,6 +304,9 @@ export default function PostUpdate() {
     );
   }
 
+  // ✅ 사이드바의 표시 이름: 세션 닉네임 사용
+  const nickname = me?.nickName ?? me?.nickname ?? '(로그인 필요)';
+
   return (
     <>
       <PostUpdateStyle />
@@ -273,7 +324,8 @@ export default function PostUpdate() {
                 <img src="https://i.postimg.cc/hP9yPjCQ/image.jpg" alt="avatar" width="80" />
               </figure>
               <div className="postdetail-info-content">
-                <h1 className="postdetail-name">박명수</h1>
+                {/* ⬇️ 여기! 하드코딩(박명수) → 세션 닉네임 */}
+                <h1 className="postdetail-name">{nickname}</h1>
                 <p className="postdetail-title">Web Developer</p>
               </div>
               <button

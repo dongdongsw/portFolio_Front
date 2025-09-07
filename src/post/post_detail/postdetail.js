@@ -7,13 +7,14 @@ import { createGlobalStyle } from 'styled-components';
 import axios from 'axios';
 
 axios.defaults.withCredentials = true;
-// axios 인스턴스
+
+// axios 인스턴스 (세션 쿠키 포함)
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_BASE || "",
-  withCredentials: false,
+  withCredentials: true,
 });
 
-// ── 로컬 API 헬퍼 (axios)
+// ── 로컬 API 헬퍼
 async function apiFetchPost(id) {
   const { data } = await api.get(`/api/posts/detail/${id}`);
   return data;
@@ -22,13 +23,16 @@ async function apiDeletePost(id) {
   await api.delete(`/api/posts/delete/${id}`);
   return true;
 }
+async function apiGetSession() {
+  const res = await api.get("/api/user/session-info", { validateStatus: () => true });
+  return res.status === 200 ? res.data : null;
+}
 
 const PostDetailGlobalStyle = createGlobalStyle`
   .pd-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .pd-title { margin-bottom:6px; }
   .pd-meta { margin:0; color:#666; }
   .pd-meta .pd-modified { color:#8a8a8a; }
-
   .pd-actions { display:flex; gap:10px; }
   .pd-btn { padding:10px 14px; border-radius:12px; border:1px solid #d1d5db; background:#fff; cursor:pointer; font-size:14px; }
   .pd-btn--cancel { background:#f3f4f6; color:#374151; border-color:#e5e7eb; }
@@ -75,6 +79,11 @@ export default function PostDetail() {
 
   const [post, setPost] = useState(null);
   const [error, setError] = useState('');
+
+  // 세션 로딩/데이터
+  const [me, setMe] = useState(null);
+  const [loadingMe, setLoadingMe] = useState(true);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(v => !v);
 
@@ -90,23 +99,50 @@ export default function PostDetail() {
     }
     (async () => {
       try {
-        const data = await apiFetchPost(id);
+        const [data, meData] = await Promise.all([
+          apiFetchPost(id),
+          apiGetSession()
+        ]);
         setPost(data);
+        setMe(meData); // 로그인 안되어 있으면 null
       } catch (e) {
         setError('게시글을 불러오지 못했습니다.');
+      } finally {
+        setLoadingMe(false);
       }
     })();
   }, [id]);
 
-  const onEdit = () => navigate(`/update/${id}`);
+  // ── 소유자 판별: 다양한 필드명 대응
+  const postAuthorLoginId =
+    post?.loginid ??
+    post?.writerLoginId ??
+    post?.authorLoginId ??
+    post?.userLoginId ??
+    null;
+  const meLoginId = me?.loginid ?? me?.loginId ?? null;
+
+  // 닉네임도 예비 비교(가능하면 loginid 비교가 우선)
+  const meNick = me?.nickName ?? me?.nickname ?? null;
+  const postNick = post?.nickname ?? null;
+
+  const isOwner =
+    (!!meLoginId && !!postAuthorLoginId && meLoginId === postAuthorLoginId) ||
+    (!!meNick && !!postNick && meNick === postNick);
+
+  const onEdit = () => {
+    if (!isOwner) { alert('작성자만 수정할 수 있습니다.'); return; }
+    navigate(`/update/${id}`);
+  };
   const onDelete = async () => {
+    if (!isOwner) { alert('작성자만 삭제할 수 있습니다.'); return; }
     if (!window.confirm('정말 삭제할까요?')) return;
     try {
       await apiDeletePost(id);
       alert('삭제되었습니다.');
       navigate('/postlist');
     } catch {
-      alert('삭제에 실패했습니다.');
+      alert('삭제에 실패했습니다. 권한을 확인하세요.');
     }
   };
 
@@ -182,44 +218,7 @@ export default function PostDetail() {
             </div>
             <div className="postdetail-sidebar-info-more">
               <div className="postdetail-separator" />
-              <ul className="postdetail-contacts-list">
-                <li className="postdetail-contact-item">
-                  <div className="postdetail-icon-box">
-                    <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/new-post.png" alt="new-post"/>
-                  </div>
-                  <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Email</p>
-                    <a href="#!" className="postdetail-contact-link">greatPark@example.com</a>
-                  </div>
-                </li>
-                <li className="postdetail-contact-item">
-                  <div className="postdetail-icon-box">
-                    <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/phone--v1.png" alt="phone--v1"/>
-                  </div>
-                  <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Phone</p>
-                    <a href="#!" className="postdetail-contact-link">+82-10-0000-0000</a>
-                  </div>
-                </li>
-                <li className="postdetail-contact-item">
-                  <div className="postdetail-icon-box">
-                    <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/birthday.png" alt="birthday"/>
-                  </div>
-                  <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Birthday</p>
-                    <time dateTime="1982-06-23">June 23, 1982</time>
-                  </div>
-                </li>
-                <li className="postdetail-contact-item">
-                  <div className="postdetail-icon-box">
-                    <img width="30" height="30" src="https://img.icons8.com/material-sharp/24/marker.png" alt="marker"/>
-                  </div>
-                  <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Location</p>
-                    <address>Seoul, Korea</address>
-                  </div>
-                </li>
-              </ul>
+              {/* 연락처 데모 섹션 필요 시 유지/수정 */}
             </div>
           </aside>
 
@@ -234,10 +233,14 @@ export default function PostDetail() {
                     {modifyStr && <span className="pd-modified"> (최종 수정일: {modifyStr})</span>}
                   </p>
                 </div>
-                <div className="pd-actions">
-                  <button onClick={onEdit} className="pd-btn pd-btn--submit">수정</button>
-                  <button onClick={onDelete} className="pd-btn pd-btn--cancel">삭제</button>
-                </div>
+
+                {/* 작성자 본인에게만 수정/삭제 노출 */}
+                {!loadingMe && isOwner && (
+                  <div className="pd-actions">
+                    <button onClick={onEdit} className="pd-btn pd-btn--submit">수정</button>
+                    <button onClick={onDelete} className="pd-btn pd-btn--cancel">삭제</button>
+                  </div>
+                )}
               </header>
 
               <section className="postdetail-about-text">
