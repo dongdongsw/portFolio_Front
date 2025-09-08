@@ -313,33 +313,27 @@ const handleSaveClick = async () => {
 };
 
 
-  // 탈퇴 (현재 컨트롤러에 없음, 프론트에만 있음)
-  const handlesecessionClick = async () => {
+  // 탈퇴
+const handlesecessionClick = async () => {
+  if (!window.confirm("정말로 회원 탈퇴를 하시겠습니까? 모든 정보가 삭제되며 되돌릴 수 없습니다.")) {
+    return;
+  }
+  try {
+    const response = await axios.delete('/api/mypage/delete');
+    alert(response.data);
 
-    if (!window.confirm("정말로 회원 탈퇴를 하시겠습니까? 모든 정보가 삭제되며 되돌릴 수 없습니다.")) {
-
-      return;
+    // 로그아웃 or 메인 페이지 이동
+    window.location.href = "/"; 
+  } catch (err) {
+    console.error("회원 탈퇴 중 오류 발생:", err);
+    if (err.response && err.response.data) {
+      alert(`탈퇴 실패: ${err.response.data}`);
+    } else {
+      alert('회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
     }
-    try {
-      // 백엔드에 회원 탈퇴 API가 없으니, 이 부분을 먼저 백엔드에 추가해야 함
-      
-      alert('성공적으로 회원 탈퇴되었습니다. 안녕히 가세요.');
-      
-    } catch (err) {
+  }
+};
 
-      console.error("회원 탈퇴 중 오류 발생:", err);
-
-      if (err.response && err.response.data) {
-
-        alert(`탈퇴 실패: ${err.response.data}`); // 백엔드 메시지 출력
-
-      } else {
-
-        alert('회원 탈퇴에 실패했습니다. 다시 시도해주세요.');
-
-      }
-    }
-  };
 
   // UI 핸들러
   const handleEditClick = () => {
