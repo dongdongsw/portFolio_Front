@@ -4,6 +4,12 @@ import { createGlobalStyle } from 'styled-components';
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
+const api = axios.create({
+  baseURL: "http://localhost:8080/api",
+  headers: { "Content-Type": "application/json" },
+  withCredentials: true
+});
+
 const CommentStyle = createGlobalStyle`
   * { box-sizing: border-box; margin: 0; padding: 0; 
       -webkit-box-sizing: border-box;
@@ -28,6 +34,7 @@ function CommentsApp() {
   const [editingText, setEditingText] = useState("");
   const [deleteConfirmIdx, setDeleteConfirmIdx] = useState(null);
   
+  const [currentNickname, setCurrentNickname] = useState("");
   const [isMember, setIsMember] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [currentUserId] = useState("user-1");
@@ -41,6 +48,21 @@ function CommentsApp() {
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const { data } = await api.get("/user/me");
+        setCurrentNickname(data.nickname || "");
+        setIsMember(true);
+      }
+      catch (err) {
+        setIsMember(false);
+        console.error("GET /user/me failed", err);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 60 * 1000);
     return () => clearInterval(t);
   }, []);
@@ -48,21 +70,22 @@ function CommentsApp() {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const res = await axios.get(`http://localhost:8080/api/comments/post/${POST_ID}`);
-        const mapped = (res.data || []).map(c => ({
+        const { data } = await api.get(`/comments/post/${POST_ID}`);
+        const mapped = (data || []).map(c => ({
           id: c.id,
           text: c.content,
           author: c.nickname,
           authorId: c.loginId,
           createdAt: c.uploadDate ? new Date(c.uploadDate) : null,
-          displayedAt: c.modifyDate ? new Date(c.modifyDate) : (c.uploadDate ? new Date(c.uploadDate) : null),
+          displayedAt: c.displayedAt ? new Date(c.displayedAt) 
+                     : (c.modifyDate ? new Date(c.modifyDate) 
+                     : (c.uploadDate ? new Date(c.uploadDate) : null)),
         }));
-
-        mapped.sort((a, b) => new Date(b.displayedAt ?? 0) - new Date(a.displayedAt ?? 0));
+        mapped.sort((a, b) => (b.displayedAt ?? 0) - (a.displayedAt ?? 0));
         setComments(mapped);
       }
       catch (err) {
-        console.error("GET /api/comments/post failed", err);
+        console.error("GET /comments/post failed", err);
       }
     };
     fetchComments();
@@ -118,20 +141,51 @@ function CommentsApp() {
     setComment((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isMember) {
       setShowAuthModal(true);
       return;
     }
-    if (!comment.text) return;
-    const ts = new Date();
-    setComments(prev => [
-      { id: Date.now(), text: comment.text, author: comment.author || "ME", authorId: currentUserId, createdAt: ts, displayedAt: ts },
-      ...prev
-    ]);
-    setComment(prev => ({ text: "", author: prev.author }));
-    navigate(0);
+    if (!comment.text.trim()) return;
+    
+    const optimistic = {
+      id: `temp-${Date.now()}`,
+      text: comment.text,
+      author: currentNickname || "ME",
+      authorId: currentUserId,
+      createdAt: new Date(),
+      displayedAt: new Date()
+    };
+    setComments(prev => [optimistic, ...prev]);
+
+    try {
+      const payload = { loginId: currentUserId, nickname: currentNickname || "ME", content: optimistic.text };
+      const { data } = await api.post(`/comments/post/${POST_ID}`, payload);
+      setComments(prev => {
+        const idx = prev.findIndex(c => c.id === optimistic.id);
+        if (idx === -1) return prev;
+        const serverItem = {
+          id: data.id,
+          text: data.content,
+          author: data.nickname,
+          authorId: data.loginId,
+          createdAt: data.uploadDate ? new Date(data.uploadDate) : new Date(),
+          displayedAt: data.displayedAt ? new Date(data.displayedAt)
+                      : (data.modifyDate ? new Date(data.modifyDate)
+                      : (data.uploadDate ? new Date(data.uploadDate) : new Date()))
+        };
+        const next = [...prev];
+        next[idx] = serverItem;
+        return next.sort((a,b)=>(b.displayedAt??0)-(a.displayedAt??0));
+      });
+      setComment(prev => ({ text: "", author: prev.author }));
+    }
+    catch (error) {
+      setComments(prev => prev.filter(c => c.id !== optimistic.id));
+      console.error("POST /comments/post Failed", error);
+      alert(error.response?.data?.message || "등록 실패");
+    }
   };
 
   const handleEditStart = (idx, text) => {
@@ -149,17 +203,48 @@ function CommentsApp() {
     setEditingText(e.target.value);
   };
 
-  const handleEditSubmit = (idx) => {
+  const handleEditSubmit = async (idx) => {
     const c = comments[idx];
     if (!c || c.authorId !== currentUserId) return;
     if (!editingText.trim()) return;
-    setComments((prev) => {
+
+    const original = { ...c };
+    const updatedLocal = { ...c, text: editingText, displayedAt: new Date() };
+    setComments(prev => {
       const next = [...prev];
-      next[idx] = { ...next[idx], text: editingText, displayedAt: new Date() };
+      next[idx] = updatedLocal;
       return next;
     });
-    setEditingCommentIndex(null);
-    setEditingText("");
+
+    try {
+      const payload = { loginId: currentUserId, nickname: currentNickname || "ME", content: editingText };
+      const { data } = await api.put(`/comments/edit/${c.id}`, payload);
+      setComments(prev => {
+        const next = [...prev];
+        next[idx] = {
+          id: data.id,
+          text: data.content,
+          author: data.nickname,
+          authorId: data.loginId,
+          createdAt: data.uploadDate ? new Date(data.uploadDate) : original.createdAt,
+          displayedAt: data.displayedAt ? new Date(data.displayedAt)
+                     : (data.modifyDate ? new Date(data.modifyDate)
+                     : (data.uploadDate ? new Date(data.uploadDate) : updatedLocal.displayedAt))
+        };
+        return next.sort((a,b)=>(b.displayedAt??0)-(a.displayedAt??0));
+      });
+      setEditingCommentIndex(null);
+      setEditingText("");
+    }
+    catch (error) {
+      setComments(prev => {
+        const next = [...prev];
+        next[idx] = original;
+        return next;
+      });
+      console.error("PUT /comments/edit failed", error);
+      alert(error.response?.data?.message || "수정 실패");
+    }
   };
 
   const handleCancelEdit = () => {
@@ -179,7 +264,7 @@ function CommentsApp() {
         <div className="comment-form">
           <form className="form" onSubmit={handleSubmit} noValidate>
             <div className="textarea-wrapper">
-            <div className="nickname-text">닉네임</div>
+            <div className="nickname-text">{currentNickname || "닉네임"}</div>
             <div className="char-counter">{comment.text.length}/300</div>
             <textarea
               className="input textarea-comment"
@@ -305,16 +390,29 @@ function CommentsApp() {
               <button className="btn btn-cancel" onClick={() => setDeleteConfirmIdx(null)}>취소</button>
               <button
                 className="btn btn-delete"
-                onClick={() => {
+                onClick={async () => {
                   const idx = deleteConfirmIdx;
                   const target = comments[idx];
                   if (!target || target.authorId !== currentUserId) {
                     setDeleteConfirmIdx(null);
                     return;
                   }
-                  setComments((prev) => prev.filter((_, i) => i !== idx));
+                  
+                  const removed = target;
+                  setComments(prev => prev.filter((_, i) => i !== idx));
                   setDeleteConfirmIdx(null);
-                  navigate(0);
+                  try {
+                    await api.delete(`/comments/delete/${removed.id}`);
+                  }
+                  catch (error) {
+                    setComments(prev => {
+                      const next = [...prev];
+                      next.splice(idx, 0, removed);
+                      return next;
+                    });
+                    console.error("DELETE /comments/delete failed", error);
+                    alert(error.response?.data?.message || "삭제 실패");
+                  }
                 }}
               >확인</button>
             </div>
