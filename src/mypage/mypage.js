@@ -78,17 +78,12 @@ function ProfileCard() {
     }
 
   `;
-
   // 초기값은 null로 두어 API 로딩 전에는 렌더링되지 않도록 처리
   const [userInfo, setUserInfo] = useState(null); // 실제 보여줄 사용자 정보
-
   const [editedUserInfo, setEditedUserInfo] = useState({ 
-    loginid: '',
-    nickname: '',
-    email: '',
+    loginid: '', nickname: '', email: '', phone: '', location: '', birthday: '', imagePath: null,
     // 기타 프로필 정보 (DB에서 오는 것들)
-    registdate: '', // 가입 날짜
-    pwupdate: '' // 비밀번호 업데이트 날짜
+    registdate: '', pwupdate: '', modifyDate: '' 
   });
 
   const [currentPassword, setCurrentPassword] = useState('');
@@ -105,37 +100,28 @@ function ProfileCard() {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-
         setIsLoading(true);
         setError(null);
         const response = await axios.get('/api/mypage/info');
         const userData = response.data; // UserResponseDto 객체
-
         setUserInfo(userData);
         setEditedUserInfo(userData); 
-
       } catch (err) {
 
         console.error("사용자 정보 로딩 중 오류 발생:", err);
         setError("사용자 정보를 불러오는데 실패했습니다.");
-
       } finally {
 
         setIsLoading(false);
-
       }
     };
-
     fetchUserInfo();
   }, []);
 
   // === 입력 필드 변경 핸들러 ===
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setEditedUserInfo((prev) => ({
-      ...prev,
-      [name]: value
-    }));
+    setEditedUserInfo((prev) => ({ ...prev, [name]: value }));
   };
 
   // 비밀번호 입력 필드 변경
@@ -143,9 +129,7 @@ function ProfileCard() {
     const { name, value } = e.target;
 
     if (name === "currentPassword") setCurrentPassword(value);
-
     else if (name === "newPassword") setNewPassword(value);
-
     else if (name === "confirmNewPassword") setConfirmNewPassword(value);
   };
 
@@ -153,41 +137,32 @@ function ProfileCard() {
   const handleNewEmailChange = (e) => {
 
     setNewEmail(e.target.value);
-
   };
 
   // 인증번호 입력 필드 변경
   const handleVerificationCodeChange = (e) => {
 
     setVerificationCode(e.target.value);
-
   };
 
   // 닉네임 중복 확인
   const handleNicknameDuplicateCheck = async () => {
     if (!editedUserInfo.nickname) {
-
       alert("닉네임을 입력해주세요.");
 
       return;
     }
     try {
       const response = await axios.get(`/api/mypage/nickname/check-availability?nickname=${editedUserInfo.nickname}`);
-
       alert(response.data); // 백엔드 메시지 출력
 
     } catch (err) {
-
       console.error("닉네임 중복 확인 중 오류:", err);
 
       if (err.response && err.response.data) {
-
         alert(err.response.data); // 백엔드 메시지 출력
-
       } else {
-
         alert('닉네임 중복 확인에 실패했습니다. 다시 시도해주세요.');
-
       }
     }
   };
@@ -280,35 +255,55 @@ const handleSaveClick = async () => {
 
   try {
     const updateData = {
-      newNickname: editedUserInfo.nickname,
-      newEmail: newEmail || null,  // ✅ 새 이메일만 PATCH로 보냄 (기존 email은 유지)
-      currentPassword: currentPassword || null,
-      newPassword: newPassword || null,
-      newPasswordConfirm: confirmNewPassword || null
+      newNickname: editedUserInfo.nickname, newEmail: newEmail || null,  // 새 이메일만 PATCH로 보냄 (기존 email은 유지)
+      currentPassword: currentPassword || null, newPassword: newPassword || null,
+      newPasswordConfirm: confirmNewPassword || null, phone: editedUserInfo.phone || null,
+      location: editedUserInfo.location || null, birthday: editedUserInfo.birthday || null,
+      imagePath: editedUserInfo.imagePath || null
     };
 
     console.log("PATCH payload", updateData); // 디버깅용
 
-    const response = await axios.patch('/api/mypage', updateData);
+    // FormData 생성
+    const formData = new FormData();
+    formData.append(
+      "updateDto",
+      new Blob([JSON.stringify(updateData)], { type: "application/json" })
+    );
 
-    // ✅ 저장 성공 시 기존 이메일을 새 이메일로 갱신
+    if (editedUserInfo.profileImageFile) {
+      formData.append("profileImage", editedUserInfo.profileImageFile);
+    }
+
+    const response = await axios.patch('/api/mypage', formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+
+    // 저장 성공 시 기존 이메일을 새 이메일로 갱신
     if (newEmail) {
       setEditedUserInfo((prev) => ({ ...prev, email: newEmail }));
       setNewEmail('');
     }
 
-    setUserInfo({ ...editedUserInfo });
-    setIsEditing(false);
+    setUserInfo({ ...editedUserInfo }); setIsEditing(false);
 
     // 비밀번호 필드 초기화
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmNewPassword('');
+    setCurrentPassword(''); setNewPassword(''); setConfirmNewPassword('');
 
     alert(response.data);
   } catch (err) {
     console.error("정보 저장 중 오류 발생:", err);
     alert(err.response?.data || '정보 저장에 실패했습니다. 다시 시도해주세요.');
+  }
+};
+
+// 이미지 파일 선택 핸들러
+const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (file) {
+    setEditedUserInfo((prev) => ({
+      ...prev, profileImageFile: file, imagePath: URL.createObjectURL(file) 
+    }));
   }
 };
 
@@ -339,21 +334,15 @@ const handlesecessionClick = async () => {
   const handleEditClick = () => {
     // 편집 모드 진입 시, 현재 userInfo를 editedUserInfo로 복사
     // 이렇게 해야 사용자가 취소했을 때 원본 데이터가 보존됨
-    setEditedUserInfo({ ...userInfo });
-    setIsEditing(true);
+    setEditedUserInfo({ ...userInfo }); setIsEditing(true);
   };
 
   const handleCancelClick = () => {
     // 취소 시 원본 userInfo로 되돌리고 편집 모드 종료
     // 비밀번호/이메일 관련 임시 상태 초기화
-    setEditedUserInfo({ ...userInfo });
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmNewPassword('');
-    setNewEmail('');
-    setShowVerificationInput(false);
-    setVerificationCode('');
-    setIsEditing(false);
+    setEditedUserInfo({ ...userInfo }); setCurrentPassword(''); setNewPassword('');
+    setConfirmNewPassword(''); setNewEmail(''); setShowVerificationInput(false);
+    setVerificationCode(''); setIsEditing(false);
   };
 
   // 로딩 및 에러 처리 UI
@@ -362,14 +351,8 @@ const handlesecessionClick = async () => {
       <>
         <MypageStyle />
         {/* <Header /> */}
-        <div className="login-header">
-          <a href="http://localhost:3000">
-            <img src={logo} width="150" height="150" alt="logo" />
-          </a>
-        </div>
-        <div className="profile-card" style={{ textAlign: 'center', padding: '50px' }}>
-          정보를 불러오는 중입니다... 
-        </div>
+        <div className="login-header"><a href="http://localhost:3000"><img src={logo} width="150" height="150" alt="logo" /></a></div>
+        <div className="profile-card" style={{ textAlign: 'center', padding: '50px' }}>정보를 불러오는 중입니다...</div>
       </>
     );
   }
@@ -379,15 +362,8 @@ const handlesecessionClick = async () => {
       <>
         <MypageStyle />
         {/* <Header /> */}
-        <div className="login-header">
-          <a href="http://localhost:3000">
-            <img src={logo} width="150" height="150" alt="logo" />
-          </a>
-        </div>
-        <div className="profile-card" style={{ textAlign: 'center', padding: '50px', color: 'red' }}>
-          <p>오류 발생: {error}</p>
-          <p>잠시 후 다시 시도해주세요.</p>
-        </div>
+        <div className="login-header"> <a href="http://localhost:3000"><img src={logo} width="150" height="150" alt="logo" /></a> </div>
+        <div className="profile-card" style={{ textAlign: 'center', padding: '50px', color: 'red' }}> <p>오류 발생: {error}</p> <p>잠시 후 다시 시도해주세요.</p></div>
       </>
     );
   }
@@ -395,18 +371,21 @@ const handlesecessionClick = async () => {
     <>
       <MypageStyle />
       {/* <Header /> */}
-      <div className="login-header">
-        <a href="http://localhost:3000">
-          <img src={logo} width="150" height="150" alt="logo" />
-        </a>
-      </div>
+      <div className="login-header"><a href="http://localhost:3000"><img src={logo} width="150" height="150" alt="logo" /></a></div>
       <div className="profile-card">
         <div className="profile-header">
-          <img src="https://randomuser.me/api/portraits/women/79.jpg" className="avatar" alt="Profile" />
+        <div className="avatar-wrapper"> 
+          <img src={editedUserInfo.imagePath || "https://randomuser.me/api/portraits/women/79.jpg"} className="avatar" alt="Profile" />
+           {isEditing && (
+              <>
+                <div className="avatar-overlay" onClick={() => document.getElementById("fileInput").click()}>이미지 변경</div>
+                <input id="fileInput" type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageChange}/>
+              </>
+            )}
+            </div>
           <div>
             {/* userInfo가 로드된 후에만 접근 */}
-            <h2>{userInfo?.nickname}</h2>
-            <p className="meta">{userInfo?.email}</p>
+            <h2>{userInfo?.nickname}</h2><p className="meta">{userInfo?.email}</p>
           </div>
         </div>
 
@@ -420,29 +399,21 @@ const handlesecessionClick = async () => {
                 <div className="meta-value">{userInfo?.registdate ? new Date(userInfo.registdate).toLocaleDateString() : 'N/A'}</div>
               </div>
               <div>
-                <span className="meta-label">비밀번호 업데이트</span>
+                <span className="meta-label">비밀번호 수정일</span>
                 <div className="meta-value">{userInfo?.pwupdate ? new Date(userInfo.pwupdate).toLocaleDateString() : 'N/A'}</div>
               </div>
+              <div>
+            <span className="meta-label">회원 정보 수정일</span>
+            <div className="meta-value">{userInfo?.modifyDate ? new Date(userInfo.modifyDate).toLocaleDateString() : 'N/A'}</div>
+          </div>
             </div>
 
-            <div className="mypage-field">
-              <label>아이디</label>
-              <p>{userInfo?.loginid}</p>
-            </div>
-            <div className="mypage-field">
-              <label>비밀번호</label>
-              <p>********</p> {/* 보안상 항상 가려줌 */}
-            </div>
-
-            <div className="mypage-field">
-              <label>닉네임</label>
-              <p>{userInfo?.nickname}</p>
-            </div>
-
-            <div className="mypage-field">
-              <label>이메일 주소</label>
-              <p>{userInfo?.email}</p>
-            </div>
+            <div className="mypage-field"><label>아이디</label><p>{userInfo?.loginid}</p></div>
+            <div className="mypage-field"><label>닉네임</label> <p>{userInfo?.nickname}</p> </div>
+            <div className="mypage-field"><label>전화번호</label><p>{userInfo?.phone || '수정해주세요'}</p></div>
+            <div className="mypage-field"><label>주소</label><p>{userInfo?.location || '수정해주세요'}</p></div>
+            <div className="mypage-field"><label>생일</label><p>{userInfo?.birthday || '수정해주세요'}</p></div>
+            <div className="mypage-field"><label>이메일 주소</label><p>{userInfo?.email}</p></div>
           </>
         ) : (
           <>
@@ -458,121 +429,63 @@ const handlesecessionClick = async () => {
               </div>
             </div>
 
-            <div className="mypage-field">
-              <label>아이디</label>
-              <input
-                type="text"
-                name="loginid" // name 속성을 loginid로 변경
-                value={editedUserInfo.loginid}
-                onChange={handleChange}
-                disabled // 아이디는 보통 수정 불가
-              />
+            <div className="mypage-field"><label>아이디</label>
+              <input type="text" name="loginid" value={editedUserInfo.loginid} onChange={handleChange} disabled/>
             </div>
-            <div className="mypage-field">
-              <label>닉네임</label>
-              <div className="nickname-input-group">
-                <input
-                  type="text"
-                  name="nickname"
-                  value={editedUserInfo.nickname}
-                  onChange={handleChange}
-                  maxLength="20" 
-                />
+            <div className="mypage-field"><label>닉네임</label><div className="nickname-input-group">
+                <input type="text" name="nickname" value={editedUserInfo.nickname} onChange={handleChange} maxLength="20"/>
                 <button type="button" className="check-duplicate-btn" onClick={handleNicknameDuplicateCheck}>중복 확인</button>
               </div>
             </div>
 
             {/* 비밀번호 변경 필드 */}
-            <div className="mypage-pw">
-              <div className="mypage-field-a">
-                <label>현재 비밀번호</label>
-                <input
-                  type="password" 
-                  name="currentPassword"
-                  value={currentPassword} 
-                  placeholder='현재 비밀번호'
-                  onChange={handlePasswordChange} 
-                />
+            <div className="mypage-pw"><div className="mypage-field-a"><label>현재 비밀번호</label>
+                <input type="password"  name="currentPassword" value={currentPassword}  placeholder='현재 비밀번호' onChange={handlePasswordChange}/>
               </div>
-              <div className="mypage-field-a" >
-                <label>새 비밀번호</label>
-                <input
-                  type="password" 
-                  name="newPassword"
-                  value={newPassword} 
-                  placeholder='새 비밀번호 (8~20자)'
-                  onChange={handlePasswordChange} 
-                />
+              <div className="mypage-field-a"><label>새 비밀번호</label>
+                <input type="password"  name="newPassword" value={newPassword}  placeholder='새 비밀번호 (8~20자)' onChange={handlePasswordChange}/>
               </div>
-              <div className="mypage-field-a">
-                <label>새 비밀번호 재확인</label>
-                <input
-                  type="password" 
-                  name="confirmNewPassword"
-                  value={confirmNewPassword}
-                  placeholder='새 비밀번호 재확인'
-                  onChange={handlePasswordChange}
-                />
+              <div className="mypage-field-a"><label>새 비밀번호 재확인</label>
+                <input type="password" name="confirmNewPassword" value={confirmNewPassword} placeholder='새 비밀번호 재확인' onChange={handlePasswordChange}/>
               </div>
             </div>
 
             {/* 이메일 변경 필드 */}
             <div className="mypage-pw">
-              <div className="mypage-field-a">
-                <label>현재 이메일 주소</label>
-                <div className="nickname-input-group">
-                  <input
-                    type="email"
-                    name="email"
-                    value={editedUserInfo.email} // 현재 편집 중인 이메일
-                    disabled // 직접 수정 불가
-                  />
-                </div>
-              </div>
+              <div className="mypage-field-a"><label>현재 이메일 주소</label>
+                <div className="nickname-input-group"><input type="email" name="email" value={editedUserInfo.email} disabled/></div></div>
 
                {/* 새 이메일 */}
-  <div className="mypage-field-a">
-    <label>새 이메일 주소</label>
-    <div className="nickname-input-group">
-      <input
-        type="email"
-        name="newEmail"
-        value={newEmail}
-        placeholder="새로운 이메일 주소 입력"
-        onChange={handleNewEmailChange}
-      />
-      <button
-        type="button"
-        className="check-duplicate-btn"
-        onClick={handleEmailVerificationClick}
-      >
-        인증 요청
-      </button>
-    </div>
+              <div className="mypage-field-a"><label>새 이메일 주소</label>
+                <div className="nickname-input-group">
+                  <input type="email" name="newEmail" value={newEmail} placeholder="새로운 이메일 주소 입력" onChange={handleNewEmailChange}/>
+                  <button type="button" className="check-duplicate-btn" onClick={handleEmailVerificationClick}>인증 요청</button>
+                </div>
 
-    {/* 인증번호 입력창 */}
-    {showVerificationInput && (
-      <div className="nickname-input-group" style={{ marginTop: '10px' }}>
-        <input
-          type="text"
-          name="verificationCode"
-          placeholder="인증번호 6자리 입력"
-          value={verificationCode}
-          onChange={handleVerificationCodeChange}
-          maxLength="7"
-          autoComplete="off"
-        />
-        <button
-          type="button"
-          className="check-duplicate-btn"
-          onClick={handleVerifyCodeClick}
-        >
-          인증 확인
-        </button>
-      </div>
-    )}
-  </div>
-</div>
+                {/* 인증번호 입력창 */}
+                {showVerificationInput && (
+                  <div className="nickname-input-group" style={{ marginTop: '10px' }}>
+                    <input type="text" name="verificationCode" placeholder="인증번호 6자리 입력" value={verificationCode}
+                      onChange={handleVerificationCodeChange} maxLength="7" autoComplete="off"/>
+                    <button type="button" className="check-duplicate-btn" onClick={handleVerifyCodeClick}>인증 확인</button>
+                  </div>
+                )}
+              </div>
+            </div>
+            {/* 전화번호 */}
+            <div className="mypage-field"><label>전화번호</label>
+              <input type="text" name="phone" value={editedUserInfo.phone || ''} placeholder="010-1234-5678" onChange={handleChange}/>
+            </div>
+
+            {/* 주소 */}
+            <div className="mypage-field"><label>주소</label>
+              <input type="text" name="location" value={editedUserInfo.location || ''} placeholder="주소 입력" onChange={handleChange}/>
+            </div>
+
+            {/* 생일 */}
+            <div className="mypage-field"><label>생일</label>
+              <input type="date" name="birthday" value={editedUserInfo.birthday || ''} onChange={handleChange}/>
+            </div>
           </>
         )}
         {/* 버튼 영역 */}
