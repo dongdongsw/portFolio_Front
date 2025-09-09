@@ -399,6 +399,11 @@ body.postdetail-body-styles::-webkit-scrollbar {
 
 @media (min-width: 768px) {
 
+    .postdetail-sidebar {
+        width: 300px;
+        min-width: 300px;
+    }
+    
     .postdetail-sidebar, .postdetail-article { width: 700px; }
 
     .postdetail-contacts-list {
@@ -425,6 +430,10 @@ body.postdetail-body-styles::-webkit-scrollbar {
 
 @media (min-width: 1250px) {
 
+    .postdetail-sidebar {
+        width: 300px;
+        min-width: 300px;
+    }
     .postdetail-sidebar, .postdetail-article { width: auto; }
 
     .postdetail-article { min-height: 70%; }

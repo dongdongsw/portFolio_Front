@@ -33,6 +33,11 @@ async function apiGetSession() {
   const res = await api.get('/api/user/session-info', { validateStatus: () => true });
   return res.status === 200 ? res.data : null;
 }
+// ✅ mypage API 호출 함수 추가
+async function apiGetMypageInfo() {
+  const res = await api.get("/api/mypage/info", { validateStatus: () => true });
+  return res.status === 200 ? res.data : null;
+}
 /* ─────────────────────────────────────────────────── */
 
 /* ── styled-components ─────────────────────────────── */
@@ -139,17 +144,26 @@ function isEmptyContent(html = "") {
     .trim();
   return !hasImage && textOnly.length === 0;
 }
+// ✅ 추가: YYYY-MM-DD 형식으로 변환하는 함수
+function formatDateToYYYYMMDD(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 /* ─────────────────────────────────────────────────── */
 
 export default function PostUpdate() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState('');
+  const [loading, setLoading]   = useState(true);
+  const [error, setError]       = useState('');
 
   const [title, setTitle] = useState('');
-  const [html, setHtml]   = useState('');
+  const [html, setHtml]   = useState('');
   const [files, setFiles] = useState([]); // 새로 추가되는 파일만
 
   // ✅ 세션 사용자(본인 이름/권한 체크용)
@@ -160,7 +174,8 @@ export default function PostUpdate() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(v => !v);
-  const [contactInfo, setContactInfo] = useState({ email:'', phone:'', birthday:'', location:'' });
+  // ✅ contactInfo 상태 추가
+  const [contactInfo, setContactInfo] = useState({ email: '', phone: '', birthday: '', location: '' });
   const handleContactInfoChange = (e) => {
     const { name, value } = e.target;
     setContactInfo(prev => ({ ...prev, [name]: value }));
@@ -181,13 +196,25 @@ export default function PostUpdate() {
     }
     (async () => {
       try {
-        const [data, meData] = await Promise.all([
+        // ✅ 3개의 API를 동시에 호출
+        const [data, meData, mypageData] = await Promise.all([
           apiFetchPost(id),
-          apiGetSession()
+          apiGetSession(),
+          apiGetMypageInfo(),
         ]);
 
         setPost(data);
         setMe(meData);
+
+        // ✅ 가져온 데이터로 contactInfo 상태 업데이트
+        const { phone, birthday, location } = meData || {};
+        const email = mypageData?.email || '';
+        setContactInfo({
+          email: email,
+          phone: phone || '',
+          birthday: formatDateToYYYYMMDD(birthday),
+          location: location || '',
+        });
 
         const uploadedImages = [
           data?.imagepath0, data?.imagepath1, data?.imagepath2, data?.imagepath3, data?.imagepath4
@@ -306,6 +333,7 @@ export default function PostUpdate() {
 
   // ✅ 사이드바의 표시 이름: 세션 닉네임 사용
   const nickname = me?.nickName ?? me?.nickname ?? '(로그인 필요)';
+  const myImage = me?.imagePath ?? "https://i.postimg.cc/hP9yPjCQ/image.jpg";
 
   return (
     <>
@@ -321,7 +349,8 @@ export default function PostUpdate() {
           >
             <div className="postdetail-sidebar-info">
               <figure className="postdetail-avatar-box">
-                <img src="https://i.postimg.cc/hP9yPjCQ/image.jpg" alt="avatar" width="80" />
+                {/* ✅ 로그인한 사용자 이미지 */}
+                <img src={myImage} alt="avatar" width="80" />
               </figure>
               <div className="postdetail-info-content">
                 {/* ⬇️ 여기! 하드코딩(박명수) → 세션 닉네임 */}
@@ -349,6 +378,7 @@ export default function PostUpdate() {
                     <SidebarInput
                       type="email"
                       name="email"
+                      // ✅ contactInfo 상태와 연결
                       value={contactInfo.email}
                       onChange={handleContactInfoChange}
                       placeholder="이메일을 입력하세요"
@@ -364,6 +394,7 @@ export default function PostUpdate() {
                     <SidebarInput
                       type="tel"
                       name="phone"
+                      // ✅ contactInfo 상태와 연결
                       value={contactInfo.phone}
                       onChange={handleContactInfoChange}
                       placeholder="전화번호를 입력하세요"
@@ -379,6 +410,7 @@ export default function PostUpdate() {
                     <SidebarInput
                       type="date"
                       name="birthday"
+                      // ✅ contactInfo 상태와 연결
                       value={contactInfo.birthday}
                       onChange={handleContactInfoChange}
                       placeholder="YYYY-MM-DD"
@@ -394,6 +426,7 @@ export default function PostUpdate() {
                     <SidebarInput
                       type="text"
                       name="location"
+                      // ✅ contactInfo 상태와 연결
                       value={contactInfo.location}
                       onChange={handleContactInfoChange}
                       placeholder="주소를 입력하세요"

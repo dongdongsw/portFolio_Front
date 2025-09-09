@@ -1,4 +1,3 @@
-// src/post/post_detail/postdetail.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './postdetail.css';
@@ -27,6 +26,12 @@ async function apiGetSession() {
   const res = await api.get("/api/user/session-info", { validateStatus: () => true });
   return res.status === 200 ? res.data : null;
 }
+// ✅ mypage API 호출 함수 추가
+async function apiGetMypageInfo() {
+  const res = await api.get("/api/mypage/info", { validateStatus: () => true });
+  return res.status === 200 ? res.data : null;
+}
+
 
 const PostDetailGlobalStyle = createGlobalStyle`
   .pd-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
@@ -84,6 +89,9 @@ export default function PostDetail() {
   const [me, setMe] = useState(null);
   const [loadingMe, setLoadingMe] = useState(true);
 
+  // ✅ contactInfo 상태 추가
+  const [contactInfo, setContactInfo] = useState({ email: '', phone: '', birthday: '', location: '' });
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(v => !v);
 
@@ -99,12 +107,27 @@ export default function PostDetail() {
     }
     (async () => {
       try {
-        const [data, meData] = await Promise.all([
+        // ✅ Promise.all로 3개의 API를 동시에 호출
+        const [postData, sessionData, mypageData] = await Promise.all([
           apiFetchPost(id),
-          apiGetSession()
+          apiGetSession(),
+          apiGetMypageInfo()
         ]);
-        setPost(data);
-        setMe(meData); // 로그인 안되어 있으면 null
+
+        setPost(postData);
+        setMe(sessionData); // 로그인 안되어 있으면 null
+        
+        // ✅ 가져온 데이터로 contactInfo 상태 업데이트
+        const { phone, birthday, location } = sessionData || {};
+        const email = mypageData?.email || '';
+
+        setContactInfo({
+          email: email,
+          phone: phone || '',
+          birthday: formatDateToYYYYMMDD(birthday),
+          location: location || '',
+        });
+
       } catch (e) {
         setError('게시글을 불러오지 못했습니다.');
       } finally {
@@ -112,6 +135,16 @@ export default function PostDetail() {
       }
     })();
   }, [id]);
+
+  // ✅ 추가: YYYY-MM-DD 형식으로 변환하는 함수
+  function formatDateToYYYYMMDD(dateString) {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 
   // ── 소유자 판별: 다양한 필드명 대응
   const postAuthorLoginId =
@@ -178,8 +211,8 @@ export default function PostDetail() {
     );
   }
 
-  const title   = post.title || '(제목 없음)';
-  const author  = post.nickname || post.loginid || '작성자';
+  const title   = post.title || '(제목 없음)';
+  const author  = post.nickname || post.loginid || '작성자';
   const uploadStr = formatDate(post.uploaddate);
   const modifyStr =
     post.modifydate &&
@@ -195,6 +228,14 @@ export default function PostDetail() {
   const baseHtml = toDisplayHtml(content);
   const { html: htmlNoBlob } = replaceBlobImages(baseHtml, uploadedImages);
 
+  // ✅ 로그인한 사용자 정보 변수 정의 (DTO/Entity에 맞춤)
+  const myNickname = me?.nickname ?? 'null';
+  const myImage = me?.imagePath ?? "https://i.postimg.cc/hP9yPjCQ/image.jpg";
+  const myEmail = contactInfo.email ?? 'null';
+  const myPhone = contactInfo.phone ?? 'null';
+  const myBirthday = contactInfo.birthday ?? 'null';
+  const myLocation = contactInfo.location ?? 'null';
+
   return (
     <>
       <PostDetailGlobalStyle />
@@ -205,10 +246,12 @@ export default function PostDetail() {
           <aside className={`postdetail-sidebar ${sidebarOpen ? 'active' : ''}`} aria-hidden={!sidebarOpen} data-sidebar>
             <div className="postdetail-sidebar-info">
               <figure className="postdetail-avatar-box">
-                <img src="https://i.postimg.cc/hP9yPjCQ/image.jpg" alt="avatar"/>
+                {/* ✅ 로그인한 사용자 이미지 */}
+                <img src={myImage} alt="avatar" width="80" />
               </figure>
               <div className="postdetail-info-content">
-                <h1 className="postdetail-name" title="Writer">{author}</h1>
+                {/* ✅ 로그인한 사용자 닉네임 */}
+                <h1 className="postdetail-name" title="Writer">{myNickname}</h1>
                 <p className="postdetail-title">Web Developer</p>
               </div>
               <button className="postdetail-info-more-btn" data-sidebar-btn onClick={toggleSidebar} aria-expanded={sidebarOpen}>
@@ -218,7 +261,40 @@ export default function PostDetail() {
             </div>
             <div className="postdetail-sidebar-info-more">
               <div className="postdetail-separator" />
-              {/* 연락처 데모 섹션 필요 시 유지/수정 */}
+              <ul className="postdetail-contacts-list">
+                {/* ✅ 로그인한 사용자 이메일 */}
+                <li className="postdetail-contact-item">
+                  <div className="postdetail-icon-box"><ion-icon name="mail-outline" aria-hidden="true" /></div>
+                  <div className="postdetail-contact-info">
+                    <p className="postdetail-contact-title">Email</p>
+                    <p className="postdetail-contact-link">{myEmail}</p>
+                  </div>
+                </li>
+                {/* ✅ 로그인한 사용자 전화번호 */}
+                <li className="postdetail-contact-item">
+                  <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true" /></div>
+                  <div className="postdetail-contact-info">
+                    <p className="postdetail-contact-title">Phone</p>
+                    <p className="postdetail-contact-link">{myPhone}</p>
+                  </div>
+                </li>
+                {/* ✅ 로그인한 사용자 생일 */}
+                <li className="postdetail-contact-item">
+                  <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true" /></div>
+                  <div className="postdetail-contact-info">
+                    <p className="postdetail-contact-title">Birthday</p>
+                    <p className="postdetail-contact-link">{myBirthday}</p>
+                  </div>
+                </li>
+                {/* ✅ 로그인한 사용자 주소 */}
+                <li className="postdetail-contact-item">
+                  <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true" /></div>
+                  <div className="postdetail-contact-info">
+                    <p className="postdetail-contact-title">Location</p>
+                    <p className="postdetail-contact-link">{myLocation}</p>
+                  </div>
+                </li>
+              </ul>
             </div>
           </aside>
 
