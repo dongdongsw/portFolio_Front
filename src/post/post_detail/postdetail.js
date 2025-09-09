@@ -1,3 +1,4 @@
+// src/post/post_detail/PostDetail.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './postdetail.css';
@@ -7,13 +8,30 @@ import axios from 'axios';
 
 axios.defaults.withCredentials = true;
 
-// axios 인스턴스 (세션 쿠키 포함)
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_BASE || "",
   withCredentials: true,
 });
 
-// ── 로컬 API 헬퍼
+const DEFAULT_AVATAR = '/default_profile.png';
+const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8080';
+
+// 서버에서 오는 경로를 안전하게 <img src>로 변환
+const toImageSrc = (p) => {
+  if (!p) return DEFAULT_AVATAR;
+  // 절대 URL
+  if (/^https?:\/\//i.test(p)) return p;
+  // 루트(/...)로 시작 → 백엔드 호스트 붙임
+  if (p.startsWith('/')) return API_BASE + p;
+  // 파일명이나 상대경로만 온 경우 → /profile/ 또는 /images/에 저장했다면 보통 파일명만 저장하므로 /profile/ 가정
+  // 만약 서비스에서 /images에 저장한다면 아래 한 줄을 '/images/'로 바꿔도 됨
+  return API_BASE + '/profile/' + p;
+};
+
+// 캐시 버스터(업로드 직후 최신 반영)
+const bust = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
+
+/* ---------------- API ---------------- */
 async function apiFetchPost(id) {
   const { data } = await api.get(`/api/posts/detail/${id}`);
   return data;
@@ -26,13 +44,12 @@ async function apiGetSession() {
   const res = await api.get("/api/user/session-info", { validateStatus: () => true });
   return res.status === 200 ? res.data : null;
 }
-// ✅ mypage API 호출 함수 추가
 async function apiGetMypageInfo() {
   const res = await api.get("/api/mypage/info", { validateStatus: () => true });
   return res.status === 200 ? res.data : null;
 }
 
-
+/* ---------------- UI 스타일 ---------------- */
 const PostDetailGlobalStyle = createGlobalStyle`
   .pd-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .pd-title { margin-bottom:6px; }
@@ -44,6 +61,7 @@ const PostDetailGlobalStyle = createGlobalStyle`
   .pd-btn--submit { background:#c7c8cc; color:#374151; border:none; box-shadow:0 2px 6px rgba(59,130,246,0.35); }
 `;
 
+/* ---------------- 유틸 ---------------- */
 const pad = (n) => String(n).padStart(2, '0');
 function formatDate(v) {
   if (!v) return '';
@@ -71,13 +89,24 @@ function replaceBlobImages(html = '', imagePaths = []) {
     /<img\b[^>]*src=["']blob:[^"']*["'][^>]*>/gi,
     (match) => {
       if (idx >= imagePaths.length) return '';
-      const src = imagePaths[idx++];
+      const raw = imagePaths[idx++];
+      const src = bust(toImageSrc(raw));
       return match.replace(/src=["'][^"']+["']/, `src="${src}"`);
     }
   );
   return { html: replaced };
 }
 
+function formatDateToYYYYMMDD(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/* ---------------- 컴포넌트 ---------------- */
 export default function PostDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -85,11 +114,9 @@ export default function PostDetail() {
   const [post, setPost] = useState(null);
   const [error, setError] = useState('');
 
-  // 세션 로딩/데이터
   const [me, setMe] = useState(null);
   const [loadingMe, setLoadingMe] = useState(true);
 
-  // ✅ contactInfo 상태 추가
   const [contactInfo, setContactInfo] = useState({ email: '', phone: '', birthday: '', location: '' });
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -107,7 +134,6 @@ export default function PostDetail() {
     }
     (async () => {
       try {
-        // ✅ Promise.all로 3개의 API를 동시에 호출
         const [postData, sessionData, mypageData] = await Promise.all([
           apiFetchPost(id),
           apiGetSession(),
@@ -115,19 +141,16 @@ export default function PostDetail() {
         ]);
 
         setPost(postData);
-        setMe(sessionData); // 로그인 안되어 있으면 null
-        
-        // ✅ 가져온 데이터로 contactInfo 상태 업데이트
+        setMe(sessionData);
+
         const { phone, birthday, location } = sessionData || {};
         const email = mypageData?.email || '';
-
         setContactInfo({
-          email: email,
+          email,
           phone: phone || '',
           birthday: formatDateToYYYYMMDD(birthday),
           location: location || '',
         });
-
       } catch (e) {
         setError('게시글을 불러오지 못했습니다.');
       } finally {
@@ -136,26 +159,11 @@ export default function PostDetail() {
     })();
   }, [id]);
 
-  // ✅ 추가: YYYY-MM-DD 형식으로 변환하는 함수
-  function formatDateToYYYYMMDD(dateString) {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  // ── 소유자 판별: 다양한 필드명 대응
+  // 소유자 판별
   const postAuthorLoginId =
-    post?.loginid ??
-    post?.writerLoginId ??
-    post?.authorLoginId ??
-    post?.userLoginId ??
-    null;
+    post?.loginid ?? post?.writerLoginId ?? post?.authorLoginId ?? post?.userLoginId ?? null;
   const meLoginId = me?.loginid ?? me?.loginId ?? null;
 
-  // 닉네임도 예비 비교(가능하면 loginid 비교가 우선)
   const meNick = me?.nickName ?? me?.nickname ?? null;
   const postNick = post?.nickname ?? null;
 
@@ -211,8 +219,7 @@ export default function PostDetail() {
     );
   }
 
-  const title   = post.title || '(제목 없음)';
-  const author  = post.nickname || post.loginid || '작성자';
+  const title     = post.title || '(제목 없음)';
   const uploadStr = formatDate(post.uploaddate);
   const modifyStr =
     post.modifydate &&
@@ -228,13 +235,16 @@ export default function PostDetail() {
   const baseHtml = toDisplayHtml(content);
   const { html: htmlNoBlob } = replaceBlobImages(baseHtml, uploadedImages);
 
-  // ✅ 로그인한 사용자 정보 변수 정의 (DTO/Entity에 맞춤)
-  const myNickname = me?.nickname ?? 'null';
-  const myImage = me?.imagePath ?? "https://i.postimg.cc/hP9yPjCQ/image.jpg";
-  const myEmail = contactInfo.email ?? 'null';
-  const myPhone = contactInfo.phone ?? 'null';
-  const myBirthday = contactInfo.birthday ?? 'null';
-  const myLocation = contactInfo.location ?? 'null';
+  // 세션에서 프로필 경로 읽기 (imagePath / imagepath 둘 다 대비)
+  const rawPath = me?.imagePath ?? me?.imagepath ?? null;
+  const myNickname = me?.nickname ?? me?.nickName ?? '(로그인 필요)';
+  const myImage = bust(toImageSrc(rawPath || DEFAULT_AVATAR));
+  const myEmail = contactInfo.email ?? '';
+  const myPhone = contactInfo.phone ?? '';
+  const myBirthday = contactInfo.birthday ?? '';
+  const myLocation = contactInfo.location ?? '';
+
+  const onAvatarError = (e) => { e.currentTarget.src = DEFAULT_AVATAR; };
 
   return (
     <>
@@ -246,11 +256,9 @@ export default function PostDetail() {
           <aside className={`postdetail-sidebar ${sidebarOpen ? 'active' : ''}`} aria-hidden={!sidebarOpen} data-sidebar>
             <div className="postdetail-sidebar-info">
               <figure className="postdetail-avatar-box">
-                {/* ✅ 로그인한 사용자 이미지 */}
-                <img src={myImage} alt="avatar" width="80" />
+                <img src={myImage} alt="avatar" width="80" onError={onAvatarError} />
               </figure>
               <div className="postdetail-info-content">
-                {/* ✅ 로그인한 사용자 닉네임 */}
                 <h1 className="postdetail-name" title="Writer">{myNickname}</h1>
                 <p className="postdetail-title">Web Developer</p>
               </div>
@@ -262,7 +270,6 @@ export default function PostDetail() {
             <div className="postdetail-sidebar-info-more">
               <div className="postdetail-separator" />
               <ul className="postdetail-contacts-list">
-                {/* ✅ 로그인한 사용자 이메일 */}
                 <li className="postdetail-contact-item">
                   <div className="postdetail-icon-box"><ion-icon name="mail-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
@@ -270,7 +277,6 @@ export default function PostDetail() {
                     <p className="postdetail-contact-link">{myEmail}</p>
                   </div>
                 </li>
-                {/* ✅ 로그인한 사용자 전화번호 */}
                 <li className="postdetail-contact-item">
                   <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
@@ -278,7 +284,6 @@ export default function PostDetail() {
                     <p className="postdetail-contact-link">{myPhone}</p>
                   </div>
                 </li>
-                {/* ✅ 로그인한 사용자 생일 */}
                 <li className="postdetail-contact-item">
                   <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
@@ -286,7 +291,6 @@ export default function PostDetail() {
                     <p className="postdetail-contact-link">{myBirthday}</p>
                   </div>
                 </li>
-                {/* ✅ 로그인한 사용자 주소 */}
                 <li className="postdetail-contact-item">
                   <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
@@ -310,7 +314,6 @@ export default function PostDetail() {
                   </p>
                 </div>
 
-                {/* 작성자 본인에게만 수정/삭제 노출 */}
                 {!loadingMe && isOwner && (
                   <div className="pd-actions">
                     <button onClick={onEdit} className="pd-btn pd-btn--submit">수정</button>

@@ -1,5 +1,4 @@
-// src/post/post_create/PostCreate.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import '../post_detail/postdetail.css';
@@ -15,6 +14,36 @@ const api = axios.create({
   withCredentials: true,
 });
 
+const DEFAULT_AVATAR = '/default_profile.png';
+const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8080';
+
+// 백엔드가 돌려준 상대경로(/profile/..., /images/...) → 절대 URL
+const toImageSrc = (p) => (!p ? DEFAULT_AVATAR
+  : /^https?:\/\//i.test(p) ? p
+  : p.startsWith('/') ? API_BASE + p
+  : API_BASE + '/' + p);
+
+// 캐시 버스팅
+const bust = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
+
+// 짧게 프리로드(업로드 직후 404 타이밍 회피)
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+async function preloadWithRetry(url, tries = 6, delay = 150) {
+  for (let i = 0; i < tries; i++) {
+    const ok = await new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = url;
+    });
+    if (ok) return true;
+    await sleep(delay);
+    delay = Math.round(delay * 1.6);
+  }
+  return false;
+}
+
+/* ---------------- API ---------------- */
 async function apiCreatePost(formData) {
   const { data } = await api.post("/api/posts", formData);
   return data;
@@ -23,16 +52,32 @@ async function apiGetSession() {
   const res = await api.get("/api/user/session-info", { validateStatus: () => true });
   return res.status === 200 ? res.data : null;
 }
-
 async function apiGetMypageInfo() {
   const res = await api.get("/api/mypage/info", { validateStatus: () => true });
   return res.status === 200 ? res.data : null;
 }
-
 async function apiUpdateSession(sessionData) {
   await api.patch("/api/user/session-info", sessionData);
 }
+/* 프로필 업로드/삭제 */
+async function apiUploadProfileImage(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  const res = await api.post("/api/posts/profile-image", fd, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    validateStatus: () => true,
+  });
+  if (res.status === 401) throw Object.assign(new Error("UNAUTHORIZED"), { code: 401 });
+  if (res.status !== 200 || !res.data?.imagePath) throw new Error("프로필 이미지 업로드 실패");
+  return res.data; // { imagePath: "/profile/xxx.png" }
+}
+async function apiDeleteProfileImage() {
+  const res = await api.delete("/api/posts/profile-image", { validateStatus: () => true });
+  if (res.status === 401) throw Object.assign(new Error("UNAUTHORIZED"), { code: 401 });
+  if (res.status !== 200) throw new Error("프로필 이미지 삭제 실패");
+}
 
+/* --------------- Utils --------------- */
 function isEmptyContent(html = "") {
   const hasImage = /<img\b/i.test(html);
   const textOnly = html
@@ -42,7 +87,6 @@ function isEmptyContent(html = "") {
     .trim();
   return !hasImage && textOnly.length === 0;
 }
-
 function formatDateToYYYYMMDD(dateString) {
   if (!dateString) return '';
   const date = new Date(dateString);
@@ -52,6 +96,7 @@ function formatDateToYYYYMMDD(dateString) {
   return `${year}-${month}-${day}`;
 }
 
+/* ------------ Styled UI ------------- */
 const SidebarInput = styled.input`
   border: none;
   background: none;
@@ -60,23 +105,32 @@ const SidebarInput = styled.input`
   width: 100%;
   outline: none;
 
-  ${props => props.isEditable && `
+  ${({ $editable }) => $editable && `
     background: #fff;
     border: 1px solid #ddd;
     border-radius: 6px;
     padding: 4px 8px;
   `}
 `;
-
 const EditButton = styled.span`
   cursor: pointer;
   color: #3b82f6;
   font-size: 14px;
   font-weight: 500;
   margin-left: 8px;
-  &:hover {
-    text-decoration: underline;
-  }
+  &:hover { text-decoration: underline; }
+`;
+const SolidButton = styled.button`
+  border: none;
+  background: #3b82f6;
+  color: white;
+  font-size: 13px;
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: .15s ease;
+  &:hover { filter: brightness(0.95); }
+  &:disabled { opacity: .5; cursor: not-allowed; }
 `;
 
 export default function PostCreate() {
@@ -96,54 +150,141 @@ export default function PostCreate() {
   const [me, setMe] = useState(null);
   const [loadingMe, setLoadingMe] = useState(true);
 
-  const [contactInfo, setContactInfo] = useState({ email: '', phone: '', birthday: '', location: '' });
+  // 연락처(이메일은 readOnly)
+  const [contactInfo, setContactInfo] = useState({
+    email: '',
+    phone: '',
+    birthday: '',
+    location: '',
+  });
   const handleContactInfoChange = (e) => {
     const { name, value } = e.target;
     setContactInfo(prev => ({ ...prev, [name]: value }));
   };
-
   const [editMode, setEditMode] = useState({
     phone: false,
     birthday: false,
     location: false,
   });
+  const handleEditClick = (field) => setEditMode(prev => ({ ...prev, [field]: true }));
 
-  const handleEditClick = (field) => {
-    setEditMode(prev => ({ ...prev, [field]: true }));
+  // 프로필 업로드/삭제 상태
+  const [uploadingProfile, setUploadingProfile] = useState(false);
+  const avatarFileRef = useRef(null);
+  const [avatarSrc, setAvatarSrc] = useState(DEFAULT_AVATAR);   // 화면 표시용
+  const [currentImagePath, setCurrentImagePath] = useState(''); // 서버가 보관하는 imagePath(상대경로)
+  const previewURLRef = useRef(null);
+
+  const handleAvatarError = (e) => {
+    const src = e.currentTarget.src || '';
+    if (!src.startsWith('blob:')) e.currentTarget.src = DEFAULT_AVATAR;
+  };
+
+  const onPickAvatar = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('이미지 파일만 업로드 가능합니다.'); e.target.value=''; return; }
+    if (file.size > 5 * 1024 * 1024) { alert('이미지는 최대 5MB까지 업로드 가능합니다.'); e.target.value=''; return; }
+
+    // 1) 즉시 미리보기
+    const preview = URL.createObjectURL(file);
+    previewURLRef.current = preview;
+    setAvatarSrc(preview);
+
+    try {
+      setUploadingProfile(true);
+      // 2) 서버 업로드 → imagePath 수신
+      const { imagePath } = await apiUploadProfileImage(file); // e.g. "/profile/abc.png"
+      setCurrentImagePath(imagePath);
+
+      // 3) 절대 URL + 캐시버스트 후 프리로드 성공 시 교체
+      const serverUrl = bust(toImageSrc(imagePath));
+      const ok = await preloadWithRetry(serverUrl, 6, 150);
+      if (ok) {
+        setAvatarSrc(serverUrl);
+        if (previewURLRef.current) {
+          URL.revokeObjectURL(previewURLRef.current);
+          previewURLRef.current = null;
+        }
+      }
+      // 4) 세션(UserEntity) 업데이트에 imagePath도 포함해 저장
+      await apiUpdateSession({ ...contactInfo, imagePath });
+      setMe(prev => ({ ...(prev||{}), imagePath }));
+    } catch (err) {
+      console.error(err);
+      alert(err.code === 401 ? "로그인이 필요합니다." : "프로필 이미지 업로드 중 오류가 발생했습니다.");
+      if (err.code === 401) navigate("/login");
+      // 실패 시 미리보기 정리 후 기본 이미지
+      if (previewURLRef.current) {
+        URL.revokeObjectURL(previewURLRef.current);
+        previewURLRef.current = null;
+      }
+      setAvatarSrc(DEFAULT_AVATAR);
+      setCurrentImagePath('');
+    } finally {
+      setUploadingProfile(false);
+      e.target.value = '';
+    }
+  };
+
+  const onClearAvatar = async () => {
+    if (!window.confirm('프로필 이미지를 기본 이미지로 되돌릴까요?')) return;
+    try {
+      setUploadingProfile(true);
+      await apiDeleteProfileImage();
+      setAvatarSrc(DEFAULT_AVATAR);
+      setCurrentImagePath('');
+      if (previewURLRef.current) {
+        URL.revokeObjectURL(previewURLRef.current);
+        previewURLRef.current = null;
+      }
+      await apiUpdateSession({ ...contactInfo, imagePath: '' });
+      setMe(prev => ({ ...(prev||{}), imagePath: '' }));
+    } catch (err) {
+      console.error(err);
+      alert(err.code === 401 ? "로그인이 필요합니다." : "프로필 이미지 삭제 중 오류가 발생했습니다.");
+      if (err.code === 401) navigate("/login");
+    } finally {
+      setUploadingProfile(false);
+    }
   };
 
   useEffect(() => {
     document.body.classList.add('postdetail-body-styles');
-    return () => document.body.classList.remove('postdetail-body-styles');
+    return () => {
+      document.body.classList.remove('postdetail-body-styles');
+      if (previewURLRef.current) {
+        URL.revokeObjectURL(previewURLRef.current);
+        previewURLRef.current = null;
+      }
+    };
   }, []);
 
   useEffect(() => {
     (async () => {
       try {
         setLoadingMe(true);
-        
         const [sessionUser, mypageInfo] = await Promise.all([
           apiGetSession(),
           apiGetMypageInfo()
         ]);
 
-        if (!sessionUser) {
-          alert("로그인이 필요합니다.");
-          navigate("/login");
-          return;
-        }
+        if (!sessionUser) { alert("로그인이 필요합니다."); navigate("/login"); return; }
 
         setMe(sessionUser);
-        
-        const { phone, birthday, location } = sessionUser;
-        const email = mypageInfo?.email || '';
 
+        const { phone, birthday, location, imagePath } = sessionUser;
+        const email = mypageInfo?.email || '';
         setContactInfo({
           email,
           phone: phone || '',
           birthday: formatDateToYYYYMMDD(birthday),
           location: location || '',
         });
+
+        // 아바타 초기값(세션값 → 절대URL+버스트)
+        setCurrentImagePath(imagePath || '');
+        setAvatarSrc(imagePath ? bust(toImageSrc(imagePath)) : DEFAULT_AVATAR);
 
       } catch (error) {
         console.error("데이터 로딩 중 오류 발생:", error);
@@ -155,22 +296,12 @@ export default function PostCreate() {
   }, [navigate]);
 
   const handleSubmit = async ({ title: submittedTitle, html: submittedHtml }) => {
-    if (!me) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
+    if (!me) { alert("로그인이 필요합니다."); return; }
 
     const t = (submittedTitle ?? "").trim();
     const h = (submittedHtml ?? "").trim();
-
-    if (!t) {
-      alert("제목을 입력하세요.");
-      return;
-    }
-    if (isEmptyContent(h)) {
-      alert("내용을 입력하세요.");
-      return;
-    }
+    if (!t) { alert("제목을 입력하세요."); return; }
+    if (isEmptyContent(h)) { alert("내용을 입력하세요."); return; }
 
     const nickname = me?.nickName ?? me?.nickname ?? "";
     const loginid = me?.loginid ?? me?.loginId ?? "";
@@ -183,7 +314,8 @@ export default function PostCreate() {
     (files || []).forEach(f => fd.append("files", f));
 
     try {
-      await apiUpdateSession(contactInfo);
+      // ⭐ 작성 직전에 imagePath 포함해서 세션(UserEntity) 최종 반영
+      await apiUpdateSession({ ...contactInfo, imagePath: currentImagePath });
       await apiCreatePost(fd);
       alert("작성 완료!");
       navigate("/postlist");
@@ -210,7 +342,6 @@ export default function PostCreate() {
   }
 
   const nickname = me?.nickName ?? me?.nickname ?? "(알 수 없음)";
-  const myImage = me?.imagePath ?? "https://i.postimg.cc/hP9yPjCQ/image.jpg";
 
   return (
     <>
@@ -220,9 +351,30 @@ export default function PostCreate() {
         <main className="postdetail-main">
           <aside className={`postdetail-sidebar ${sidebarOpen ? 'active' : ''}`} aria-hidden={!sidebarOpen} data-sidebar>
             <div className="postdetail-sidebar-info">
-              <figure className="postdetail-avatar-box">
-                <img src={myImage} alt="avatar" width="80" />
+              <figure className="postdetail-avatar-box" style={{ position: 'relative' }}>
+                <img src={avatarSrc} alt="avatar" width="80" onError={handleAvatarError} />
+                {uploadingProfile && (
+                  <span style={{ position:'absolute', bottom:-6, left:'50%', transform:'translateX(-50%)', fontSize:12 }}>
+                    처리 중…
+                  </span>
+                )}
               </figure>
+
+              <div style={{ display:'flex', gap:8, marginTop:8 }}>
+                <SolidButton type="button" onClick={() => avatarFileRef.current?.click()} disabled={!me}>
+                  이미지 삽입
+                </SolidButton>
+                <SolidButton type="button" onClick={onClearAvatar} disabled={!me}>
+                  기본프로필
+                </SolidButton>
+                <input
+                  ref={avatarFileRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display:'none' }}
+                  onChange={onPickAvatar}
+                />
+              </div>
 
               <div className="postdetail-info-content">
                 <h1 className="postdetail-name">{nickname}</h1>
@@ -230,7 +382,7 @@ export default function PostCreate() {
               </div>
 
               <button className="postdetail-info-more-btn" data-sidebar-btn onClick={toggleSidebar} aria-expanded={sidebarOpen}>
-                <span>Show Contacts</span>
+                <span>{sidebarOpen ? 'Hide Contacts' : 'Show Contacts'}</span>
                 <ion-icon name="chevron-down" aria-hidden="true" />
               </button>
             </div>
@@ -265,7 +417,7 @@ export default function PostCreate() {
                       onChange={handleContactInfoChange}
                       placeholder="전화번호를 입력하세요"
                       readOnly={!editMode.phone}
-                      isEditable={editMode.phone}
+                      $editable={editMode.phone}
                     />
                   </div>
                 </li>
@@ -276,13 +428,14 @@ export default function PostCreate() {
                       <EditButton onClick={() => handleEditClick('birthday')}>Edit</EditButton>
                     </p>
                     <SidebarInput
-                      type="date"
+                      type="text"
                       name="birthday"
                       value={contactInfo.birthday}
                       onChange={handleContactInfoChange}
                       placeholder="YYYY-MM-DD"
                       readOnly={!editMode.birthday}
-                      isEditable={editMode.birthday}
+                      $editable={editMode.birthday}
+                      inputMode="numeric"
                     />
                   </div>
                 </li>
@@ -299,13 +452,14 @@ export default function PostCreate() {
                       onChange={handleContactInfoChange}
                       placeholder="주소를 입력하세요"
                       readOnly={!editMode.location}
-                      isEditable={editMode.location}
+                      $editable={editMode.location}
                     />
                   </div>
                 </li>
               </ul>
             </div>
           </aside>
+
           <div className="postdetail-main-content">
             <article className="postdetail-article active" data-page="about">
               <section className="postdetail-about-text">
