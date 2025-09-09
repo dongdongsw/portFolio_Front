@@ -38,6 +38,10 @@ async function apiGetMypageInfo() {
   const res = await api.get("/api/mypage/info", { validateStatus: () => true });
   return res.status === 200 ? res.data : null;
 }
+// ✅ 세션 정보를 업데이트하는 API 함수 추가
+async function apiUpdateSession(sessionData) {
+  await api.patch("/api/user/session-info", sessionData);
+}
 /* ─────────────────────────────────────────────────── */
 
 /* ── styled-components ─────────────────────────────── */
@@ -73,6 +77,7 @@ const SubmitBtn = styled(Btn)`
   box-shadow: 0 2px 6px rgba(59,130,246,0.35);
 `;
 
+// ✅ 수정 모드에 따라 스타일이 변하는 입력 필드
 const SidebarInput = styled.input`
   border: none;
   background: none;
@@ -80,6 +85,26 @@ const SidebarInput = styled.input`
   font-size: 15px;
   width: 100%;
   outline: none;
+
+  // ✅ 수정 모드일 때 스타일
+  ${props => props.isEditable && `
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 4px 8px;
+  `}
+`;
+
+// ✅ 수정 버튼 스타일 추가
+const EditButton = styled.span`
+  cursor: pointer;
+  color: #3b82f6;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 8px;
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 /* ─────────────────────────────────────────────────── */
 
@@ -174,11 +199,24 @@ export default function PostUpdate() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen(v => !v);
+  
   // ✅ contactInfo 상태 추가
   const [contactInfo, setContactInfo] = useState({ email: '', phone: '', birthday: '', location: '' });
   const handleContactInfoChange = (e) => {
     const { name, value } = e.target;
     setContactInfo(prev => ({ ...prev, [name]: value }));
+  };
+
+  // ✅ 각 필드의 수정 모드 상태 추가
+  const [editMode, setEditMode] = useState({
+    phone: false,
+    birthday: false,
+    location: false,
+  });
+
+  // ✅ 수정 버튼 클릭 핸들러
+  const handleEditClick = (field) => {
+    setEditMode(prev => ({ ...prev, [field]: true }));
   };
 
   useEffect(() => {
@@ -293,6 +331,8 @@ export default function PostUpdate() {
 
     try {
       setLoading(true);
+      // ✅ 사이드바 정보도 함께 업데이트
+      await apiUpdateSession(contactInfo);
       await apiUpdatePost({ id, title: t, content: cleaned, files });
       alert('수정되었습니다.');
       navigate(`/postlist/postdetail/${id}`);
@@ -382,7 +422,7 @@ export default function PostUpdate() {
                       value={contactInfo.email}
                       onChange={handleContactInfoChange}
                       placeholder="이메일을 입력하세요"
-                      className="postdetail-contact-link-input"
+                      readOnly // ✅ readOnly 설정으로 수정 불가
                     />
                   </div>
                 </li>
@@ -390,7 +430,9 @@ export default function PostUpdate() {
                 <li className="postdetail-contact-item">
                   <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Phone</p>
+                    <p className="postdetail-contact-title">Phone
+                      <EditButton onClick={() => handleEditClick('phone')}>Edit</EditButton>
+                    </p>
                     <SidebarInput
                       type="tel"
                       name="phone"
@@ -398,7 +440,8 @@ export default function PostUpdate() {
                       value={contactInfo.phone}
                       onChange={handleContactInfoChange}
                       placeholder="전화번호를 입력하세요"
-                      className="postdetail-contact-link-input"
+                      readOnly={!editMode.phone} // ✅ 수정 모드에 따라 readOnly 설정
+                      isEditable={editMode.phone} // ✅ isEditable prop 추가
                     />
                   </div>
                 </li>
@@ -406,7 +449,9 @@ export default function PostUpdate() {
                 <li className="postdetail-contact-item">
                   <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Birthday</p>
+                    <p className="postdetail-contact-title">Birthday
+                      <EditButton onClick={() => handleEditClick('birthday')}>Edit</EditButton>
+                    </p>
                     <SidebarInput
                       type="date"
                       name="birthday"
@@ -414,7 +459,8 @@ export default function PostUpdate() {
                       value={contactInfo.birthday}
                       onChange={handleContactInfoChange}
                       placeholder="YYYY-MM-DD"
-                      className="postdetail-contact-link-input"
+                      readOnly={!editMode.birthday} // ✅ 수정 모드에 따라 readOnly 설정
+                      isEditable={editMode.birthday} // ✅ isEditable prop 추가
                     />
                   </div>
                 </li>
@@ -422,7 +468,9 @@ export default function PostUpdate() {
                 <li className="postdetail-contact-item">
                   <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Location</p>
+                    <p className="postdetail-contact-title">Location
+                      <EditButton onClick={() => handleEditClick('location')}>Edit</EditButton>
+                    </p>
                     <SidebarInput
                       type="text"
                       name="location"
@@ -430,7 +478,8 @@ export default function PostUpdate() {
                       value={contactInfo.location}
                       onChange={handleContactInfoChange}
                       placeholder="주소를 입력하세요"
-                      className="postdetail-contact-link-input"
+                      readOnly={!editMode.location} // ✅ 수정 모드에 따라 readOnly 설정
+                      isEditable={editMode.location} // ✅ isEditable prop 추가
                     />
                   </div>
                 </li>

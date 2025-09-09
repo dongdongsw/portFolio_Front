@@ -59,6 +59,24 @@ const SidebarInput = styled.input`
   font-size: 15px;
   width: 100%;
   outline: none;
+
+  ${props => props.isEditable && `
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 4px 8px;
+  `}
+`;
+
+const EditButton = styled.span`
+  cursor: pointer;
+  color: #3b82f6;
+  font-size: 14px;
+  font-weight: 500;
+  margin-left: 8px;
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 export default function PostCreate() {
@@ -82,6 +100,16 @@ export default function PostCreate() {
   const handleContactInfoChange = (e) => {
     const { name, value } = e.target;
     setContactInfo(prev => ({ ...prev, [name]: value }));
+  };
+
+  const [editMode, setEditMode] = useState({
+    phone: false,
+    birthday: false,
+    location: false,
+  });
+
+  const handleEditClick = (field) => {
+    setEditMode(prev => ({ ...prev, [field]: true }));
   };
 
   useEffect(() => {
@@ -125,7 +153,6 @@ export default function PostCreate() {
       }
     })();
   }, [navigate]);
-
 
   const handleSubmit = async ({ title: submittedTitle, html: submittedHtml }) => {
     if (!me) {
@@ -228,39 +255,51 @@ export default function PostCreate() {
                 <li className="postdetail-contact-item">
                   <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Phone</p>
+                    <p className="postdetail-contact-title">Phone
+                      <EditButton onClick={() => handleEditClick('phone')}>Edit</EditButton>
+                    </p>
                     <SidebarInput
                       type="tel"
                       name="phone"
                       value={contactInfo.phone}
                       onChange={handleContactInfoChange}
                       placeholder="전화번호를 입력하세요"
+                      readOnly={!editMode.phone}
+                      isEditable={editMode.phone}
                     />
                   </div>
                 </li>
                 <li className="postdetail-contact-item">
                   <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Birthday</p>
+                    <p className="postdetail-contact-title">Birthday
+                      <EditButton onClick={() => handleEditClick('birthday')}>Edit</EditButton>
+                    </p>
                     <SidebarInput
                       type="date"
                       name="birthday"
                       value={contactInfo.birthday}
                       onChange={handleContactInfoChange}
                       placeholder="YYYY-MM-DD"
+                      readOnly={!editMode.birthday}
+                      isEditable={editMode.birthday}
                     />
                   </div>
                 </li>
                 <li className="postdetail-contact-item">
                   <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true" /></div>
                   <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Location</p>
+                    <p className="postdetail-contact-title">Location
+                      <EditButton onClick={() => handleEditClick('location')}>Edit</EditButton>
+                    </p>
                     <SidebarInput
                       type="text"
                       name="location"
                       value={contactInfo.location}
                       onChange={handleContactInfoChange}
                       placeholder="주소를 입력하세요"
+                      readOnly={!editMode.location}
+                      isEditable={editMode.location}
                     />
                   </div>
                 </li>
