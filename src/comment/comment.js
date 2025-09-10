@@ -149,13 +149,15 @@ function CommentsApp() {
     }
     if (!comment.text.trim()) return;
     
+    const now = new Date();
+    const kstNow = new Date(now.getTime() + 9*60*60*1000); // KST 기준
     const optimistic = {
       id: `temp-${Date.now()}`,
       text: comment.text,
       author: currentNickname || "ME",
       authorId: currentUserId,
-      createdAt: new Date(),
-      displayedAt: new Date()
+      createdAt: kstNow,
+      displayedAt: kstNow
     };
     setComments(prev => [optimistic, ...prev]);
 
@@ -208,8 +210,10 @@ function CommentsApp() {
     if (!c || c.authorId !== currentUserId) return;
     if (!editingText.trim()) return;
 
+    const now = new Date();
+    const kstNow = new Date(now.getTime() + 9*60*60*1000);
     const original = { ...c };
-    const updatedLocal = { ...c, text: editingText, displayedAt: new Date() };
+    const updatedLocal = { ...c, text: editingText, displayedAt: kstNow };
     setComments(prev => {
       const next = [...prev];
       next[idx] = updatedLocal;
@@ -313,7 +317,10 @@ function CommentsApp() {
                       <div className="comment-info">
                         <span className="comment-author"><a href={`mailto:${c.author}`}>{c.author}</a></span>
                         <span className="comment-date">
-                          {(c.displayedAt instanceof Date ? c.displayedAt : new Date(c.displayedAt)).toLocaleString()}
+                          {c.displayedAt instanceof Date
+                            ? new Date(c.displayedAt.getTime() + 9*60*60*1000)
+                              .toISOString().slice(0,16).replace('T',' ')
+                              : c.displayedAt}
                         </span>
                         <button
                           type="button"
@@ -323,7 +330,9 @@ function CommentsApp() {
                         >▽</button>
                         {originalOpenIndex === idx && (
                           <div className="date-dropdown">
-                            최초 등록일: {(c.createdAt instanceof Date ? c.createdAt : new Date(c.createdAt)).toLocaleString()}
+                            최초 등록일: {c.createdAt instanceof Date 
+                                            ? new Date(c.createdAt.getTime() + 9*60*60*1000).toISOString().slice(0,16).replace('T',' ')
+                                            : c.createdAt}
                           </div>
                         )}
                       </div>
