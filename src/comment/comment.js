@@ -160,7 +160,7 @@ function CommentsApp() {
     setComments(prev => [optimistic, ...prev]);
 
     try {
-      const payload = { loginId: currentUserId, nickname: currentNickname || "ME", content: optimistic.text };
+      const payload = { loginId: currentUserId, content: optimistic.text };
       const { data } = await api.post(`/comments/post/${POST_ID}`, payload);
       setComments(prev => {
         const idx = prev.findIndex(c => c.id === optimistic.id);
@@ -217,7 +217,7 @@ function CommentsApp() {
     });
 
     try {
-      const payload = { loginId: currentUserId, nickname: currentNickname || "ME", content: editingText };
+      const payload = { loginId: currentUserId, content: editingText };
       const { data } = await api.put(`/comments/edit/${c.id}`, payload);
       setComments(prev => {
         const next = [...prev];
@@ -401,6 +401,11 @@ function CommentsApp() {
                   const removed = target;
                   setComments(prev => prev.filter((_, i) => i !== idx));
                   setDeleteConfirmIdx(null);
+                  const idToDelete = removed.id;
+                  if (typeof idToDelete === 'string' && idToDelete.startsWith('temp-')) {
+                    return;
+                  }
+                  
                   try {
                     await api.delete(`/comments/delete/${removed.id}`);
                   }
