@@ -1,3 +1,4 @@
+// src/post/post_create/PostCreate.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
@@ -17,7 +18,7 @@ const api = axios.create({
 const DEFAULT_AVATAR = '/default_profile.png';
 const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8080';
 
-// 백엔드가 돌려준 상대경로(/profile/..., /images/...) → 절대 URL
+// 서버 경로를 안전하게 절대 URL로 변환
 const toImageSrc = (p) => (!p ? DEFAULT_AVATAR
   : /^https?:\/\//i.test(p) ? p
   : p.startsWith('/') ? API_BASE + p
@@ -52,9 +53,11 @@ async function apiGetSession() {
   const res = await api.get("/api/user/session-info", { validateStatus: () => true });
   return res.status === 200 ? res.data : null;
 }
-async function apiGetMypageInfo() {
-  const res = await api.get("/api/mypage/info", { validateStatus: () => true });
-  return res.status === 200 ? res.data : null;
+// author(작성자) 정보: USER 테이블에서 닉네임으로 조회(백엔드 PostController에 추가한 공개 API)
+async function apiGetAuthorByNickname(nickname) {
+  const res = await api.get(`/api/posts/author/by-nickname/${encodeURIComponent(nickname)}`, { validateStatus: () => true });
+  if (res.status >= 200 && res.status < 300) return res.data;
+  return null;
 }
 async function apiUpdateSession(sessionData) {
   await api.patch("/api/user/session-info", sessionData);
@@ -69,7 +72,7 @@ async function apiUploadProfileImage(file) {
   });
   if (res.status === 401) throw Object.assign(new Error("UNAUTHORIZED"), { code: 401 });
   if (res.status !== 200 || !res.data?.imagePath) throw new Error("프로필 이미지 업로드 실패");
-  return res.data; // { imagePath: "/profile/xxx.png" }
+  return res.data; // { imagePath: "/uploads/profile/xxx.png" (또는 서버 설정값) }
 }
 async function apiDeleteProfileImage() {
   const res = await api.delete("/api/posts/profile-image", { validateStatus: () => true });
@@ -89,37 +92,15 @@ function isEmptyContent(html = "") {
 }
 function formatDateToYYYYMMDD(dateString) {
   if (!dateString) return '';
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const d = new Date(dateString);
+  if (isNaN(d)) return '';
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 /* ------------ Styled UI ------------- */
-const SidebarInput = styled.input`
-  border: none;
-  background: none;
-  color: hsl(0,0%,0%);
-  font-size: 15px;
-  width: 100%;
-  outline: none;
-
-  ${({ $editable }) => $editable && `
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 4px 8px;
-  `}
-`;
-const EditButton = styled.span`
-  cursor: pointer;
-  color: #3b82f6;
-  font-size: 14px;
-  font-weight: 500;
-  margin-left: 8px;
-  &:hover { text-decoration: underline; }
-`;
 const SolidButton = styled.button`
   border: none;
   background: #3b82f6;
@@ -140,39 +121,27 @@ export default function PostCreate() {
     .postdetail-article.active { min-height: 681px; }
   `;
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const toggleSidebar = () => setSidebarOpen(v => !v);
 
   const [title, setTitle] = useState("");
   const [html, setHtml] = useState("");
   const [files, setFiles] = useState([]);
 
+  // 세션 사용자
   const [me, setMe] = useState(null);
   const [loadingMe, setLoadingMe] = useState(true);
 
-  // 연락처(이메일은 readOnly)
-  const [contactInfo, setContactInfo] = useState({
-    email: '',
-    phone: '',
-    birthday: '',
-    location: '',
-  });
-  const handleContactInfoChange = (e) => {
-    const { name, value } = e.target;
-    setContactInfo(prev => ({ ...prev, [name]: value }));
-  };
-  const [editMode, setEditMode] = useState({
-    phone: false,
-    birthday: false,
-    location: false,
-  });
-  const handleEditClick = (field) => setEditMode(prev => ({ ...prev, [field]: true }));
+  // 출력 전용: 작성자(USER) 정보
+  const [author, setAuthor] = useState(null); // {nickname,email,phone,birthday,location,imagePath}
+  const [authorError, setAuthorError] = useState('');
+  const [authorLoading, setAuthorLoading] = useState(false);
 
-  // 프로필 업로드/삭제 상태
+  // 프로필 업로드/삭제 상태(선택)
   const [uploadingProfile, setUploadingProfile] = useState(false);
   const avatarFileRef = useRef(null);
   const [avatarSrc, setAvatarSrc] = useState(DEFAULT_AVATAR);   // 화면 표시용
-  const [currentImagePath, setCurrentImagePath] = useState(''); // 서버가 보관하는 imagePath(상대경로)
+  const [currentImagePath, setCurrentImagePath] = useState(''); // 서버가 보관하는 imagePath(상대경로/절대경로)
   const previewURLRef = useRef(null);
 
   const handleAvatarError = (e) => {
@@ -180,45 +149,95 @@ export default function PostCreate() {
     if (!src.startsWith('blob:')) e.currentTarget.src = DEFAULT_AVATAR;
   };
 
+  // 글작성 화면 진입 시: 세션 + 작성자(USER) 정보 로드
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoadingMe(true);
+        const sessionUser = await apiGetSession();
+        if (!sessionUser) { alert("로그인이 필요합니다."); navigate("/login"); return; }
+        setMe(sessionUser);
+
+        // 작성자 닉네임으로 USER 조회
+        const nickname = sessionUser?.nickName ?? sessionUser?.nickname;
+        if (!nickname) {
+          setAuthor(null);
+          setAuthorError('닉네임이 없어 사용자 정보를 조회할 수 없습니다.');
+        } else {
+          setAuthorLoading(true);
+          const user = await apiGetAuthorByNickname(nickname);
+          if (user) {
+            setAuthor({
+              nickname: user.nickName ?? user.nickname ?? nickname,
+              email: user.email ?? '',
+              phone: user.phone ?? '',
+              birthday: user.birthday ?? '',
+              location: user.location ?? '',
+              imagePath: user.imagePath ?? user.imagepath ?? '',
+            });
+            // 아바타 초기값: USER.imagePath 우선 → 세션.imagePath → 기본
+            const raw = (user.imagePath ?? user.imagepath) || (sessionUser.imagePath ?? sessionUser.imagepath) || '';
+            setCurrentImagePath(raw || '');
+            setAvatarSrc(raw ? bust(toImageSrc(raw)) : DEFAULT_AVATAR);
+          } else {
+            setAuthor(null);
+            setAuthorError('사용자 정보를 가져오지 못했습니다.');
+            // 세션 이미지로라도 표시
+            const raw = sessionUser?.imagePath ?? sessionUser?.imagepath ?? '';
+            setCurrentImagePath(raw || '');
+            setAvatarSrc(raw ? bust(toImageSrc(raw)) : DEFAULT_AVATAR);
+          }
+        }
+      } catch (error) {
+        console.error("데이터 로딩 중 오류:", error);
+        alert("사용자 정보를 불러오는데 실패했습니다.");
+      } finally {
+        setAuthorLoading(false);
+        setLoadingMe(false);
+      }
+    })();
+
+    document.body.classList.add('postdetail-body-styles');
+    return () => {
+      document.body.classList.remove('postdetail-body-styles');
+      if (previewURLRef.current) { URL.revokeObjectURL(previewURLRef.current); previewURLRef.current = null; }
+    };
+  }, [navigate]);
+
+  // 프로필 업로드(선택 기능 유지)
   const onPickAvatar = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) { alert('이미지 파일만 업로드 가능합니다.'); e.target.value=''; return; }
     if (file.size > 5 * 1024 * 1024) { alert('이미지는 최대 5MB까지 업로드 가능합니다.'); e.target.value=''; return; }
 
-    // 1) 즉시 미리보기
+    // 미리보기
     const preview = URL.createObjectURL(file);
     previewURLRef.current = preview;
     setAvatarSrc(preview);
 
     try {
       setUploadingProfile(true);
-      // 2) 서버 업로드 → imagePath 수신
-      const { imagePath } = await apiUploadProfileImage(file); // e.g. "/profile/abc.png"
+      const { imagePath } = await apiUploadProfileImage(file);
       setCurrentImagePath(imagePath);
 
-      // 3) 절대 URL + 캐시버스트 후 프리로드 성공 시 교체
       const serverUrl = bust(toImageSrc(imagePath));
       const ok = await preloadWithRetry(serverUrl, 6, 150);
       if (ok) {
         setAvatarSrc(serverUrl);
-        if (previewURLRef.current) {
-          URL.revokeObjectURL(previewURLRef.current);
-          previewURLRef.current = null;
-        }
+        if (previewURLRef.current) { URL.revokeObjectURL(previewURLRef.current); previewURLRef.current = null; }
       }
-      // 4) 세션(UserEntity) 업데이트에 imagePath도 포함해 저장
-      await apiUpdateSession({ ...contactInfo, imagePath });
+
+      // 세션(UserEntity) 업데이트 (작성 전 최신 반영용)
+      await apiUpdateSession({ imagePath });
       setMe(prev => ({ ...(prev||{}), imagePath }));
+      // author에도 반영
+      setAuthor(prev => prev ? ({ ...prev, imagePath }) : prev);
     } catch (err) {
       console.error(err);
       alert(err.code === 401 ? "로그인이 필요합니다." : "프로필 이미지 업로드 중 오류가 발생했습니다.");
       if (err.code === 401) navigate("/login");
-      // 실패 시 미리보기 정리 후 기본 이미지
-      if (previewURLRef.current) {
-        URL.revokeObjectURL(previewURLRef.current);
-        previewURLRef.current = null;
-      }
+      if (previewURLRef.current) { URL.revokeObjectURL(previewURLRef.current); previewURLRef.current = null; }
       setAvatarSrc(DEFAULT_AVATAR);
       setCurrentImagePath('');
     } finally {
@@ -227,73 +246,6 @@ export default function PostCreate() {
     }
   };
 
-  const onClearAvatar = async () => {
-    if (!window.confirm('프로필 이미지를 기본 이미지로 되돌릴까요?')) return;
-    try {
-      setUploadingProfile(true);
-      await apiDeleteProfileImage();
-      setAvatarSrc(DEFAULT_AVATAR);
-      setCurrentImagePath('');
-      if (previewURLRef.current) {
-        URL.revokeObjectURL(previewURLRef.current);
-        previewURLRef.current = null;
-      }
-      await apiUpdateSession({ ...contactInfo, imagePath: '' });
-      setMe(prev => ({ ...(prev||{}), imagePath: '' }));
-    } catch (err) {
-      console.error(err);
-      alert(err.code === 401 ? "로그인이 필요합니다." : "프로필 이미지 삭제 중 오류가 발생했습니다.");
-      if (err.code === 401) navigate("/login");
-    } finally {
-      setUploadingProfile(false);
-    }
-  };
-
-  useEffect(() => {
-    document.body.classList.add('postdetail-body-styles');
-    return () => {
-      document.body.classList.remove('postdetail-body-styles');
-      if (previewURLRef.current) {
-        URL.revokeObjectURL(previewURLRef.current);
-        previewURLRef.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        setLoadingMe(true);
-        const [sessionUser, mypageInfo] = await Promise.all([
-          apiGetSession(),
-          apiGetMypageInfo()
-        ]);
-
-        if (!sessionUser) { alert("로그인이 필요합니다."); navigate("/login"); return; }
-
-        setMe(sessionUser);
-
-        const { phone, birthday, location, imagePath } = sessionUser;
-        const email = mypageInfo?.email || '';
-        setContactInfo({
-          email,
-          phone: phone || '',
-          birthday: formatDateToYYYYMMDD(birthday),
-          location: location || '',
-        });
-
-        // 아바타 초기값(세션값 → 절대URL+버스트)
-        setCurrentImagePath(imagePath || '');
-        setAvatarSrc(imagePath ? bust(toImageSrc(imagePath)) : DEFAULT_AVATAR);
-
-      } catch (error) {
-        console.error("데이터 로딩 중 오류 발생:", error);
-        alert("사용자 정보를 불러오는데 실패했습니다.");
-      } finally {
-        setLoadingMe(false);
-      }
-    })();
-  }, [navigate]);
 
   const handleSubmit = async ({ title: submittedTitle, html: submittedHtml }) => {
     if (!me) { alert("로그인이 필요합니다."); return; }
@@ -314,8 +266,8 @@ export default function PostCreate() {
     (files || []).forEach(f => fd.append("files", f));
 
     try {
-      // ⭐ 작성 직전에 imagePath 포함해서 세션(UserEntity) 최종 반영
-      await apiUpdateSession({ ...contactInfo, imagePath: currentImagePath });
+      // 작성 직전 세션(UserEntity) 최신 이미지 반영
+      await apiUpdateSession({ imagePath: currentImagePath });
       await apiCreatePost(fd);
       alert("작성 완료!");
       navigate("/postlist");
@@ -341,7 +293,11 @@ export default function PostCreate() {
     );
   }
 
-  const nickname = me?.nickName ?? me?.nickname ?? "(알 수 없음)";
+  const nickname = author?.nickname ?? me?.nickName ?? me?.nickname ?? "(알 수 없음)";
+  const email    = (author?.email ?? '').trim() || '(미등록)';
+  const phone    = (author?.phone ?? '').trim() || '(미등록)';
+  const birthday = (author?.birthday ? formatDateToYYYYMMDD(author.birthday) : '').trim() || '(미등록)';
+  const location = (author?.location ?? '').trim() || '(미등록)';
 
   return (
     <>
@@ -349,10 +305,15 @@ export default function PostCreate() {
       <div className="app-root">
         <Header />
         <main className="postdetail-main">
+          {/* 사이드바: USER 테이블 값 "출력 전용" */}
           <aside className={`postdetail-sidebar ${sidebarOpen ? 'active' : ''}`} aria-hidden={!sidebarOpen} data-sidebar>
             <div className="postdetail-sidebar-info">
               <figure className="postdetail-avatar-box" style={{ position: 'relative' }}>
-                <img src={avatarSrc} alt="avatar" width="80" onError={handleAvatarError} />
+                {authorLoading ? (
+                  <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#eee' }} />
+                ) : (
+                  <img src={avatarSrc} alt="avatar" width="80" onError={handleAvatarError} />
+                )}
                 {uploadingProfile && (
                   <span style={{ position:'absolute', bottom:-6, left:'50%', transform:'translateX(-50%)', fontSize:12 }}>
                     처리 중…
@@ -360,25 +321,11 @@ export default function PostCreate() {
                 )}
               </figure>
 
-              <div style={{ display:'flex', gap:8, marginTop:8 }}>
-                <SolidButton type="button" onClick={() => avatarFileRef.current?.click()} disabled={!me}>
-                  이미지 삽입
-                </SolidButton>
-                <SolidButton type="button" onClick={onClearAvatar} disabled={!me}>
-                  기본프로필
-                </SolidButton>
-                <input
-                  ref={avatarFileRef}
-                  type="file"
-                  accept="image/*"
-                  style={{ display:'none' }}
-                  onChange={onPickAvatar}
-                />
-              </div>
+            
 
               <div className="postdetail-info-content">
                 <h1 className="postdetail-name">{nickname}</h1>
-                <p className="postdetail-title">Web Developer</p>
+                <p className="postdetail-title">Author</p>
               </div>
 
               <button className="postdetail-info-more-btn" data-sidebar-btn onClick={toggleSidebar} aria-expanded={sidebarOpen}>
@@ -389,77 +336,44 @@ export default function PostCreate() {
 
             <div className="postdetail-sidebar-info-more">
               <div className="postdetail-separator" />
-              <ul className="postdetail-contacts-list">
-                <li className="postdetail-contact-item">
-                  <div className="postdetail-icon-box"><ion-icon name="mail-outline" aria-hidden="true" /></div>
-                  <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Email</p>
-                    <SidebarInput
-                      type="email"
-                      name="email"
-                      value={contactInfo.email}
-                      onChange={handleContactInfoChange}
-                      placeholder="이메일을 입력하세요"
-                      readOnly
-                    />
-                  </div>
-                </li>
-                <li className="postdetail-contact-item">
-                  <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true" /></div>
-                  <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Phone
-                      <EditButton onClick={() => handleEditClick('phone')}>Edit</EditButton>
-                    </p>
-                    <SidebarInput
-                      type="tel"
-                      name="phone"
-                      value={contactInfo.phone}
-                      onChange={handleContactInfoChange}
-                      placeholder="전화번호를 입력하세요"
-                      readOnly={!editMode.phone}
-                      $editable={editMode.phone}
-                    />
-                  </div>
-                </li>
-                <li className="postdetail-contact-item">
-                  <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true" /></div>
-                  <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Birthday
-                      <EditButton onClick={() => handleEditClick('birthday')}>Edit</EditButton>
-                    </p>
-                    <SidebarInput
-                      type="text"
-                      name="birthday"
-                      value={contactInfo.birthday}
-                      onChange={handleContactInfoChange}
-                      placeholder="YYYY-MM-DD"
-                      readOnly={!editMode.birthday}
-                      $editable={editMode.birthday}
-                      inputMode="numeric"
-                    />
-                  </div>
-                </li>
-                <li className="postdetail-contact-item">
-                  <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true" /></div>
-                  <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Location
-                      <EditButton onClick={() => handleEditClick('location')}>Edit</EditButton>
-                    </p>
-                    <SidebarInput
-                      type="text"
-                      name="location"
-                      value={contactInfo.location}
-                      onChange={handleContactInfoChange}
-                      placeholder="주소를 입력하세요"
-                      readOnly={!editMode.location}
-                      $editable={editMode.location}
-                    />
-                  </div>
-                </li>
-              </ul>
+              {authorError ? (
+                <div style={{ color: '#b00020' }}>{authorError}</div>
+              ) : (
+                <ul className="postdetail-contacts-list">
+                  <li className="postdetail-contact-item">
+                    <div className="postdetail-icon-box"><ion-icon name="mail-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-contact-info">
+                      <p className="postdetail-contact-title">Email</p>
+                      <p className="postdetail-contact-link">{email}</p>
+                    </div>
+                  </li>
+                  <li className="postdetail-contact-item">
+                    <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-contact-info">
+                      <p className="postdetail-contact-title">Phone</p>
+                      <p className="postdetail-contact-link">{phone}</p>
+                    </div>
+                  </li>
+                  <li className="postdetail-contact-item">
+                    <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-contact-info">
+                      <p className="postdetail-contact-title">Birthday</p>
+                      <p className="postdetail-contact-link">{birthday}</p>
+                    </div>
+                  </li>
+                  <li className="postdetail-contact-item">
+                    <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-contact-info">
+                      <p className="postdetail-contact-title">Location</p>
+                      <p className="postdetail-contact-link">{location}</p>
+                    </div>
+                  </li>
+                </ul>
+              )}
             </div>
           </aside>
 
+          {/* 본문 */}
           <div className="postdetail-main-content">
             <article className="postdetail-article active" data-page="about">
               <section className="postdetail-about-text">

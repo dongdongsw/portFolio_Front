@@ -6,50 +6,78 @@ import Header from '../../components/Header';
 import { createGlobalStyle } from 'styled-components';
 import axios from 'axios';
 
-axios.defaults.withCredentials = true;
-
-const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE || "",
-  withCredentials: true,
-});
+/** Axios 2종: 1) 같은 오리진(+쿠키), 2) 8080 직접(쿠키X) */
+const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8080';
+const sameOrigin = axios.create({ baseURL: "", withCredentials: true });
+const direct8080 = axios.create({ baseURL: API_BASE, withCredentials: false });
 
 const DEFAULT_AVATAR = '/default_profile.png';
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8080';
 
-// 서버에서 오는 경로를 안전하게 <img src>로 변환
+/** ✅ 이미지 경로 보정: /uploads/profile 기준으로 안전 처리 */
 const toImageSrc = (p) => {
   if (!p) return DEFAULT_AVATAR;
-  // 절대 URL
-  if (/^https?:\/\//i.test(p)) return p;
-  // 루트(/...)로 시작 → 백엔드 호스트 붙임
-  if (p.startsWith('/')) return API_BASE + p;
-  // 파일명이나 상대경로만 온 경우 → /profile/ 또는 /images/에 저장했다면 보통 파일명만 저장하므로 /profile/ 가정
-  // 만약 서비스에서 /images에 저장한다면 아래 한 줄을 '/images/'로 바꿔도 됨
-  return API_BASE + '/profile/' + p;
-};
+  if (/^(https?:)?\/\//i.test(p) || /^blob:/i.test(p)) return p;
 
-// 캐시 버스터(업로드 직후 최신 반영)
+  let path = String(p).trim().replace(/^\.?\/*/, '');
+
+  if (/^uploads\/profile\//i.test(path)) return `${API_BASE}/${path}`;
+  if (/^\/uploads\/profile\//i.test(p))  return `${API_BASE}${p}`;
+
+  if (/^profile\//i.test(path))  return `${API_BASE}/uploads/${path}`.replace('/profile/', '/profile/');
+  if (/^\/profile\//i.test(p))   return `${API_BASE}/uploads${p}`;
+
+  if (/^(images|uploads\/images|static)\//i.test(path)) return `${API_BASE}/${path}`;
+
+  return `${API_BASE}/uploads/profile/${path}`;
+};
 const bust = (url) => url + (url.includes('?') ? '&' : '?') + 'v=' + Date.now();
 
 /* ---------------- API ---------------- */
-async function apiFetchPost(id) {
-  const { data } = await api.get(`/api/posts/detail/${id}`);
+async function fetchPost(id) {
+  const { data } = await sameOrigin.get(`/api/posts/detail/${id}`);
   return data;
 }
-async function apiDeletePost(id) {
-  await api.delete(`/api/posts/delete/${id}`);
-  return true;
-}
 async function apiGetSession() {
-  const res = await api.get("/api/user/session-info", { validateStatus: () => true });
-  return res.status === 200 ? res.data : null;
+  const res = await sameOrigin.get('/api/user/session-info', { validateStatus: () => true });
+  return res.status === 200 ? res.data : null; // 미로그인/403이면 null
 }
-async function apiGetMypageInfo() {
-  const res = await api.get("/api/mypage/info", { validateStatus: () => true });
-  return res.status === 200 ? res.data : null;
+async function apiDeletePost(id) {
+  const res = await sameOrigin.delete(`/api/posts/delete/${id}`, { validateStatus: () => true });
+  if (res.status >= 200 && res.status < 300) return true;
+  throw new Error(`삭제 실패(${res.status})`);
 }
 
-/* ---------------- UI 스타일 ---------------- */
+/** 작성자 조회: /api/posts/author/by-nickname/{nickname} (permitAll) */
+const AUTHOR_PATHS = [
+  (nick) => `/api/posts/author/by-nickname/${encodeURIComponent(nick)}`,
+];
+async function fetchAuthorCascade(nickname) {
+  const attempts = [];
+  for (const b of AUTHOR_PATHS) attempts.push({ client: 'sameOrigin', url: b(nickname) });
+  for (const b of AUTHOR_PATHS) attempts.push({ client: 'direct8080', url: b(nickname) });
+
+  for (const { client, url } of attempts) {
+    try {
+      const cli = client === 'sameOrigin' ? sameOrigin : direct8080;
+      const res = await cli.get(url, { validateStatus: () => true });
+      if (res.status >= 200 && res.status < 300 && res.data) {
+        const u = res.data;
+        return {
+          nickname : u.nickName ?? u.nickname ?? nickname,
+          email    : u.email ?? '',
+          phone    : u.phone ?? '',
+          birthday : u.birthday ?? '',
+          imagePath: u.imagePath ?? u.imagepath ?? '',
+          location : u.location ?? '',
+          _source  : `${client} ${url}`,
+        };
+      }
+    } catch {}
+  }
+  return null;
+}
+
+/* ---------------- 스타일 ---------------- */
 const PostDetailGlobalStyle = createGlobalStyle`
   .pd-header { display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .pd-title { margin-bottom:6px; }
@@ -70,7 +98,6 @@ function formatDate(v) {
   return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 const looksLikeHtml = (s='') => /<\/?[a-z][\s\S]*>/i.test(s);
-
 function toDisplayHtml(content='') {
   if (!content) return '';
   if (looksLikeHtml(content)) return content;
@@ -82,28 +109,24 @@ function toDisplayHtml(content='') {
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/\r?\n/g,'<br/>');
 }
-
 function replaceBlobImages(html = '', imagePaths = []) {
   let idx = 0;
   const replaced = html.replace(
     /<img\b[^>]*src=["']blob:[^"']*["'][^>]*>/gi,
-    (match) => {
+    (m) => {
       if (idx >= imagePaths.length) return '';
-      const raw = imagePaths[idx++];
-      const src = bust(toImageSrc(raw));
-      return match.replace(/src=["'][^"']+["']/, `src="${src}"`);
+      const src = bust(toImageSrc(imagePaths[idx++] ?? ''));
+      return m.replace(/src=["'][^"']+["']/, `src="${src}"`);
     }
   );
   return { html: replaced };
 }
-
-function formatDateToYYYYMMDD(dateString) {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+function formatDateToYYYYMMDD(s) {
+  if (!s) return '';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const d = new Date(s);
+  if (isNaN(d)) return '';
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 }
 
 /* ---------------- 컴포넌트 ---------------- */
@@ -112,54 +135,78 @@ export default function PostDetail() {
   const navigate = useNavigate();
 
   const [post, setPost] = useState(null);
-  const [error, setError] = useState('');
+  const [postError, setPostError] = useState('');
 
   const [me, setMe] = useState(null);
   const [loadingMe, setLoadingMe] = useState(true);
 
-  const [contactInfo, setContactInfo] = useState({ email: '', phone: '', birthday: '', location: '' });
+  const [author, setAuthor] = useState(null);
+  const [authorLoading, setAuthorLoading] = useState(false);
+  const [authorError, setAuthorError] = useState('');
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const toggleSidebar = () => setSidebarOpen(v => !v);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // 기본 펼침
 
   useEffect(() => {
     document.body.classList.add('postdetail-body-styles');
     return () => document.body.classList.remove('postdetail-body-styles');
   }, []);
 
+  // 1) 게시글, 2) 세션 병행 로드
   useEffect(() => {
     if (!id || isNaN(Number(id))) {
-      setError('잘못된 게시글 주소입니다.');
+      setPostError('잘못된 게시글 주소입니다.');
       return;
     }
     (async () => {
       try {
-        const [postData, sessionData, mypageData] = await Promise.all([
-          apiFetchPost(id),
+        const [postData, sessionData] = await Promise.all([
+          fetchPost(id),
           apiGetSession(),
-          apiGetMypageInfo()
         ]);
-
         setPost(postData);
         setMe(sessionData);
-
-        const { phone, birthday, location } = sessionData || {};
-        const email = mypageData?.email || '';
-        setContactInfo({
-          email,
-          phone: phone || '',
-          birthday: formatDateToYYYYMMDD(birthday),
-          location: location || '',
-        });
-      } catch (e) {
-        setError('게시글을 불러오지 못했습니다.');
+      } catch {
+        setPostError('게시글을 불러오지 못했습니다.');
       } finally {
         setLoadingMe(false);
       }
     })();
   }, [id]);
 
-  // 소유자 판별
+  // 3) 작성자 정보(USER 테이블)
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!post) return;
+      const nickname = post?.nickname ?? post?.writerNick ?? null;
+      if (!nickname) {
+        setAuthor(null);
+        setAuthorError('작성자 닉네임이 없어 사용자 정보를 조회할 수 없습니다.');
+        return;
+      }
+      setAuthorLoading(true);
+      setAuthorError('');
+      try {
+        const u = await fetchAuthorCascade(nickname);
+        if (!alive) return;
+        if (!u) {
+          setAuthor(null);
+          setAuthorError('사용자 정보를 가져오지 못했습니다.');
+        } else {
+          setAuthor(u);
+        }
+      } catch {
+        if (!alive) return;
+        setAuthor(null);
+        setAuthorError('작성자 정보를 불러오지 못했습니다.');
+      } finally {
+        if (alive) setAuthorLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [post]);
+
+  // 소유자 판별(세션 vs 글)
   const postAuthorLoginId =
     post?.loginid ?? post?.writerLoginId ?? post?.authorLoginId ?? post?.userLoginId ?? null;
   const meLoginId = me?.loginid ?? me?.loginId ?? null;
@@ -187,7 +234,8 @@ export default function PostDetail() {
     }
   };
 
-  if (error) {
+  // 로딩/에러 처리
+  if (postError) {
     return (
       <>
         <PostDetailGlobalStyle />
@@ -195,7 +243,7 @@ export default function PostDetail() {
           <Header />
           <main className="postdetail-main">
             <div className="postdetail-main-content">
-              <p className="postdetail-h3">{error}</p>
+              <p className="postdetail-h3">{postError}</p>
               <button onClick={() => navigate('/postlist')}>목록으로</button>
             </div>
           </main>
@@ -219,6 +267,7 @@ export default function PostDetail() {
     );
   }
 
+  // 본문/메타
   const title     = post.title || '(제목 없음)';
   const uploadStr = formatDate(post.uploaddate);
   const modifyStr =
@@ -228,21 +277,16 @@ export default function PostDetail() {
       : null;
 
   const content = post.content || '';
-  const uploadedImages = [
-    post.imagepath0, post.imagepath1, post.imagepath2, post.imagepath3, post.imagepath4
-  ].filter(Boolean);
-
+  const images = [post.imagepath0, post.imagepath1, post.imagepath2, post.imagepath3, post.imagepath4].filter(Boolean);
   const baseHtml = toDisplayHtml(content);
-  const { html: htmlNoBlob } = replaceBlobImages(baseHtml, uploadedImages);
+  const { html: htmlNoBlob } = replaceBlobImages(baseHtml, images);
 
-  // 세션에서 프로필 경로 읽기 (imagePath / imagepath 둘 다 대비)
-  const rawPath = me?.imagePath ?? me?.imagepath ?? null;
-  const myNickname = me?.nickname ?? me?.nickName ?? '(로그인 필요)';
-  const myImage = bust(toImageSrc(rawPath || DEFAULT_AVATAR));
-  const myEmail = contactInfo.email ?? '';
-  const myPhone = contactInfo.phone ?? '';
-  const myBirthday = contactInfo.birthday ?? '';
-  const myLocation = contactInfo.location ?? '';
+  // 사이드바: 작성자(User) 정보
+  const avatarSrc = bust(toImageSrc(author?.imagePath));
+  const email = (author?.email ?? '').trim() || '(미등록)';
+  const phone = (author?.phone ?? '').trim() || '(미등록)';
+  const birthday = (author?.birthday ? formatDateToYYYYMMDD(author.birthday) : '').trim() || '(미등록)';
+  const location = (author?.location ?? '').trim() || '(미등록)';
 
   const onAvatarError = (e) => { e.currentTarget.src = DEFAULT_AVATAR; };
 
@@ -252,53 +296,67 @@ export default function PostDetail() {
       <div className="app-root">
         <Header />
         <main className="postdetail-main">
-          {/* 사이드바 */}
+          {/* 사이드바: 작성자 정보 */}
           <aside className={`postdetail-sidebar ${sidebarOpen ? 'active' : ''}`} aria-hidden={!sidebarOpen} data-sidebar>
             <div className="postdetail-sidebar-info">
               <figure className="postdetail-avatar-box">
-                <img src={myImage} alt="avatar" width="80" onError={onAvatarError} />
+                {authorLoading ? (
+                  <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#eee' }} />
+                ) : (
+                  <img src={avatarSrc} alt="author avatar" width="80" onError={onAvatarError} />
+                )}
               </figure>
               <div className="postdetail-info-content">
-                <h1 className="postdetail-name" title="Writer">{myNickname}</h1>
-                <p className="postdetail-title">Web Developer</p>
+                <h1 className="postdetail-name">{author?.nickname ?? post?.nickname ?? ''}</h1>
+                <p className="postdetail-title">Author</p>
               </div>
-              <button className="postdetail-info-more-btn" data-sidebar-btn onClick={toggleSidebar} aria-expanded={sidebarOpen}>
-                <span>Show Contacts</span>
-                <ion-icon name="chevron-down" aria-hidden="true"></ion-icon>
+              <button
+                className="postdetail-info-more-btn"
+                data-sidebar-btn
+                onClick={() => setSidebarOpen(o=>!o)}
+                aria-expanded={sidebarOpen}
+              >
+                <span>{sidebarOpen ? 'Hide Contacts' : 'Show Contacts'}</span>
+                <ion-icon name="chevron-down" aria-hidden="true" />
               </button>
             </div>
+
             <div className="postdetail-sidebar-info-more">
               <div className="postdetail-separator" />
-              <ul className="postdetail-contacts-list">
-                <li className="postdetail-contact-item">
-                  <div className="postdetail-icon-box"><ion-icon name="mail-outline" aria-hidden="true" /></div>
-                  <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Email</p>
-                    <p className="postdetail-contact-link">{myEmail}</p>
-                  </div>
-                </li>
-                <li className="postdetail-contact-item">
-                  <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true" /></div>
-                  <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Phone</p>
-                    <p className="postdetail-contact-link">{myPhone}</p>
-                  </div>
-                </li>
-                <li className="postdetail-contact-item">
-                  <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true" /></div>
-                  <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Birthday</p>
-                    <p className="postdetail-contact-link">{myBirthday}</p>
-                  </div>
-                </li>
-                <li className="postdetail-contact-item">
-                  <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true" /></div>
-                  <div className="postdetail-contact-info">
-                    <p className="postdetail-contact-title">Location</p>
-                    <p className="postdetail-contact-link">{myLocation}</p>
-                  </div>
-                </li>
-              </ul>
+              {authorError ? (
+                <div style={{ color: '#b00020' }}>{authorError}</div>
+              ) : (
+                <ul className="postdetail-contacts-list">
+                  <li className="postdetail-contact-item">
+                    <div className="postdetail-icon-box"><ion-icon name="mail-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-contact-info">
+                      <p className="postdetail-contact-title">Email</p>
+                      <p className="postdetail-contact-link">{email}</p>
+                    </div>
+                  </li>
+                  <li className="postdetail-contact-item">
+                    <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-contact-info">
+                      <p className="postdetail-contact-title">Phone</p>
+                      <p className="postdetail-contact-link">{phone}</p>
+                    </div>
+                  </li>
+                  <li className="postdetail-contact-item">
+                    <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-contact-info">
+                      <p className="postdetail-contact-title">Birthday</p>
+                      <p className="postdetail-contact-link">{birthday}</p>
+                    </div>
+                  </li>
+                  <li className="postdetail-contact-item">
+                    <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-contact-info">
+                      <p className="postdetail-contact-title">Location</p>
+                      <p className="postdetail-contact-link">{location}</p>
+                    </div>
+                  </li>
+                </ul>
+              )}
             </div>
           </aside>
 
@@ -314,6 +372,7 @@ export default function PostDetail() {
                   </p>
                 </div>
 
+                {/* ✅ 세션으로 소유자 판별하여 동일 디자인의 수정/삭제 버튼 노출 */}
                 {!loadingMe && isOwner && (
                   <div className="pd-actions">
                     <button onClick={onEdit} className="pd-btn pd-btn--submit">수정</button>
