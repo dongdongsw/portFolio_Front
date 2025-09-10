@@ -402,14 +402,11 @@ function CommentsApp() {
                   setComments(prev => prev.filter((_, i) => i !== idx));
                   setDeleteConfirmIdx(null);
                   const idToDelete = removed.id;
-                  if (typeof idToDelete === 'string' && idToDelete.startsWith('temp-')) {
-                    return;
-                  }
-                  
+                  if (typeof removed.id === 'string' && removed.id.startsWith('temp-')) return;
+
                   try {
                     await api.delete(`/comments/delete/${removed.id}`);
-                  }
-                  catch (error) {
+                  } catch (error) {
                     setComments(prev => {
                       const next = [...prev];
                       next.splice(idx, 0, removed);
