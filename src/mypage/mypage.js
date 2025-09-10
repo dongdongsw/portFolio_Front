@@ -95,6 +95,7 @@ function ProfileCard() {
   const [isEditing, setIsEditing] = useState(false); // 편집 모드 여부
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태
   const [error, setError] = useState(null); // 에러 메시지
+  const [previewImage, setPreviewImage] = useState(null);
 
   // 사용자 정보 불러오기
   useEffect(() => {
@@ -259,7 +260,6 @@ const handleSaveClick = async () => {
       currentPassword: currentPassword || null, newPassword: newPassword || null,
       newPasswordConfirm: confirmNewPassword || null, phone: editedUserInfo.phone || null,
       location: editedUserInfo.location || null, birthday: editedUserInfo.birthday || null,
-      imagePath: editedUserInfo.imagePath || null
     };
 
     console.log("PATCH payload", updateData); // 디버깅용
@@ -302,10 +302,14 @@ const handleImageChange = (e) => {
   const file = e.target.files[0];
   if (file) {
     setEditedUserInfo((prev) => ({
-      ...prev, profileImageFile: file, imagePath: URL.createObjectURL(file) 
+      ...prev, profileImageFile: file
     }));
+    setPreviewImage(URL.createObjectURL(file)); // 여기서만 blob URL 저장
+
   }
+  
 };
+
 
 
   // 탈퇴
@@ -375,8 +379,8 @@ const handlesecessionClick = async () => {
       <div className="profile-card">
         <div className="profile-header">
         <div className="avatar-wrapper"> 
-          <img src={editedUserInfo.imagePath || "https://randomuser.me/api/portraits/women/79.jpg"} className="avatar" alt="Profile" />
-           {isEditing && (
+          <img src={ previewImage || editedUserInfo.imagePath || "https://randomuser.me/api/portraits/women/79.jpg"} className="avatar" alt="Profile"/>           
+          {isEditing && (
               <>
                 <div className="avatar-overlay" onClick={() => document.getElementById("fileInput").click()}>이미지 변경</div>
                 <input id="fileInput" type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageChange}/>
