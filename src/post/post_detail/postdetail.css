@@ -506,4 +506,7 @@ body.postdetail-body-styles::-webkit-scrollbar {
     .detail-header {
         padding-bottom: 100px;
     }
+    .butt {
+        max-width: 860px; margin: 24px auto; display: grid; gap: 12px;
+    }
 }

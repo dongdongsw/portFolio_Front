@@ -93,6 +93,7 @@ const PostUpdateStyle = createGlobalStyle`
   .postdetail-article[data-page="edit-post"] { min-height: 681px; }
 `;
 const PostEditButtons = styled.div`
+  
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -346,28 +347,36 @@ export default function PostUpdate() {
               ) : (
                 <ul className="postdetail-contacts-list">
                   <li className="postdetail-contact-item">
-                    <div className="postdetail-icon-box"><ion-icon name="mail-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-icon-box">
+                        <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/new-post.png" alt="new-post"/>
+                    </div>
                     <div className="postdetail-contact-info">
                       <p className="postdetail-contact-title">Email</p>
                       <p className="postdetail-contact-link">{email}</p>
                     </div>
                   </li>
                   <li className="postdetail-contact-item">
-                    <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-icon-box">
+                      <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/phone--v1.png" alt="phone--v1"/>
+                    </div>
                     <div className="postdetail-contact-info">
                       <p className="postdetail-contact-title">Phone</p>
                       <p className="postdetail-contact-link">{phone}</p>
                     </div>
                   </li>
                   <li className="postdetail-contact-item">
-                    <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-icon-box">
+                      <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/birthday.png" alt="birthday"/>
+                    </div>
                     <div className="postdetail-contact-info">
                       <p className="postdetail-contact-title">Birthday</p>
                       <p className="postdetail-contact-link">{birthday}</p>
                     </div>
                   </li>
                   <li className="postdetail-contact-item">
-                    <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-icon-box">
+                      <img width="30" height="30" src="https://img.icons8.com/material-sharp/24/marker.png" alt="marker"/>
+                    </div>
                     <div className="postdetail-contact-info">
                       <p className="postdetail-contact-title">Location</p>
                       <p className="postdetail-contact-link">{location}</p>
@@ -392,12 +401,15 @@ export default function PostUpdate() {
                     return URL.createObjectURL(file);
                   }}
                 />
+                <div className='butt'>
                 <PostEditButtons>
                   <CancelBtn type="button" onClick={handleCancel}>취소</CancelBtn>
                   <SubmitBtn type="submit" disabled={loading}>
                     {loading ? '저장 중...' : '저장'}
                   </SubmitBtn>
                 </PostEditButtons>
+                </div>
+                
               </form>
             </article>
           </div>

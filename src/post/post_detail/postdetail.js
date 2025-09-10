@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './postdetail.css';
 import Header from '../../components/Header';
 import { createGlobalStyle } from 'styled-components';
+import CommentsApp from './../../comment/comment';
 import axios from 'axios';
 
 /** Axios 2종: 1) 같은 오리진(+쿠키), 2) 8080 직접(쿠키X) */
@@ -328,28 +329,36 @@ export default function PostDetail() {
               ) : (
                 <ul className="postdetail-contacts-list">
                   <li className="postdetail-contact-item">
-                    <div className="postdetail-icon-box"><ion-icon name="mail-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-icon-box">
+                        <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/new-post.png" alt="new-post"/>
+                    </div>
                     <div className="postdetail-contact-info">
                       <p className="postdetail-contact-title">Email</p>
                       <p className="postdetail-contact-link">{email}</p>
                     </div>
                   </li>
                   <li className="postdetail-contact-item">
-                    <div className="postdetail-icon-box"><ion-icon name="phone-portrait-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-icon-box">
+                      <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/phone--v1.png" alt="phone--v1"/>
+                    </div>
                     <div className="postdetail-contact-info">
                       <p className="postdetail-contact-title">Phone</p>
                       <p className="postdetail-contact-link">{phone}</p>
                     </div>
                   </li>
                   <li className="postdetail-contact-item">
-                    <div className="postdetail-icon-box"><ion-icon name="calendar-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-icon-box">
+                      <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/birthday.png" alt="birthday"/>
+                    </div>
                     <div className="postdetail-contact-info">
                       <p className="postdetail-contact-title">Birthday</p>
                       <p className="postdetail-contact-link">{birthday}</p>
                     </div>
                   </li>
                   <li className="postdetail-contact-item">
-                    <div className="postdetail-icon-box"><ion-icon name="location-outline" aria-hidden="true" /></div>
+                    <div className="postdetail-icon-box">
+                      <img width="30" height="30" src="https://img.icons8.com/material-sharp/24/marker.png" alt="marker"/>
+                    </div>
                     <div className="postdetail-contact-info">
                       <p className="postdetail-contact-title">Location</p>
                       <p className="postdetail-contact-link">{location}</p>
@@ -389,6 +398,12 @@ export default function PostDetail() {
                 )}
               </section>
             </article>
+            <section className="postdetail-comment-section">
+                <h3 className="postdetail-h3 postdetail-comment-title">Comments</h3>
+                <div className="postdetail-comments-container">
+                  <CommentsApp/>
+                </div>
+              </section>
           </div>
         </main>
       </div>
