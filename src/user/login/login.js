@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './login.css'; 
 import '../../commonness.css';
+import { Link } from "react-router-dom";
 import { createGlobalStyle } from 'styled-components';
 import FindIdModal from './find_login/find_id';
 import FindPwModal from './find_login/find_pw';
@@ -204,11 +205,10 @@ function Login() {
           <div className="switch__circle"></div>
           <div className="switch__circle switch__circle--t"></div>
           <div className={`switch__container ${isSignInActive ? '' : 'is-hidden'}`}>
-            <div className="login-header">
-              <a href="http://localhost:3000">
-                <img src={logo} width="150" height="150" alt="logo" />
-              </a>
-            </div>
+            <div className="logo-login">
+              <Link to="/" className="logo-login-text">Port Folio</Link>
+            </div>   
+                          
             <h2 className="switch__title title">Welcome Back !</h2>
             <p className="switch__description description">To keep connected with us please login with your personal info</p>
             <button className="switch__button button switch-btn" onClick={handleSignUpClick}>SIGN UP</button>

@@ -1,6 +1,7 @@
 import React, { useState,useEffect  } from 'react';
 import './mypage.css';
 import Header from '../components/Header';
+import { Link } from "react-router-dom";
 import { createGlobalStyle } from 'styled-components';
 import logo from './10.png'; 
 import axios from 'axios'; // Axios 임포트!
@@ -375,8 +376,12 @@ const handlesecessionClick = async () => {
     <>
       <MypageStyle />
       {/* <Header /> */}
-      <div className="login-header"><a href="http://localhost:3000"><img src={logo} width="150" height="150" alt="logo" /></a></div>
-      <div className="profile-card">
+      <div className="login-header">
+        <div className="logo-mypage">
+                  <Link to="/" className="logo-text">Port Folio</Link>
+                </div>   
+              </div>       
+        <div className="profile-card">
         <div className="profile-header">
         <div className="avatar-wrapper"> 
           <img src={ previewImage || editedUserInfo.imagePath || "https://randomuser.me/api/portraits/women/79.jpg"} className="avatar" alt="Profile"/>           

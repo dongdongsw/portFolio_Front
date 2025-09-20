@@ -7,6 +7,8 @@ import PostCreate from './post/create/postcreate';
 import PostUpdate from './post/update/postupdate';
 import Comment from './comment/comment';
 import Mypage from './mypage/mypage';
+import ContactUs from './contactus/contactus';
+import AboutMe from './aboutme/aboutme';
 
 function App() {
   return (
@@ -19,7 +21,9 @@ function App() {
       <Route path='/update/:id' element={<PostUpdate/>}/>
       <Route path='/comment' element={<Comment/>}/>
       <Route path='/mypage' element={<Mypage/>}/>
-      
+      <Route path='/contactus' element={<ContactUs/>}/>
+      <Route path='/aboutme' element={<AboutMe/>}/>
+
       
 
     </Routes>
