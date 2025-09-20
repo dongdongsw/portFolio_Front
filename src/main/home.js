@@ -33,20 +33,19 @@ function MyHome() {
   const [hoverText, setHoverText] = useState("");
   const [year, setYear] = useState(new Date().getFullYear());
   const [currentBg, setCurrentBg] = useState(0);
-  const [backgrounds, setBackgrounds] = useState([]); // 🔹 백엔드 이미지 저장
+  const [backgrounds, setBackgrounds] = useState([]); // 백엔드 이미지 저장
 
   useEffect(() => {
     setYear(new Date().getFullYear());
   }, []);
 
-  // 🔹 백엔드에서 최신 3개 이미지 불러오기
+  // 백엔드에서 최신 3개 이미지 불러오기
   useEffect(() => {
     fetch("http://localhost:8080/api/posts/latest-images", {
       credentials: "include"
     })
       .then((res) => res.json())
       .then((data) => {
-        // data = ["/images/aaa.jpg", "/images/bbb.png", ...]
         setBackgrounds(data);
       })
       .catch((err) => {
@@ -127,12 +126,10 @@ function MyHome() {
           </a>
         </div>
 
-        {/* Hover Text */}
         <div id="nav_big_text" className={hoverText ? "big_text_active" : ""}>
           {hoverText}
         </div>
 
-        {/* Footer */}
         <footer>
           <div className="copyright">
             ©<span className="year">{year}</span> Pord Folio - All rights reserved.

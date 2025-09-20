@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./contactus.css"; // 스타일은 따로 분리
+import "./contactus.css"; 
 import Header from '../components/Header';
 import { createGlobalStyle } from 'styled-components';
 
@@ -56,8 +56,6 @@ const ContactUsStyle = createGlobalStyle`
         color: #cb4332;
         text-decoration: none;
     }
-
-    
   `;
 
   const [formData, setFormData] = useState({
@@ -67,7 +65,7 @@ const ContactUsStyle = createGlobalStyle`
     message: "",
   });
 
-  const [status, setStatus] = useState(""); // "sending", "success", "error"
+  const [status, setStatus] = useState(""); 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -79,7 +77,7 @@ const ContactUsStyle = createGlobalStyle`
     setStatus("sending");
 
     try {
-      // 예시: 백엔드 API 호출
+     
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -104,7 +102,6 @@ const ContactUsStyle = createGlobalStyle`
      <div className="contact-wrapper">
     <section className="contact-us" id="contact">
       <div className="container">
-        {/* SECTION HEADER */}
         <div className="section-header">
           <h2 className="white-text">Contact Us</h2>
           <h6 className="white-text">
@@ -112,7 +109,6 @@ const ContactUsStyle = createGlobalStyle`
           </h6>
         </div>
 
-        {/* CONTACT FORM */}
         <div className="row">
           <form className="contact-form" id="contact-form" onSubmit={handleSubmit}>
             <div className="form-row">

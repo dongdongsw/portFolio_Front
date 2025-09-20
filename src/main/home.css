@@ -1,15 +1,14 @@
 .home-wrap {
   background-color: #e4e1da;
-  padding: 1.5rem;  /* ✅ body 대신 여기 적용 */
+  padding: 1.5rem;
 }
 
 .hero {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* margin-top: 48px; */
   border-radius: 5px;
-min-height: 70vh;  position: relative;
+  min-height: 70vh;  position: relative;
   background-image: url("https://images.unsplash.com/photo-1534138807944-7b5dd2954e1a?crop=entropy&cs=srgb&fm=jpg&ixid=MnwxNDU4OXwwfDF8cmFuZG9tfHx8fHx8fHx8MTYyNzExNzU3Nw&ixlib=rb-1.2.1&q=85");
   background-position: center;
   background-repeat: no-repeat;
@@ -34,7 +33,6 @@ color: white;
 text-decoration-line: none;
 
 }
-
 
 .hero a.left {
   left: 0;

@@ -4,7 +4,7 @@ import Header from '../components/Header';
 import { Link } from "react-router-dom";
 import { createGlobalStyle } from 'styled-components';
 import logo from './10.png'; 
-import axios from 'axios'; // Axios 임포트!
+import axios from 'axios'; 
 
 axios.defaults.withCredentials = true;
 
@@ -120,7 +120,7 @@ function ProfileCard() {
     fetchUserInfo();
   }, []);
 
-  // === 입력 필드 변경 핸들러 ===
+  // 입력 필드 변경 핸들러 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setEditedUserInfo((prev) => ({ ...prev, [name]: value }));
@@ -355,7 +355,6 @@ const handlesecessionClick = async () => {
     return (
       <>
         <MypageStyle />
-        {/* <Header /> */}
         <div className="login-header"><a href="http://localhost:3000"><img src={logo} width="150" height="150" alt="logo" /></a></div>
         <div className="profile-card" style={{ textAlign: 'center', padding: '50px' }}>정보를 불러오는 중입니다...</div>
       </>
@@ -366,7 +365,6 @@ const handlesecessionClick = async () => {
     return (
       <>
         <MypageStyle />
-        {/* <Header /> */}
         <div className="login-header"> <a href="http://localhost:3000"><img src={logo} width="150" height="150" alt="logo" /></a> </div>
         <div className="profile-card" style={{ textAlign: 'center', padding: '50px', color: 'red' }}> <p>오류 발생: {error}</p> <p>잠시 후 다시 시도해주세요.</p></div>
       </>
@@ -375,7 +373,6 @@ const handlesecessionClick = async () => {
   return (
     <>
       <MypageStyle />
-      {/* <Header /> */}
       <div className="login-header">
         <div className="logo-mypage">
                   <Link to="/" className="logo-text">Port Folio</Link>
@@ -400,7 +397,6 @@ const handlesecessionClick = async () => {
 
         {!isEditing ? (
           <>
-            {/* === 뷰 모드 === */}
             <div className="mypage-info">
               <div>
                 <span className="meta-label">가입 날짜</span>
@@ -426,7 +422,7 @@ const handlesecessionClick = async () => {
           </>
         ) : (
           <>
-            {/* === 편집 모드 === */}
+            {/* 편집 모드 */}
             <div className="mypage-info">
               <div>
                 <span className="meta-label">가입 날짜</span>

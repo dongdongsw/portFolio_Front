@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import "./aboutme.css"; // CSS 따로 관리
+import "./aboutme.css";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { createGlobalStyle } from "styled-components";
 import img1 from "./1.jpg";
@@ -41,11 +41,10 @@ function Testim() {
 
   const [current, setCurrent] = useState(0);
   const [prev, setPrev] = useState(null);
-  const [direction, setDirection] = useState("next"); // ← 방향 상태 추가
+  const [direction, setDirection] = useState("next"); 
   const slideInterval = useRef(null);
   const speed = 4500;
 
-  // 자동 슬라이드
   useEffect(() => {
     startAutoSlide();
     return () => stopAutoSlide();
@@ -80,7 +79,7 @@ function Testim() {
     setCurrent((prev) => (prev + 1) % slides.length);
   };
 
-  // 터치 이벤트 (모바일 스와이프)
+
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
@@ -113,7 +112,6 @@ function Testim() {
             <FaChevronRight />
           </span>
 
-          {/* 슬라이드 내용 */}
           <div id="testim-content" className="cont">
             {slides.map((slide, index) => (
               <div
@@ -135,7 +133,6 @@ function Testim() {
             ))}
           </div>
 
-          {/* 점 네비게이션 */}
           <ul id="testim-dots" className="dots">
             {slides.map((_, index) => (
               <li

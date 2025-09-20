@@ -8,7 +8,6 @@
 	color: var(--theme-color);
 	padding: 24px;
 	padding-left: 30px;
-	/* padding-top: 50px; */
 	border-radius: var(--modal-radius);
 	box-shadow: 10px 10px 10px #f3f1e5, -10px -10px 10px #f3f1e5;
 	position: relative;
