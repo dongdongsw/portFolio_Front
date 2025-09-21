@@ -7,6 +7,7 @@ body.postdetail-body-styles {
 
 body.postdetail-body-styles::-webkit-scrollbar {
     display: none; 
+    /* display: block; */
 }
 
 .postdetail-main {
@@ -288,12 +289,16 @@ body.postdetail-body-styles::-webkit-scrollbar {
 }
 
 .postdetail-comments-container {
-    max-height: 300px;
-    overflow-y: auto;
+    max-height: 1500px;
+      overflow-y: scroll;  
+
     /* padding-right: 10px;  */
     /* display: flex; */
+    padding-right: 10px;
     width: 1300px;
     margin-left: -120px;
+    
+
 }
 
 .postdetail-comment-list {
@@ -448,7 +453,7 @@ body.postdetail-body-styles::-webkit-scrollbar {
         margin-inline: auto;
         display: flex;
         justify-content: center;
-        align-items: stretch;
+        align-items: flex-start;
         gap: 25px;
     } 
     .postdetail-comment-section {

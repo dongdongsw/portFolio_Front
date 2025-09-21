@@ -48,7 +48,7 @@ async function apiDeletePost(id) {
   throw new Error(`삭제 실패(${res.status})`);
 }
 
-/** ✅ 작성자 조회: /api/posts/author?loginid=... (permitAll) */
+/** 작성자 조회: /api/posts/author?loginid=... (permitAll) */
 const AUTHOR_PATHS = [
   (loginid) => `/api/posts/author?loginid=${encodeURIComponent(loginid)}`,
 ];
@@ -180,7 +180,7 @@ export default function PostDetail() {
     post?.loginid ?? post?.writerLoginId ?? post?.authorLoginId ?? post?.userLoginId ?? null;
   const meLoginId = me?.loginid ?? me?.loginId ?? null;
 
-  // 3) 작성자 정보(USER 테이블) — ✅ loginid로만 조회
+  // 3) 작성자 정보(USER 테이블) — loginid로만 조회
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -213,7 +213,7 @@ export default function PostDetail() {
     return () => { alive = false; };
   }, [post]);
 
-  // ✅ 소유자 판별: loginid만 사용
+  // 소유자 판별: loginid만 사용
   const isOwner = !!meLoginId && !!postAuthorLoginId && meLoginId === postAuthorLoginId;
 
   const onEdit = () => {
@@ -381,7 +381,7 @@ export default function PostDetail() {
                   </p>
                 </div>
 
-                {/* ✅ 세션으로 소유자 판별하여 동일 디자인의 수정/삭제 버튼 노출 */}
+                {/* 세션으로 소유자 판별하여 동일 디자인의 수정/삭제 버튼 노출 */}
                 {!loadingMe && isOwner && (
                   <div className="pd-actions">
                     <button onClick={onEdit} className="pd-btn pd-btn--submit">수정</button>
