@@ -58,14 +58,14 @@ async function apiUpdatePost({ id, title, content, files }) {
   return data;
 }
 
-/** 작성자(User) 조회: permitAll 엔드포인트 */
+/** ✅ 작성자(User) 조회: /api/posts/author?loginid=... (permitAll) */
 const AUTHOR_PATHS = [
-  (nick) => `/api/posts/author/by-nickname/${encodeURIComponent(nick)}`,
+  (loginid) => `/api/posts/author?loginid=${encodeURIComponent(loginid)}`,
 ];
-async function fetchAuthorCascade(nickname) {
+async function fetchAuthorCascade(loginid) {
   const attempts = [];
-  for (const b of AUTHOR_PATHS) attempts.push({ client: 'sameOrigin', url: b(nickname) });
-  for (const b of AUTHOR_PATHS) attempts.push({ client: 'direct8080', url: b(nickname) });
+  for (const b of AUTHOR_PATHS) attempts.push({ client: 'sameOrigin', url: b(loginid) });
+  for (const b of AUTHOR_PATHS) attempts.push({ client: 'direct8080', url: b(loginid) });
 
   for (const { client, url } of attempts) {
     try {
@@ -74,7 +74,8 @@ async function fetchAuthorCascade(nickname) {
       if (res.status >= 200 && res.status < 300 && res.data) {
         const u = res.data;
         return {
-          nickname : u.nickName ?? u.nickname ?? nickname,
+          loginId  : u.loginId ?? u.loginid ?? loginid,
+          nickname : u.nickName ?? u.nickname ?? '',
           email    : u.email ?? '',
           phone    : u.phone ?? '',
           birthday : u.birthday ?? '',
@@ -93,7 +94,6 @@ const PostUpdateStyle = createGlobalStyle`
   .postdetail-article[data-page="edit-post"] { min-height: 681px; }
 `;
 const PostEditButtons = styled.div`
-  
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -204,11 +204,13 @@ export default function PostUpdate() {
         const data = await apiFetchPost(id);
         setPost(data);
 
-        // 2) 작성자 정보
-        const nickname = data?.nickname ?? data?.writerNick ?? null;
-        if (nickname) {
+        // 2) 작성자 정보 (✅ loginid 기반 조회)
+        const loginid =
+          data?.loginid ?? data?.writerLoginId ?? data?.authorLoginId ?? data?.userLoginId ?? null;
+
+        if (loginid) {
           setAuthorLoading(true);
-          const u = await fetchAuthorCascade(nickname);
+          const u = await fetchAuthorCascade(loginid);
           if (!u) {
             setAuthor(null);
             setAuthorError('작성자 정보를 가져오지 못했습니다.');
@@ -217,7 +219,7 @@ export default function PostUpdate() {
           }
         } else {
           setAuthor(null);
-          setAuthorError('작성자 닉네임이 없어 사용자 정보를 조회할 수 없습니다.');
+          setAuthorError('작성자 로그인 아이디가 없어 사용자 정보를 조회할 수 없습니다.');
         }
 
         // 3) 에디터 초기화
@@ -326,7 +328,10 @@ export default function PostUpdate() {
                 )}
               </figure>
               <div className="postdetail-info-content">
-                <h1 className="postdetail-name">{author?.nickname ?? post?.nickname ?? ''}</h1>
+                <h1 className="postdetail-name">
+                  {/* 닉네임 있으면 닉네임, 없으면 loginId */}
+                  {author?.nickname || post?.nickname || author?.loginId || '(작성자)'}
+                </h1>
                 <p className="postdetail-title">Author</p>
               </div>
               <button
@@ -402,14 +407,13 @@ export default function PostUpdate() {
                   }}
                 />
                 <div className='butt'>
-                <PostEditButtons>
-                  <CancelBtn type="button" onClick={handleCancel}>취소</CancelBtn>
-                  <SubmitBtn type="submit" disabled={loading}>
-                    {loading ? '저장 중...' : '저장'}
-                  </SubmitBtn>
-                </PostEditButtons>
+                  <PostEditButtons>
+                    <CancelBtn type="button" onClick={handleCancel}>취소</CancelBtn>
+                    <SubmitBtn type="submit" disabled={loading}>
+                      {loading ? '저장 중...' : '저장'}
+                    </SubmitBtn>
+                  </PostEditButtons>
                 </div>
-                
               </form>
             </article>
           </div>

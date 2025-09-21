@@ -247,6 +247,7 @@ body.postdetail-body-styles::-webkit-scrollbar {
 }
 
 .postdetail-about-text {
+    margin-top: 50px;
     color: hsl(0, 0%, 0%);
     font-size: 15px;
     font-weight: 300;
@@ -450,6 +451,9 @@ body.postdetail-body-styles::-webkit-scrollbar {
         align-items: stretch;
         gap: 25px;
     } 
+    .postdetail-comment-section {
+        margin-bottom: 50px;
+    }
 
     .postdetail-main-content {
         min-width: 75%;

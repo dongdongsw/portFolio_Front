@@ -53,9 +53,9 @@ async function apiGetSession() {
   const res = await api.get("/api/user/session-info", { validateStatus: () => true });
   return res.status === 200 ? res.data : null;
 }
-// author(작성자) 정보: USER 테이블에서 닉네임으로 조회(백엔드 PostController에 추가한 공개 API)
-async function apiGetAuthorByNickname(nickname) {
-  const res = await api.get(`/api/posts/author/by-nickname/${encodeURIComponent(nickname)}`, { validateStatus: () => true });
+// ✅ author(작성자) 정보: USER 테이블에서 "loginid"로 조회
+async function apiGetAuthorByLoginid(loginid) {
+  const res = await api.get(`/api/posts/author?loginid=${encodeURIComponent(loginid)}`, { validateStatus: () => true });
   if (res.status >= 200 && res.status < 300) return res.data;
   return null;
 }
@@ -72,7 +72,7 @@ async function apiUploadProfileImage(file) {
   });
   if (res.status === 401) throw Object.assign(new Error("UNAUTHORIZED"), { code: 401 });
   if (res.status !== 200 || !res.data?.imagePath) throw new Error("프로필 이미지 업로드 실패");
-  return res.data; // { imagePath: "/uploads/profile/xxx.png" (또는 서버 설정값) }
+  return res.data; // { imagePath: "/uploads/profile/xxx.png" }
 }
 async function apiDeleteProfileImage() {
   const res = await api.delete("/api/posts/profile-image", { validateStatus: () => true });
@@ -141,7 +141,7 @@ export default function PostCreate() {
   const [uploadingProfile, setUploadingProfile] = useState(false);
   const avatarFileRef = useRef(null);
   const [avatarSrc, setAvatarSrc] = useState(DEFAULT_AVATAR);   // 화면 표시용
-  const [currentImagePath, setCurrentImagePath] = useState(''); // 서버가 보관하는 imagePath(상대경로/절대경로)
+  const [currentImagePath, setCurrentImagePath] = useState(''); // 서버가 보관하는 imagePath
   const previewURLRef = useRef(null);
 
   const handleAvatarError = (e) => {
@@ -158,17 +158,17 @@ export default function PostCreate() {
         if (!sessionUser) { alert("로그인이 필요합니다."); navigate("/login"); return; }
         setMe(sessionUser);
 
-        // 작성자 닉네임으로 USER 조회
-        const nickname = sessionUser?.nickName ?? sessionUser?.nickname;
-        if (!nickname) {
+        // ✅ 로그인 아이디로 USER 조회
+        const loginid = sessionUser?.loginid ?? sessionUser?.loginId;
+        if (!loginid) {
           setAuthor(null);
-          setAuthorError('닉네임이 없어 사용자 정보를 조회할 수 없습니다.');
+          setAuthorError('로그인 아이디가 없어 사용자 정보를 조회할 수 없습니다.');
         } else {
           setAuthorLoading(true);
-          const user = await apiGetAuthorByNickname(nickname);
+          const user = await apiGetAuthorByLoginid(loginid);
           if (user) {
             setAuthor({
-              nickname: user.nickName ?? user.nickname ?? nickname,
+              nickname: user.nickName ?? user.nickname ?? (sessionUser?.nickName ?? sessionUser?.nickname ?? ''),
               email: user.email ?? '',
               phone: user.phone ?? '',
               birthday: user.birthday ?? '',
@@ -312,7 +312,7 @@ export default function PostCreate() {
                 {authorLoading ? (
                   <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#eee' }} />
                 ) : (
-                  <img src={avatarSrc} alt="avatar" width="80" onError={handleAvatarError} />
+                  <img src={bust(toImageSrc(author?.imagePath ?? (me?.imagePath ?? me?.imagepath ?? '')))} alt="avatar" width="80" onError={handleAvatarError} />
                 )}
                 {uploadingProfile && (
                   <span style={{ position:'absolute', bottom:-6, left:'50%', transform:'translateX(-50%)', fontSize:12 }}>
@@ -320,8 +320,6 @@ export default function PostCreate() {
                   </span>
                 )}
               </figure>
-
-            
 
               <div className="postdetail-info-content">
                 <h1 className="postdetail-name">{nickname}</h1>

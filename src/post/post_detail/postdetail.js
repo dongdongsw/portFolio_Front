@@ -48,14 +48,14 @@ async function apiDeletePost(id) {
   throw new Error(`삭제 실패(${res.status})`);
 }
 
-/** 작성자 조회: /api/posts/author/by-nickname/{nickname} (permitAll) */
+/** ✅ 작성자 조회: /api/posts/author?loginid=... (permitAll) */
 const AUTHOR_PATHS = [
-  (nick) => `/api/posts/author/by-nickname/${encodeURIComponent(nick)}`,
+  (loginid) => `/api/posts/author?loginid=${encodeURIComponent(loginid)}`,
 ];
-async function fetchAuthorCascade(nickname) {
+async function fetchAuthorCascade(loginid) {
   const attempts = [];
-  for (const b of AUTHOR_PATHS) attempts.push({ client: 'sameOrigin', url: b(nickname) });
-  for (const b of AUTHOR_PATHS) attempts.push({ client: 'direct8080', url: b(nickname) });
+  for (const b of AUTHOR_PATHS) attempts.push({ client: 'sameOrigin', url: b(loginid) });
+  for (const b of AUTHOR_PATHS) attempts.push({ client: 'direct8080', url: b(loginid) });
 
   for (const { client, url } of attempts) {
     try {
@@ -64,7 +64,8 @@ async function fetchAuthorCascade(nickname) {
       if (res.status >= 200 && res.status < 300 && res.data) {
         const u = res.data;
         return {
-          nickname : u.nickName ?? u.nickname ?? nickname,
+          loginId  : u.loginId ?? u.loginid ?? loginid,
+          nickname : u.nickName ?? u.nickname ?? '',
           email    : u.email ?? '',
           phone    : u.phone ?? '',
           birthday : u.birthday ?? '',
@@ -174,21 +175,26 @@ export default function PostDetail() {
     })();
   }, [id]);
 
-  // 3) 작성자 정보(USER 테이블)
+  // 소유자 판별용 loginid
+  const postAuthorLoginId =
+    post?.loginid ?? post?.writerLoginId ?? post?.authorLoginId ?? post?.userLoginId ?? null;
+  const meLoginId = me?.loginid ?? me?.loginId ?? null;
+
+  // 3) 작성자 정보(USER 테이블) — ✅ loginid로만 조회
   useEffect(() => {
     let alive = true;
     (async () => {
       if (!post) return;
-      const nickname = post?.nickname ?? post?.writerNick ?? null;
-      if (!nickname) {
+      const loginid = post?.loginid ?? post?.writerLoginId ?? post?.authorLoginId ?? post?.userLoginId ?? null;
+      if (!loginid) {
         setAuthor(null);
-        setAuthorError('작성자 닉네임이 없어 사용자 정보를 조회할 수 없습니다.');
+        setAuthorError('작성자 로그인 아이디가 없어 사용자 정보를 조회할 수 없습니다.');
         return;
       }
       setAuthorLoading(true);
       setAuthorError('');
       try {
-        const u = await fetchAuthorCascade(nickname);
+        const u = await fetchAuthorCascade(loginid);
         if (!alive) return;
         if (!u) {
           setAuthor(null);
@@ -207,17 +213,8 @@ export default function PostDetail() {
     return () => { alive = false; };
   }, [post]);
 
-  // 소유자 판별(세션 vs 글)
-  const postAuthorLoginId =
-    post?.loginid ?? post?.writerLoginId ?? post?.authorLoginId ?? post?.userLoginId ?? null;
-  const meLoginId = me?.loginid ?? me?.loginId ?? null;
-
-  const meNick = me?.nickName ?? me?.nickname ?? null;
-  const postNick = post?.nickname ?? null;
-
-  const isOwner =
-    (!!meLoginId && !!postAuthorLoginId && meLoginId === postAuthorLoginId) ||
-    (!!meNick && !!postNick && meNick === postNick);
+  // ✅ 소유자 판별: loginid만 사용
+  const isOwner = !!meLoginId && !!postAuthorLoginId && meLoginId === postAuthorLoginId;
 
   const onEdit = () => {
     if (!isOwner) { alert('작성자만 수정할 수 있습니다.'); return; }
@@ -308,7 +305,10 @@ export default function PostDetail() {
                 )}
               </figure>
               <div className="postdetail-info-content">
-                <h1 className="postdetail-name">{author?.nickname ?? post?.nickname ?? ''}</h1>
+                <h1 className="postdetail-name">
+                  {/* 닉네임이 있으면 닉네임, 없으면 loginId 표시 */}
+                  {author?.nickname || post?.nickname || author?.loginId || '(작성자)'}
+                </h1>
                 <p className="postdetail-title">Author</p>
               </div>
               <button
@@ -399,11 +399,11 @@ export default function PostDetail() {
               </section>
             </article>
             <section className="postdetail-comment-section">
-                <h3 className="postdetail-h3 postdetail-comment-title">Comments</h3>
-                <div className="postdetail-comments-container">
-                  <CommentsApp/>
-                </div>
-              </section>
+              <h3 className="postdetail-h3 postdetail-comment-title">Comments</h3>
+              <div className="postdetail-comments-container">
+                <CommentsApp/>
+              </div>
+            </section>
           </div>
         </main>
       </div>
