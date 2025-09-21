@@ -29,7 +29,10 @@ function CommentsApp() {
   //   { id: 4, text: "게시판1", author: "JAEHYUN", authorId: "user-4", createdAt: new Date("2025-07-21T12:00:00"), displayedAt: new Date("2025-07-21T12:00:00") },
   //   { id: 5, text: "게시판2", author: "MINSEOK", authorId: "user-5", createdAt: new Date("2025-07-21T13:00:00"), displayedAt: new Date("2025-07-21T13:00:00") }
   // ]);
-  const POST_ID = 1;
+  const path = typeof window !== "undefined" ? window.location.pathname : "";
+  const parts = path.split("/").filter(Boolean);
+  const last = parts[parts.length - 1] || "";
+  const POST_ID = /^\d+$/.test(last) ? Number(last) : null;
   const [editingCommentIndex, setEditingCommentIndex] = useState(null);
   const [editingText, setEditingText] = useState("");
   const [deleteConfirmIdx, setDeleteConfirmIdx] = useState(null);
@@ -69,6 +72,7 @@ function CommentsApp() {
 
   useEffect(() => {
     const fetchComments = async () => {
+      if (!Number.isFinite(POST_ID)) return;
       try {
         const { data } = await api.get(`/comments/post/${POST_ID}`);
         const mapped = (data || []).map(c => ({
@@ -77,19 +81,19 @@ function CommentsApp() {
           author: c.nickname,
           authorId: c.loginId,
           createdAt: c.uploadDate ? new Date(c.uploadDate) : null,
-          displayedAt: c.displayedAt ? new Date(c.displayedAt) 
-                     : (c.modifyDate ? new Date(c.modifyDate) 
-                     : (c.uploadDate ? new Date(c.uploadDate) : null)),
+          displayedAt: c.displayedAt ? new Date(c.displayedAt)
+                    : (c.modifyDate ? new Date(c.modifyDate)
+                    : (c.uploadDate ? new Date(c.uploadDate) : null)),
         }));
         mapped.sort((a, b) => (b.displayedAt ?? 0) - (a.displayedAt ?? 0));
         setComments(mapped);
-      }
-      catch (err) {
+      } catch (err) {
         console.error("GET /comments/post failed", err);
       }
     };
+    setComments([]);   
     fetchComments();
-  }, []);
+  }, [POST_ID]);
   
   useEffect(() => {
     if (openMenuIndex === null) return;
