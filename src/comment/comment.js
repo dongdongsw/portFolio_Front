@@ -16,7 +16,7 @@ const CommentStyle = createGlobalStyle`
  	    -moz-box-sizing: border-box;
     }
 
-  body{ background-color: #dee1e3; font-family: "Roboto", "Tahoma", "Arial", sans-serif; }
+    comments-app, comments, dropdown-backdrop, delete-confirm-modal , auth-modal { background-color: #dee1e3; font-family: "Roboto", "Tahoma", "Arial", sans-serif; }
 `;
 
 function CommentsApp() {
