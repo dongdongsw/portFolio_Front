@@ -4,8 +4,8 @@
 
 /* 전체 댓글 앱 영역 */
 .comments-app {
-  margin: 50px auto;
-  max-width: 680px;
+  /* margin: 50px auto; */
+  /* max-width: 680px; */
   padding: 0 50px;
   width: 100%;
 }
