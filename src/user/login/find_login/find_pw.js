@@ -67,7 +67,7 @@ export default function FindPwModal({ show, onClose, initialId = "" }) {
       const response = await axios.post(
         "http://localhost:8080/api/user/findpw/send-auth",
         null,
-        { params: { loginid: pwId, email: pwEmail } }
+        { params: { loginid: pwId, email: pwEmail }, withCredentials: true }
       );
 
       setModalMessage(
@@ -97,11 +97,10 @@ export default function FindPwModal({ show, onClose, initialId = "" }) {
     if (!pwId || !pwEmail || !verificationCode) return;
 
     try {
-      await axios.post("http://localhost:8080/api/user/findpw/verify-code", {
-        loginid: pwId,
-        email: pwEmail,
-        code: verificationCode,
-      });
+      await axios.post("http://localhost:8080/api/user/findpw/verify-code", 
+        { code: verificationCode },
+        { withCredentials: true }
+      );
 
       setModalMessage("이메일 인증이 완료되었습니다.");
       setShowMessage(true);
@@ -128,14 +127,10 @@ export default function FindPwModal({ show, onClose, initialId = "" }) {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/user/findpw/reset-password",
-        {
-          loginid: pwId,
-          email: pwEmail,
-          newPassword: newPassword,
-        },
-        { headers: { "Content-Type": "application/json" } }
-      );
+      "http://localhost:8080/api/user/findpw/verify-pw",
+      { code: verificationCode, newPassword: newPassword }, 
+      { headers: { "Content-Type": "application/json" }, withCredentials: true } 
+    );
 
       setModalMessage(
         typeof response.data === "string"

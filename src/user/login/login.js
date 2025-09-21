@@ -331,6 +331,20 @@ function Login() {
   // 로그인 제출
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
+
+    // 1️⃣ 입력 여부 확인
+    if (!loginData.loginid.trim() && !loginData.loginpw.trim()) {
+      setAlertMessage("아이디와 비밀번호를 입력해주세요.");
+      return;
+    } else if (!loginData.loginid.trim()) {
+      setAlertMessage("아이디를 입력해주세요.");
+      return;
+    } else if (!loginData.loginpw.trim()) {
+      setAlertMessage("비밀번호를 입력해주세요.");
+      return;
+    }
+
+    // 2️⃣ 서버 요청
     try {
       await axios.post(
         "http://localhost:8080/api/user/login",
@@ -340,9 +354,9 @@ function Login() {
       navigate('/');
     } catch (err) {
       console.error(err);
-      const data = err.response?.data;
-      const msg = typeof data === "string" ? data : data?.message || JSON.stringify(data) || "로그인 실패";
-      setAlertMessage(msg);
+
+      // 서버에서 오는 Access Denied 포함 모든 인증 오류를 통합
+      setAlertMessage("아이디 또는 비밀번호가 올바르지 않습니다.");
     }
   };
 
@@ -376,7 +390,7 @@ function Login() {
             <h2 className="form_title title">Create Account</h2>
             <span className="form__span">or use email for registration</span>
 
-             <input
+            <input
               className={`form__input ${signupErrors.loginid ? "error-input" : ""}`}
               type="text"
               placeholder="ID"
@@ -409,7 +423,6 @@ function Login() {
               name="loginpw"
               value={signupData.loginpw}
               onChange={handleSignupChange}
-              
             />
             {errorMessages.loginpw && (
               <p className="error-text">{errorMessages.loginpw}</p>
@@ -433,10 +446,24 @@ function Login() {
               <button type="button" className="terms-button" onClick={() => setShowTerms(true)}>약관</button>
               <div className="terms-checkboxes">
                 <label>
-                  <input type="checkbox" checked={agree} onChange={onToggleAgree}/> Agree
+                  <input
+                    type="checkbox"
+                    checked={agree}
+                    readOnly // 직접 체크하지 못하게 설정
+                    onClick={() => {
+                      if (!showTerms) setAlertMessage("약관을 읽어주세요.");
+                    }}
+                  /> Agree
                 </label>
                 <label>
-                  <input type="checkbox" checked={disagree} onChange={onToggleDisagree}/> Disagree
+                  <input
+                    type="checkbox"
+                    checked={disagree}
+                    readOnly // 직접 체크하지 못하게 설정
+                    onClick={() => {
+                      if (!showTerms) setAlertMessage("약관을 읽어주세요.");
+                    }}
+                  /> Disagree
                 </label>
               </div>
             </div>
@@ -509,6 +536,35 @@ function Login() {
                 4) Uploaded photos may be publicly visible.
               </p>
             </div>
+
+            {/* === 모달 내 체크박스 === */}
+            <div className="terms-checkboxes" style={{ justifyContent: "center", marginTop: "10px" }}>
+              <label>
+                <input 
+                  type="checkbox" 
+                  checked={agree} 
+                  onChange={() => {
+                    const next = !agree;
+                    setAgree(next);
+                    if (next) setDisagree(false);
+                  }} 
+                />
+                Agree
+              </label>
+              <label>
+                <input 
+                  type="checkbox" 
+                  checked={disagree} 
+                  onChange={() => {
+                    const next = !disagree;
+                    setDisagree(next);
+                    if (next) setAgree(false);
+                  }} 
+                />
+                Disagree
+              </label>
+            </div>
+
             <div className="modal-footer">
               <button onClick={() => setShowTerms(false)}>OK</button>
             </div>
