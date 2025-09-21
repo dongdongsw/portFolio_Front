@@ -40,7 +40,7 @@ function CommentsApp() {
   const [currentNickname, setCurrentNickname] = useState("");
   const [isMember, setIsMember] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [currentUserId] = useState("user-1");
+  const [currentUserId, setCurrentUserId] = useState("");
 
   const menuRefs = useRef({});
   const buttonRefs = useRef({});
@@ -55,6 +55,7 @@ function CommentsApp() {
       try {
         const { data } = await api.get("/user/me");
         setCurrentNickname(data.nickname || "");
+        setCurrentUserId((data.loginId ?? data.login_id ?? data.userId ?? data.id) || "");
         setIsMember(true);
       }
       catch (err) {
